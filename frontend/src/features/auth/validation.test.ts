@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { validateEmail, validateName, validatePassword, validateRegister } from './validation'
+import {
+  validateEmail,
+  validateName,
+  validatePassword,
+  validateRegister,
+} from './validation'
 
 describe('register validation', () => {
   it('rejects a name shorter than 2 characters', () => {
@@ -42,7 +47,11 @@ describe('register validation', () => {
     // When the whole form is validated
     // Then the errors object is empty
     expect(
-      validateRegister({ name: 'Oriol', email: 'oriol@test.com', password: '12345678' }),
+      validateRegister({
+        name: 'Oriol',
+        email: 'oriol@test.com',
+        password: '12345678',
+      }),
     ).toEqual({})
   })
 
@@ -50,10 +59,8 @@ describe('register validation', () => {
     // Given an empty form
     // When the whole form is validated
     // Then there is an error for name, email and password
-    expect(Object.keys(validateRegister({ name: '', email: '', password: '' }))).toEqual([
-      'name',
-      'email',
-      'password',
-    ])
+    expect(
+      Object.keys(validateRegister({ name: '', email: '', password: '' })),
+    ).toEqual(['name', 'email', 'password'])
   })
 })

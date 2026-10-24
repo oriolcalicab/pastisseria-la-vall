@@ -43,5 +43,13 @@ export function useRegisterForm() {
     }
   }
 
-  return { values, errors, submitError, isSubmitting, isSuccess, setValue, handleSubmit }
+  return {
+    values,
+    errors,
+    submitError,
+    isSubmitting,
+    isSuccess,
+    setValue,
+    handleSubmit,
+  }
 }
