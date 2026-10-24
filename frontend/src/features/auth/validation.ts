@@ -23,7 +23,7 @@ export function validatePassword(password: string): string | undefined {
   }
 }
 
-export function validateRegister(values: RegisterValues): RegisterErrors{
+export function validateRegister (values: RegisterValues): RegisterErrors{
     const errors: RegisterErrors = {}
 
     const nameError = validateName(values.name)
