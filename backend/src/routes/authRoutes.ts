@@ -1,26 +1,19 @@
 import { Router } from 'express'
 import type { Request, Response } from 'express'
-import { verifyFirebaseToken } from '../services/tokenService.js'
+import { requireAuth } from '../middleware/requireAuth.js'
+import { verifyToken } from '../middleware/verifyToken.js'
 import {
   isUniqueConstraintError,
   registerCustomer,
   toPublicUser,
 } from '../services/userService.js'
-import { getBearerToken } from '../utils/bearerToken.js'
 import { parseRegisterBody } from '../validation/registerBody.js'
 
 const handleRegister = async (req: Request, res: Response) => {
-  const token = getBearerToken(req.headers.authorization)
-
-  if (!token) {
-    res.status(401).json({ error: 'Falta el token' })
-    return
-  }
-
-  const firebaseUser = await verifyFirebaseToken(token).catch(() => null)
+  const firebaseUser = res.locals.firebaseUser
 
   if (!firebaseUser) {
-    res.status(401).json({ error: 'Token no vàlid' })
+    res.status(401).json({ error: 'Falta el token' })
     return
   }
 
@@ -49,8 +42,20 @@ const handleRegister = async (req: Request, res: Response) => {
   }
 }
 
+const handleMe = (_req: Request, res: Response) => {
+  const user = res.locals.user
+
+  if (!user) {
+    res.status(401).json({ error: 'Usuari no registrat' })
+    return
+  }
+
+  res.json(toPublicUser(user))
+}
+
 const authRouter = Router()
 
-authRouter.post('/register', handleRegister)
+authRouter.post('/register', verifyToken, handleRegister)
+authRouter.get('/me', requireAuth, handleMe)
 
 export default authRouter
