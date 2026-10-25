@@ -1,5 +1,6 @@
 import FormField from '../components/FormField'
 import { useRegisterForm } from '../features/auth/hooks/useRegisterForm'
+import { Link } from 'react-router-dom'
 
 export default function RegisterPage() {
   const {
@@ -68,6 +69,14 @@ export default function RegisterPage() {
           {isSubmitting ? 'Creant el compte...' : "Registra'm"}
         </button>
       </form>
+
+      <p className="mt-4 text-sm">
+        Ja tens compte?{' '}
+        <Link to="/login" className="underline">
+          Inicia la sessió
+        </Link>
+      </p>
+      
     </main>
   )
 }

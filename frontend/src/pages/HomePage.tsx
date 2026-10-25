@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import AuthStatus from '../features/auth/components/AuthStatus'
 
 export default function HomePage() {
   const [status, setStatus] = useState('Comprovant...')
@@ -14,6 +15,7 @@ export default function HomePage() {
     <main className="p-8">
       <h1 className="text-3xl font-bold">Pastisseria La Vall</h1>
       <p className="mt-4">Estat del servidor: {status}</p>
+      <AuthStatus />
     </main>
   )
 }
