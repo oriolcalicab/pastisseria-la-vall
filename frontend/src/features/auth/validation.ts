@@ -1,4 +1,4 @@
-import type { RegisterErrors, RegisterValues } from './types/type'
+import type { RegisterErrors, RegisterValues,  LoginErrors, LoginValues } from './types/type'
 
 export const MIN_PASSWORD_LENGTH = 8
 const MIN_NAME_LENGTH = 2
@@ -30,6 +30,21 @@ export function validateRegister(values: RegisterValues): RegisterErrors {
   const passwordError = validatePassword(values.password)
 
   if (nameError) errors.name = nameError
+  if (emailError) errors.email = emailError
+  if (passwordError) errors.password = passwordError
+
+  return errors
+}
+
+export const validateLoginPassword = (password: string): string | undefined =>
+  password.length === 0 ? 'Escriu la contrasenya' : undefined
+
+export const validateLogin = (values: LoginValues): LoginErrors => {
+  const errors: LoginErrors = {}
+
+  const emailError = validateEmail(values.email)
+  const passwordError = validateLoginPassword(values.password)
+
   if (emailError) errors.email = emailError
   if (passwordError) errors.password = passwordError
 
