@@ -13,7 +13,7 @@ type RegisterResult = {
   created: boolean
 }
 
-const findUserByFirebaseUid = (firebaseUid: string) =>
+export const findUserByFirebaseUid = (firebaseUid: string) =>
   prisma.user.findUnique({ where: { firebaseUid } })
 
 const createCustomer = (data: NewCustomer) =>
