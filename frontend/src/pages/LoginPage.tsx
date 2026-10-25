@@ -1,12 +1,15 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import FormField from '../components/FormField'
 import { useLoginForm } from '../features/auth/hooks/useLoginForm'
+import { getRedirectPath } from '../features/auth/redirect'
 
 const LoginPage = () => {
-  const navigate = useNavigate()
-  const { values, errors, submitError, isSubmitting, setValue, handleSubmit } = useLoginForm(() =>
-    navigate('/'),
-  )
+ const navigate = useNavigate()
+const location = useLocation()
+const redirectPath = getRedirectPath(location.state)
+const { values, errors, submitError, isSubmitting, setValue, handleSubmit } = useLoginForm(() =>
+  navigate(redirectPath, { replace: true }),
+)
 
   return (
     <main className="mx-auto max-w-md p-8">
