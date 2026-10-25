@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { EmailAlreadyInUseError, registerUser } from '../services/authService'
+import { EmailAlreadyInUseError } from '../services/authService'
 import type { RegisterErrors, RegisterValues } from '../types/type'
 import { validateRegister } from '../validation'
+import { registerAccount } from '../services/accountService'
 
 const INITIAL_VALUES: RegisterValues = { name: '', email: '', password: '' }
 
@@ -34,7 +35,7 @@ export function useRegisterForm() {
 
     setIsSubmitting(true)
     try {
-      await registerUser(values)
+      await registerAccount(values)
       setIsSuccess(true)
     } catch (error) {
       setSubmitError(getSubmitErrorMessage(error))
