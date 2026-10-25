@@ -5,6 +5,7 @@ import RegisterPage from './pages/RegisterPage'
 import LoginPage from './pages/LoginPage'
 import ProtectedRoute from './features/auth/components/ProtectedRoute'
 import AccountPage from './pages/AccountPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
 
 export const router = createBrowserRouter([
   { path: '/', element: <HomePage /> },
@@ -14,5 +15,6 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [{ path: '/compte', element: <AccountPage /> }],
   },
+  { path: '/contrasenya-oblidada', element: <ForgotPasswordPage /> },
   { path: '*', element: <NotFoundPage /> },
 ])
