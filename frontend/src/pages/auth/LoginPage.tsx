@@ -7,8 +7,9 @@ const LoginPage = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const redirectPath = getRedirectPath(location.state)
-  const { values, errors, submitError, isSubmitting, setValue, handleSubmit } =
-    useLoginForm(() => navigate(redirectPath, { replace: true }))
+  const { values, errors, submitError, isSubmitting, setValue, handleSubmit } = useLoginForm(() =>
+    navigate(redirectPath, { replace: true }),
+  )
 
   return (
     <main className="mx-auto max-w-md p-8">

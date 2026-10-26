@@ -5,7 +5,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { loginAccount } from '../../features/auth/services/accountService'
 import LoginPage from './LoginPage'
 
-vi.mock('../../features/auth/services/accountService', () => ({ loginAccount: vi.fn() }))
+vi.mock('../../features/auth/services/accountService', () => ({
+  loginAccount: vi.fn(),
+}))
 
 const renderPage = () =>
   render(
@@ -29,7 +31,9 @@ describe('LoginPage', () => {
 
   it('shows a clear error when the credentials are wrong', async () => {
     // Given Firebase rejects the credentials
-    vi.mocked(loginAccount).mockRejectedValue({ code: 'auth/invalid-credential' })
+    vi.mocked(loginAccount).mockRejectedValue({
+      code: 'auth/invalid-credential',
+    })
     renderPage()
 
     // When the user submits the form

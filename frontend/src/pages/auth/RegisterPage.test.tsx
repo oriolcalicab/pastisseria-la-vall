@@ -7,7 +7,9 @@ import { EmailAlreadyInUseError } from '../../features/auth/services/authService
 import RegisterPage from './RegisterPage'
 
 vi.mock('../../lib/firebase', () => ({ auth: {} }))
-vi.mock('../../features/auth/services/accountService', () => ({ registerAccount: vi.fn() }))
+vi.mock('../../features/auth/services/accountService', () => ({
+  registerAccount: vi.fn(),
+}))
 
 const renderPage = () =>
   render(

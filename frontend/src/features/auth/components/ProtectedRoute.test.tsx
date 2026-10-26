@@ -38,7 +38,10 @@ describe('ProtectedRoute', () => {
 
   it('shows the private page when there is a session', () => {
     // Given a logged user
-    vi.mocked(useAuth).mockReturnValue({ user: { uid: 'u1' } as User, isLoading: false })
+    vi.mocked(useAuth).mockReturnValue({
+      user: { uid: 'u1' } as User,
+      isLoading: false,
+    })
 
     // When the user opens a private page
     renderAt('/compte')

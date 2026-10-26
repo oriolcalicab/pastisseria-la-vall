@@ -30,5 +30,13 @@ export const useForgotPasswordForm = () => {
     }
   }
 
-  return { email, emailError, submitError, isSubmitting, isSent, setEmail, handleSubmit }
+  return {
+    email,
+    emailError,
+    submitError,
+    isSubmitting,
+    isSent,
+    setEmail,
+    handleSubmit,
+  }
 }

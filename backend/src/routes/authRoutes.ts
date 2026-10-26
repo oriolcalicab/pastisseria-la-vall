@@ -2,11 +2,7 @@ import { Router } from 'express'
 import type { Request, Response } from 'express'
 import { requireAuth } from '../middleware/requireAuth.js'
 import { verifyToken } from '../middleware/verifyToken.js'
-import {
-  isUniqueConstraintError,
-  registerCustomer,
-  toPublicUser,
-} from '../services/userService.js'
+import { isUniqueConstraintError, registerCustomer, toPublicUser } from '../services/userService.js'
 import { parseRegisterBody } from '../validation/registerBody.js'
 
 const handleRegister = async (req: Request, res: Response) => {
