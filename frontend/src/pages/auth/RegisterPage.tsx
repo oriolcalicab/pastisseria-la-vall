@@ -1,5 +1,5 @@
-import FormField from '../components/FormField'
-import { useRegisterForm } from '../features/auth/hooks/useRegisterForm'
+import FormField from '../../components/FormField'
+import { useRegisterForm } from '../../features/auth/hooks/useRegisterForm'
 import { Link } from 'react-router-dom'
 
 export default function RegisterPage() {

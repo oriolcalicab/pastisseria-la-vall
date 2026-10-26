@@ -2,12 +2,12 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { registerAccount } from '../features/auth/services/accountService'
-import { EmailAlreadyInUseError } from '../features/auth/services/authService'
+import { registerAccount } from '../../features/auth/services/accountService'
+import { EmailAlreadyInUseError } from '../../features/auth/services/authService'
 import RegisterPage from './RegisterPage'
 
-vi.mock('../lib/firebase', () => ({ auth: {} }))
-vi.mock('../features/auth/services/accountService', () => ({ registerAccount: vi.fn() }))
+vi.mock('../../lib/firebase', () => ({ auth: {} }))
+vi.mock('../../features/auth/services/accountService', () => ({ registerAccount: vi.fn() }))
 
 const renderPage = () =>
   render(

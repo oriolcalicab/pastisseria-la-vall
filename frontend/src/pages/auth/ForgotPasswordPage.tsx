@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import FormField from '../components/FormField'
-import { useForgotPasswordForm } from '../features/auth/hooks/useForgotPasswordForm'
+import FormField from '../../components/FormField'
+import { useForgotPasswordForm } from '../../features/auth/hooks/useForgotPasswordForm'
 
 const ForgotPasswordPage = () => {
   const { email, emailError, submitError, isSubmitting, isSent, setEmail, handleSubmit } =

@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import FormField from '../components/FormField'
-import { useLoginForm } from '../features/auth/hooks/useLoginForm'
-import { getRedirectPath } from '../features/auth/redirect'
+import FormField from '../../components/FormField'
+import { useLoginForm } from '../../features/auth/hooks/useLoginForm'
+import { getRedirectPath } from '../../features/auth/redirect'
 
 const LoginPage = () => {
   const navigate = useNavigate()

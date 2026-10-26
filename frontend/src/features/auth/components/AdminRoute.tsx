@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import AccessDeniedPage from '../../../pages/AccessDeniedPage'
+import AccessDeniedPage from '../../../pages/errors/AccessDeniedPage'
 import { useCurrentUser } from '../hooks/useCurrentUser'
 
 const AdminRoute = () => {
