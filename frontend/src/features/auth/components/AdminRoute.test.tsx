@@ -7,8 +7,18 @@ import AdminRoute from './AdminRoute'
 
 vi.mock('../hooks/useCurrentUser', () => ({ useCurrentUser: vi.fn() }))
 
-const customer: CurrentUser = { id: 1, name: 'Anna', email: 'anna@test.com', role: 'customer' }
-const admin: CurrentUser = { id: 2, name: 'Oriol', email: 'oriol@test.com', role: 'admin' }
+const customer: CurrentUser = {
+  id: 1,
+  name: 'Anna',
+  email: 'anna@test.com',
+  role: 'customer',
+}
+const admin: CurrentUser = {
+  id: 2,
+  name: 'Oriol',
+  email: 'oriol@test.com',
+  role: 'admin',
+}
 
 const renderAt = (path: string) =>
   render(
@@ -29,7 +39,10 @@ describe('AdminRoute', () => {
 
   it('redirects to login when there is no session', () => {
     // Given a visitor without session
-    vi.mocked(useCurrentUser).mockReturnValue({ currentUser: null, isLoading: false })
+    vi.mocked(useCurrentUser).mockReturnValue({
+      currentUser: null,
+      isLoading: false,
+    })
 
     // When the visitor opens the admin page
     renderAt('/admin')
@@ -41,7 +54,10 @@ describe('AdminRoute', () => {
 
   it('shows access denied to a customer', () => {
     // Given a logged customer
-    vi.mocked(useCurrentUser).mockReturnValue({ currentUser: customer, isLoading: false })
+    vi.mocked(useCurrentUser).mockReturnValue({
+      currentUser: customer,
+      isLoading: false,
+    })
 
     // When the customer opens the admin page
     renderAt('/admin')
@@ -53,7 +69,10 @@ describe('AdminRoute', () => {
 
   it('shows the admin page to an admin', () => {
     // Given a logged admin
-    vi.mocked(useCurrentUser).mockReturnValue({ currentUser: admin, isLoading: false })
+    vi.mocked(useCurrentUser).mockReturnValue({
+      currentUser: admin,
+      isLoading: false,
+    })
 
     // When the admin opens the admin page
     renderAt('/admin')
@@ -64,7 +83,10 @@ describe('AdminRoute', () => {
 
   it('waits while the role is being checked', () => {
     // Given the role is still loading
-    vi.mocked(useCurrentUser).mockReturnValue({ currentUser: null, isLoading: true })
+    vi.mocked(useCurrentUser).mockReturnValue({
+      currentUser: null,
+      isLoading: true,
+    })
 
     // When someone opens the admin page
     renderAt('/admin')

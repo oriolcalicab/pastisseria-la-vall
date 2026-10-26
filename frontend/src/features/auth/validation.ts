@@ -1,4 +1,4 @@
-import type { RegisterErrors, RegisterValues,  LoginErrors, LoginValues } from './types/type'
+import type { RegisterErrors, RegisterValues, LoginErrors, LoginValues } from './types/type'
 
 export const MIN_PASSWORD_LENGTH = 8
 const MIN_NAME_LENGTH = 2

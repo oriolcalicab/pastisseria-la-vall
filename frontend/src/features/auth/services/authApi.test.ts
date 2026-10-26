@@ -42,7 +42,12 @@ describe('fetchCurrentUser', () => {
 
   it('sends the token and returns the user with the role', async () => {
     // Given a backend that returns an admin user
-    const user = { id: 1, name: 'Oriol', email: 'oriol@test.com', role: 'admin' }
+    const user = {
+      id: 1,
+      name: 'Oriol',
+      email: 'oriol@test.com',
+      role: 'admin',
+    }
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => user })
     vi.stubGlobal('fetch', fetchMock)
 

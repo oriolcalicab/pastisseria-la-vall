@@ -3,15 +3,8 @@ import { useRegisterForm } from '../../features/auth/hooks/useRegisterForm'
 import { Link } from 'react-router-dom'
 
 export default function RegisterPage() {
-  const {
-    values,
-    errors,
-    submitError,
-    isSubmitting,
-    isSuccess,
-    setValue,
-    handleSubmit,
-  } = useRegisterForm()
+  const { values, errors, submitError, isSubmitting, isSuccess, setValue, handleSubmit } =
+    useRegisterForm()
 
   if (isSuccess) {
     return (
@@ -76,7 +69,6 @@ export default function RegisterPage() {
           Inicia la sessió
         </Link>
       </p>
-      
     </main>
   )
 }

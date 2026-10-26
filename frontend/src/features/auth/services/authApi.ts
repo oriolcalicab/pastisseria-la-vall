@@ -1,9 +1,6 @@
 import { apiUrl } from '../../../lib/api'
 
-export const registerInBackend = async (
-  token: string,
-  name: string,
-): Promise<void> => {
+export const registerInBackend = async (token: string, name: string): Promise<void> => {
   const response = await fetch(apiUrl('/api/auth/register'), {
     method: 'POST',
     headers: {

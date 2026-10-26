@@ -18,7 +18,8 @@ const AuthStatus = () => {
         o{' '}
         <Link to="/registre" className="underline">
           crea un compte
-        </Link>{' / '}
+        </Link>
+        {' / '}
         <Link to="/compte" className="underline">
           El meu compte
         </Link>
