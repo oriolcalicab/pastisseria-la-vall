@@ -6,6 +6,9 @@ import LoginPage from './pages/LoginPage'
 import ProtectedRoute from './features/auth/components/ProtectedRoute'
 import AccountPage from './pages/AccountPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import AdminRoute from './features/auth/components/AdminRoute'
+import AdminLayout from './features/admin/components/AdminLayout'
+import AdminDashboardPage from './pages/AdminDashboardPage'
 
 export const router = createBrowserRouter([
   { path: '/', element: <HomePage /> },
@@ -16,5 +19,15 @@ export const router = createBrowserRouter([
     children: [{ path: '/compte', element: <AccountPage /> }],
   },
   { path: '/contrasenya-oblidada', element: <ForgotPasswordPage /> },
+  {
+    path: '/admin',
+    element: <AdminRoute />,
+    children: [
+      {
+        element: <AdminLayout />,
+        children: [{ index: true, element: <AdminDashboardPage /> }],
+      },
+    ],
+  },
   { path: '*', element: <NotFoundPage /> },
 ])
