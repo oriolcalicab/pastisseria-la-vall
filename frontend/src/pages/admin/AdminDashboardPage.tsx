@@ -1,4 +1,4 @@
-import { useCurrentUser } from '../features/auth/hooks/useCurrentUser'
+import { useCurrentUser } from '../../features/auth/hooks/useCurrentUser'
 
 const AdminDashboardPage = () => {
   const { currentUser } = useCurrentUser()

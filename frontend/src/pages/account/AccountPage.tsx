@@ -1,5 +1,5 @@
-import LogoutButton from '../features/auth/components/LogoutButton'
-import { useAuth } from '../features/auth/hooks/useAuth'
+import LogoutButton from '../../features/auth/components/LogoutButton'
+import { useAuth } from '../../features/auth/hooks/useAuth'
 
 const AccountPage = () => {
   const { user } = useAuth()
