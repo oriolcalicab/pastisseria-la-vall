@@ -9,6 +9,7 @@ import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import AdminRoute from './features/auth/components/AdminRoute'
 import AdminLayout from './features/admin/components/AdminLayout'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
+import AdminProductsPage from './pages/admin/AdminProductsPage'
 
 export const router = createBrowserRouter([
   { path: '/', element: <HomePage /> },
@@ -19,13 +20,16 @@ export const router = createBrowserRouter([
     children: [{ path: '/compte', element: <AccountPage /> }],
   },
   { path: '/contrasenya-oblidada', element: <ForgotPasswordPage /> },
-  {
+    {
     path: '/admin',
     element: <AdminRoute />,
     children: [
       {
         element: <AdminLayout />,
-        children: [{ index: true, element: <AdminDashboardPage /> }],
+        children: [
+          { index: true, element: <AdminDashboardPage /> },
+          { path: 'productes', element: <AdminProductsPage /> },
+        ],
       },
     ],
   },
