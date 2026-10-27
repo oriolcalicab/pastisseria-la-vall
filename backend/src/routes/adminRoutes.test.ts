@@ -5,9 +5,12 @@ import { findUserByFirebaseUid } from '../services/userService.js'
 import { startTestServer } from '../test/startTestServer.js'
 import type { TestServer } from '../test/startTestServer.js'
 import adminRouter from './adminRoutes.js'
+import { listProducts } from '../services/productService.js'
+
 
 vi.mock('../services/tokenService.js', () => ({ verifyFirebaseToken: vi.fn() }))
 vi.mock('../services/userService.js', () => ({ findUserByFirebaseUid: vi.fn() }))
+vi.mock('../services/productService.js', () => ({ listProducts: vi.fn() }))
 
 let server: TestServer
 
@@ -89,5 +92,78 @@ describe('GET /api/admin/ping', () => {
 
     // Then the role comes from the database and the request is rejected with 403
     expect(response.status).toBe(403)
+  })
+})
+
+const getProducts = (query = '') =>
+  fetch(`${server.baseUrl}/api/admin/products${query}`, {
+    headers: { Authorization: 'Bearer token' },
+  })
+
+describe('GET /api/admin/products', () => {
+  const productPage = { items: [{ id: 1, name: 'Croissant' }], page: 1, pageSize: 20, total: 1, totalPages: 1 }
+
+  beforeAll(async () => {
+    const app = express()
+    app.use(express.json())
+    app.use('/api/admin', adminRouter)
+    server = await startTestServer(app)
+  })
+
+  afterAll(() => {
+    server.close()
+  })
+
+  beforeEach(() => {
+    vi.resetAllMocks()
+    vi.mocked(listProducts).mockResolvedValue(productPage as never)
+  })
+
+  it('returns the first page with the default values', async () => {
+    // Given a logged admin
+    loginAs('admin')
+
+    // When the admin asks for the products without query
+    const response = await getProducts()
+
+    // Then the first page of 20 products is returned
+    expect(response.status).toBe(200)
+    expect(listProducts).toHaveBeenCalledWith({ page: 1, pageSize: 20, search: undefined })
+    expect(await response.json()).toEqual(productPage)
+  })
+
+  it('passes the page, the page size and the search to the service', async () => {
+    // Given a logged admin
+    loginAs('admin')
+
+    // When the admin asks for the second page searching "croi"
+    await getProducts('?page=2&pageSize=10&search=croi')
+
+    // Then the service receives the parsed values
+    expect(listProducts).toHaveBeenCalledWith({ page: 2, pageSize: 10, search: 'croi' })
+  })
+
+  it('responds 400 when the page is not valid', async () => {
+    // Given a logged admin
+    loginAs('admin')
+
+    // When the admin asks for page 0
+    const response = await getProducts('?page=0')
+
+    // Then the request is rejected and the database is not queried
+    expect(response.status).toBe(400)
+    expect(listProducts).not.toHaveBeenCalled()
+  })
+
+  it('responds 403 to a customer', async () => {
+    // Given a logged customer
+    loginAs('customer')
+
+    // When the customer asks for the products
+    const response = await getProducts()
+
+    // Then the request is rejected and the database is not queried
+    expect(response.status).toBe(403)
+    expect(listProducts).not.toHaveBeenCalled()
   })
 })
