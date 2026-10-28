@@ -1,13 +1,9 @@
+import type { ProductListQuery } from '../types/product.js'
+
 const DEFAULT_PAGE = 1
 const DEFAULT_PAGE_SIZE = 20
 const MAX_PAGE_SIZE = 50
 const MAX_SEARCH_LENGTH = 100
-
-export type ProductListQuery = {
-  page: number
-  pageSize: number
-  search: string | undefined
-}
 
 const parsePositiveInt = (value: unknown, defaultValue: number): number | null => {
   if (value === undefined) return defaultValue

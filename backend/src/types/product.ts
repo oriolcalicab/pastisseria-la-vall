@@ -16,3 +16,9 @@ export type NewProduct = {
   isActive: boolean
   variants: NewVariant[]
 }
+
+export type ProductListQuery = {
+  page: number
+  pageSize: number
+  search: string | undefined
+}

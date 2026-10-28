@@ -1,5 +1,5 @@
 import type { User } from '../generated/prisma/client.js'
-import type { VerifiedUser } from '../services/tokenService.js'
+import type { VerifiedUser } from './auth.js'
 
 declare global {
   namespace Express {

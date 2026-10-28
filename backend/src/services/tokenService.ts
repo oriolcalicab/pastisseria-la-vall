@@ -1,9 +1,5 @@
 import { firebaseAuth } from '../config/firebaseAdmin.js'
-
-export type VerifiedUser = {
-  uid: string
-  email: string
-}
+import type { VerifiedUser } from '../types/auth.js'
 
 export const verifyFirebaseToken = async (token: string): Promise<VerifiedUser> => {
   const decoded = await firebaseAuth.verifyIdToken(token)
