@@ -50,7 +50,13 @@ describe('parseCreateProductBody', () => {
     // Then the product is active, without allergens and without special options
     expect(parseCreateProductBody(validBody())).toMatchObject({
       ok: true,
-      data: { allergens: null, isGlutenFree: false, isPlantMilk: false, isVegan: false, isActive: true },
+      data: {
+        allergens: null,
+        isGlutenFree: false,
+        isPlantMilk: false,
+        isVegan: false,
+        isActive: true,
+      },
     })
   })
 

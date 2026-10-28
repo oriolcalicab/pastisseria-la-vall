@@ -47,7 +47,7 @@ describe('listProducts', () => {
     expect(prisma.product.count).toHaveBeenCalledWith({ where: { id: { in: [1, 2] } } })
   })
 
-    it('returns no pages when there are no products', async () => {
+  it('returns no pages when there are no products', async () => {
     // Given there are no products
     vi.mocked(prisma.product.count).mockResolvedValue(0 as never)
 

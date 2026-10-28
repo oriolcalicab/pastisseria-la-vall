@@ -1,4 +1,4 @@
-import type { NewProduct, NewVariant } from "../types/product.js"
+import type { NewProduct, NewVariant } from '../types/product.js'
 
 const MIN_NAME_LENGTH = 2
 const MAX_NAME_LENGTH = 100
@@ -8,7 +8,6 @@ const MAX_VARIANT_NAME_LENGTH = 50
 const MAX_VARIANTS = 20
 const MAX_PRICE_CENTS = 1_000_000
 const MAX_STOCK = 100_000
-
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: string }
 
@@ -58,7 +57,8 @@ const parseVariants = (value: unknown): Result<NewVariant[]> => {
     return fail('El producte ha de tenir com a mínim una variant')
   }
 
-  if (value.length > MAX_VARIANTS) return fail(`Un producte no pot tenir més de ${MAX_VARIANTS} variants`)
+  if (value.length > MAX_VARIANTS)
+    return fail(`Un producte no pot tenir més de ${MAX_VARIANTS} variants`)
 
   const variants: NewVariant[] = []
 

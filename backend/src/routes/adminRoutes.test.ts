@@ -7,7 +7,6 @@ import type { TestServer } from '../test/startTestServer.js'
 import adminRouter from './adminRoutes.js'
 import { listProducts } from '../services/productService.js'
 
-
 vi.mock('../services/tokenService.js', () => ({ verifyFirebaseToken: vi.fn() }))
 vi.mock('../services/userService.js', () => ({ findUserByFirebaseUid: vi.fn() }))
 vi.mock('../services/productService.js', () => ({ listProducts: vi.fn() }))
@@ -88,7 +87,10 @@ describe('GET /api/admin/ping', () => {
     loginAs('customer')
 
     // When the customer sends an admin role in a header and in the query
-    const response = await getPing({ Authorization: 'Bearer token', 'X-Role': 'admin' }, '?role=admin')
+    const response = await getPing(
+      { Authorization: 'Bearer token', 'X-Role': 'admin' },
+      '?role=admin',
+    )
 
     // Then the role comes from the database and the request is rejected with 403
     expect(response.status).toBe(403)
@@ -101,7 +103,13 @@ const getProducts = (query = '') =>
   })
 
 describe('GET /api/admin/products', () => {
-  const productPage = { items: [{ id: 1, name: 'Croissant' }], page: 1, pageSize: 20, total: 1, totalPages: 1 }
+  const productPage = {
+    items: [{ id: 1, name: 'Croissant' }],
+    page: 1,
+    pageSize: 20,
+    total: 1,
+    totalPages: 1,
+  }
 
   beforeAll(async () => {
     const app = express()
@@ -166,8 +174,8 @@ describe('GET /api/admin/products', () => {
     expect(response.status).toBe(403)
     expect(listProducts).not.toHaveBeenCalled()
   })
-  
-    it('responds 401 to a visitor without token', async () => {
+
+  it('responds 401 to a visitor without token', async () => {
     // Given a visitor without token
     // When the visitor asks for the products
     const response = await fetch(`${server.baseUrl}/api/admin/products`)
