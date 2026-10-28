@@ -166,4 +166,14 @@ describe('GET /api/admin/products', () => {
     expect(response.status).toBe(403)
     expect(listProducts).not.toHaveBeenCalled()
   })
+  
+    it('responds 401 to a visitor without token', async () => {
+    // Given a visitor without token
+    // When the visitor asks for the products
+    const response = await fetch(`${server.baseUrl}/api/admin/products`)
+
+    // Then the request is rejected and the database is not queried
+    expect(response.status).toBe(401)
+    expect(listProducts).not.toHaveBeenCalled()
+  })
 })

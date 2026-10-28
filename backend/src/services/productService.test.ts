@@ -46,4 +46,30 @@ describe('listProducts', () => {
     )
     expect(prisma.product.count).toHaveBeenCalledWith({ where: { id: { in: [1, 2] } } })
   })
+
+    it('returns no pages when there are no products', async () => {
+    // Given there are no products
+    vi.mocked(prisma.product.count).mockResolvedValue(0 as never)
+
+    // When the first page is requested
+    const result = await listProducts({ page: 1, pageSize: 20, search: undefined })
+
+    // Then the page is empty and there are no pages
+    expect(result).toMatchObject({ items: [], total: 0, totalPages: 0 })
+  })
+
+  it('returns an empty page when the search has no matches', async () => {
+    // Given no product matches the search
+    vi.mocked(prisma.$queryRaw).mockResolvedValue([] as never)
+    vi.mocked(prisma.product.count).mockResolvedValue(0 as never)
+
+    // When the products are searched by "zzz"
+    const result = await listProducts({ page: 1, pageSize: 20, search: 'zzz' })
+
+    // Then nothing matches and there are no pages
+    expect(prisma.product.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: { in: [] } } }),
+    )
+    expect(result).toMatchObject({ total: 0, totalPages: 0 })
+  })
 })
