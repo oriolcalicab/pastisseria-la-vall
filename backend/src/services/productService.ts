@@ -1,8 +1,7 @@
 import type { Prisma } from '../generated/prisma/client.js'
 import { prisma } from '../lib/prisma.js'
-import { NewProduct } from '../types/product.js'
+import type { NewProduct, ProductListQuery } from '../types/product.js'
 import { containsPattern } from '../utils/likePattern.js'
-import type { ProductListQuery } from '../validation/productListQuery.js'
 
 const findProductIdsByName = async (search: string): Promise<number[]> => {
   const rows = await prisma.$queryRaw<{ id: number }[]>`

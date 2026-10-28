@@ -1,8 +1,6 @@
-const MIN_NAME_LENGTH = 2
+import type { RegisterBody } from '../types/auth.js'
 
-export type RegisterBody = {
-  name: string
-}
+const MIN_NAME_LENGTH = 2
 
 export const parseRegisterBody = (body: unknown): RegisterBody | null => {
   if (typeof body !== 'object' || body === null) return null
