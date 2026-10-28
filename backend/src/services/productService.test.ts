@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { prisma } from '../lib/prisma.js'
-import { listProducts } from './productService.js'
+import { listProducts, createProduct } from './productService.js'
+import { NewProduct } from '../types/product.js'
 
 vi.mock('../lib/prisma.js', () => ({
   prisma: {
     $queryRaw: vi.fn(),
     $transaction: vi.fn(),
-    product: { findMany: vi.fn(), count: vi.fn() },
+    category: { findUnique: vi.fn() },
+    product: { findMany: vi.fn(), count: vi.fn(), create: vi.fn() },
   },
 }))
 
@@ -73,3 +75,51 @@ describe('listProducts', () => {
     expect(result).toMatchObject({ total: 0, totalPages: 0 })
   })
 })
+
+describe('createProduct', () => {
+  const newProduct: NewProduct = {
+    categoryId: 1,
+    name: 'Pastís de maduixa',
+    description: 'Bescuit amb nata i maduixes',
+    allergens: null,
+    isGlutenFree: false,
+    isPlantMilk: false,
+    isVegan: false,
+    isActive: true,
+    variants: [{ name: '6 racions', priceCents: 3900, stock: 5, sortOrder: 0 }],
+  }
+
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
+  it('does not create the product when the category does not exist', async () => {
+    // Given the category does not exist
+    vi.mocked(prisma.category.findUnique).mockResolvedValue(null)
+
+    // When the product is created
+    const result = await createProduct(newProduct)
+
+    // Then nothing is created
+    expect(result).toBeNull()
+    expect(prisma.product.create).not.toHaveBeenCalled()
+  })
+
+  it('creates the product and its variants at once', async () => {
+    // Given the category exists
+    vi.mocked(prisma.category.findUnique).mockResolvedValue({ id: 1 } as never)
+    vi.mocked(prisma.product.create).mockResolvedValue({ id: 10 } as never)
+
+    // When the product is created
+    const result = await createProduct(newProduct)
+
+    // Then the variants are created inside the product and the product is returned
+    const { variants, ...product } = newProduct
+    expect(prisma.product.create).toHaveBeenCalledWith({
+      data: { ...product, variants: { create: variants } },
+      include: { category: true, variants: { orderBy: { sortOrder: 'asc' } } },
+    })
+    expect(result).toEqual({ id: 10 })
+  })
+})
+
