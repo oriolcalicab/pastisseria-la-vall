@@ -116,4 +116,20 @@ describe('AdminProductsPage', () => {
     // Then the second page is requested
     expect(useAdminProducts).toHaveBeenLastCalledWith({ page: 2, search: '' })
   })
+  
+    it('keeps the search when going to the next page', async () => {
+    // Given a search with two pages of results
+    const data = productPage({ total: 25, totalPages: 2 })
+    vi.mocked(useAdminProducts).mockReturnValue({ status: 'success', data, retry })
+    render(<AdminProductsPage />)
+    const user = userEvent.setup()
+    await user.type(screen.getByLabelText('Cerca per nom'), 'pastis')
+    await user.click(screen.getByRole('button', { name: 'Cerca' }))
+
+    // When the admin clicks next
+    await user.click(screen.getByRole('button', { name: 'Següent »' }))
+
+    // Then the second page of the same search is requested
+    expect(useAdminProducts).toHaveBeenLastCalledWith({ page: 2, search: 'pastis' })
+  })
 })
