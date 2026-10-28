@@ -34,7 +34,7 @@ export type NewProduct = {
   description: string
   allergens: string
   isGlutenFree: boolean
-  isPlanMilk: boolean
+  isPlantMilk: boolean
   isVegan: boolean
   isActive: boolean
   variants: NewProductVariant[]
