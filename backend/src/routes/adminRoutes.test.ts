@@ -5,11 +5,22 @@ import { findUserByFirebaseUid } from '../services/userService.js'
 import { startTestServer } from '../test/startTestServer.js'
 import type { TestServer } from '../test/startTestServer.js'
 import adminRouter from './adminRoutes.js'
-import { listProducts, createProduct } from '../services/productService.js'
+import {
+  createProduct,
+  listProducts,
+  setProductActive,
+  setVariantActive,
+} from '../services/productService.js'
 
 vi.mock('../services/tokenService.js', () => ({ verifyFirebaseToken: vi.fn() }))
 vi.mock('../services/userService.js', () => ({ findUserByFirebaseUid: vi.fn() }))
-vi.mock('../services/productService.js', () => ({ listProducts: vi.fn(), createProduct: vi.fn() }))
+vi.mock('../services/productService.js', () => ({
+  listProducts: vi.fn(),
+  createProduct: vi.fn(),
+  setProductActive: vi.fn(),
+  setVariantActive: vi.fn(),
+})) 
+
 let server: TestServer
 
 const loginAs = (role: 'customer' | 'admin') => {
@@ -302,5 +313,149 @@ describe('POST /api/admin/products', () => {
     // Then the request is rejected and nothing is created
     expect(response.status).toBe(401)
     expect(createProduct).not.toHaveBeenCalled()
+  })
+})
+
+const patch = (
+  path: string,
+  body: object,
+  headers: Record<string, string> = { Authorization: 'Bearer token' },
+) =>
+  fetch(`${server.baseUrl}/api/admin${path}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...headers },
+    body: JSON.stringify(body),
+  })
+
+describe('PATCH active status', () => {
+  beforeAll(async () => {
+    const app = express()
+    app.use(express.json())
+    app.use('/api/admin', adminRouter)
+    server = await startTestServer(app)
+  })
+
+  afterAll(() => {
+    server.close()
+  })
+
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
+  describe('PATCH /api/admin/products/:id', () => {
+    it('deactivates the product', async () => {
+      // Given a logged admin and an existing product
+      loginAs('admin')
+      vi.mocked(setProductActive).mockResolvedValue({ id: 7, isActive: false } as never)
+
+      // When the admin deactivates the product
+      const response = await patch('/products/7', { isActive: false })
+
+      // Then the product is deactivated and returned
+      expect(response.status).toBe(200)
+      expect(setProductActive).toHaveBeenCalledWith(7, false)
+      expect(await response.json()).toEqual({ id: 7, isActive: false })
+    })
+
+    it('responds 400 when the id is not valid', async () => {
+      // Given a logged admin
+      loginAs('admin')
+
+      // When the admin uses an id that is not a number
+      const response = await patch('/products/abc', { isActive: false })
+
+      // Then the request is rejected and nothing is changed
+      expect(response.status).toBe(400)
+      expect(setProductActive).not.toHaveBeenCalled()
+    })
+
+    it('responds 400 when isActive is not true or false', async () => {
+      // Given a logged admin
+      loginAs('admin')
+
+      // When the admin sends isActive as text
+      const response = await patch('/products/7', { isActive: 'false' })
+
+      // Then the request is rejected and nothing is changed
+      expect(response.status).toBe(400)
+      expect(await response.json()).toEqual({ error: 'Cal enviar isActive amb true o false' })
+      expect(setProductActive).not.toHaveBeenCalled()
+    })
+
+    it('responds 404 when the product does not exist', async () => {
+      // Given a logged admin and a product that does not exist
+      loginAs('admin')
+      vi.mocked(setProductActive).mockResolvedValue(null)
+
+      // When the admin deactivates it
+      const response = await patch('/products/9999', { isActive: false })
+
+      // Then the request is answered with 404
+      expect(response.status).toBe(404)
+    })
+
+    it('responds 403 to a customer', async () => {
+      // Given a logged customer
+      loginAs('customer')
+
+      // When the customer tries to deactivate a product
+      const response = await patch('/products/7', { isActive: false })
+
+      // Then the request is rejected and nothing is changed
+      expect(response.status).toBe(403)
+      expect(setProductActive).not.toHaveBeenCalled()
+    })
+
+    it('responds 401 to a visitor without token', async () => {
+      // Given a visitor without token
+      // When the visitor tries to deactivate a product
+      const response = await patch('/products/7', { isActive: false }, {})
+
+      // Then the request is rejected and nothing is changed
+      expect(response.status).toBe(401)
+      expect(setProductActive).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('PATCH /api/admin/products/:productId/variants/:variantId', () => {
+    it('activates the variant of the product', async () => {
+      // Given a logged admin and an existing variant
+      loginAs('admin')
+      vi.mocked(setVariantActive).mockResolvedValue({ id: 12, isActive: true } as never)
+
+      // When the admin activates the variant
+      const response = await patch('/products/7/variants/12', { isActive: true })
+
+      // Then the variant of that product is activated and returned
+      expect(response.status).toBe(200)
+      expect(setVariantActive).toHaveBeenCalledWith(7, 12, true)
+      expect(await response.json()).toEqual({ id: 12, isActive: true })
+    })
+
+    it('responds 404 when the variant is not of that product', async () => {
+      // Given a logged admin and a variant of another product
+      loginAs('admin')
+      vi.mocked(setVariantActive).mockResolvedValue(null)
+
+      // When the admin changes it through the wrong product
+      const response = await patch('/products/7/variants/12', { isActive: false })
+
+      // Then the request is answered with 404
+      expect(response.status).toBe(404)
+      expect(await response.json()).toEqual({ error: 'La variant no existeix en aquest producte' })
+    })
+
+    it('responds 400 when the variant id is not valid', async () => {
+      // Given a logged admin
+      loginAs('admin')
+
+      // When the admin uses a variant id that is not valid
+      const response = await patch('/products/7/variants/0', { isActive: false })
+
+      // Then the request is rejected and nothing is changed
+      expect(response.status).toBe(400)
+      expect(setVariantActive).not.toHaveBeenCalled()
+    })
   })
 })
