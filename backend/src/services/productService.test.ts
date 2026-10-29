@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { prisma } from '../lib/prisma.js'
-import { createProduct, listProducts, setProductActive, setVariantActive } from './productService.js'
+import {
+  createProduct,
+  listProducts,
+  setProductActive,
+  setVariantActive,
+} from './productService.js'
 import { NewProduct } from '../types/product.js'
 
 vi.mock('../lib/prisma.js', () => ({
@@ -172,7 +177,10 @@ describe('setVariantActive', () => {
   it('only changes the variant when it belongs to the product', async () => {
     // Given a variant
     vi.mocked(prisma.productVariant.updateMany).mockResolvedValue({ count: 1 })
-    vi.mocked(prisma.productVariant.findUnique).mockResolvedValue({ id: 12, isActive: true } as never)
+    vi.mocked(prisma.productVariant.findUnique).mockResolvedValue({
+      id: 12,
+      isActive: true,
+    } as never)
 
     // When the variant of the product is activated
     const result = await setVariantActive(7, 12, true)

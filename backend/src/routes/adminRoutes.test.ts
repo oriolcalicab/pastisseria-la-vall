@@ -19,7 +19,7 @@ vi.mock('../services/productService.js', () => ({
   createProduct: vi.fn(),
   setProductActive: vi.fn(),
   setVariantActive: vi.fn(),
-})) 
+}))
 
 let server: TestServer
 
