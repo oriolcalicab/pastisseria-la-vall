@@ -3,6 +3,11 @@ import { prisma } from '../lib/prisma.js'
 import type { NewProduct, ProductListQuery } from '../types/product.js'
 import { containsPattern } from '../utils/likePattern.js'
 
+const productInclude = {
+  category: true,
+  variants: { orderBy: { sortOrder: 'asc' } },
+} satisfies Prisma.ProductInclude
+
 const findProductIdsByName = async (search: string): Promise<number[]> => {
   const rows = await prisma.$queryRaw<{ id: number }[]>`
     SELECT id FROM products WHERE unaccent(name) ILIKE unaccent(${containsPattern(search)})
@@ -19,7 +24,7 @@ export const listProducts = async ({ page, pageSize, search }: ProductListQuery)
   const [items, total] = await prisma.$transaction([
     prisma.product.findMany({
       where,
-      include: { category: true, variants: { orderBy: { sortOrder: 'asc' } } },
+      include: productInclude,
       orderBy: [{ name: 'asc' }, { id: 'asc' }],
       skip: (page - 1) * pageSize,
       take: pageSize,
@@ -39,6 +44,25 @@ export const createProduct = async (data: NewProduct) => {
 
   return prisma.product.create({
     data: { ...product, variants: { create: variants } },
-    include: { category: true, variants: { orderBy: { sortOrder: 'asc' } } },
+    include: productInclude,
   })
+}
+
+export const setProductActive = async (id: number, isActive: boolean) => {
+  const { count } = await prisma.product.updateMany({ where: { id }, data: { isActive } })
+
+  if (count === 0) return null
+
+  return prisma.product.findUnique({ where: { id }, include: productInclude })
+}
+
+export const setVariantActive = async (productId: number, variantId: number, isActive: boolean) => {
+  const { count } = await prisma.productVariant.updateMany({
+    where: { id: variantId, productId },
+    data: { isActive },
+  })
+
+  if (count === 0) return null
+
+  return prisma.productVariant.findUnique({ where: { id: variantId } })
 }
