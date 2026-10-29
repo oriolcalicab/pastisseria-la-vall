@@ -129,4 +129,25 @@ describe('NewProductPage', () => {
     expect(await screen.findByText('La categoria no existeix')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Nou producte' })).toBeInTheDocument()
   })
+
+    it('marks a negative price in its variant and does not send the form', async () => {
+    // Given a form with a second variant with a negative price
+    renderPage()
+    const user = await fillValidForm()
+    await user.click(screen.getByRole('button', { name: '+ Afegeix una variant' }))
+    const secondVariant = within(screen.getByRole('group', { name: 'Variant 2' }))
+    await user.type(secondVariant.getByLabelText('Nom'), '10 racions')
+    await user.type(secondVariant.getByLabelText('Preu (€)'), '-5')
+    await user.type(secondVariant.getByLabelText('Stock'), '3')
+
+    // When the admin saves the form
+    await user.click(screen.getByRole('button', { name: 'Desa el producte' }))
+
+    // Then only the price of the second variant is marked and nothing is sent
+    expect(secondVariant.getByLabelText('Preu (€)')).toHaveAttribute('aria-invalid', 'true')
+    expect(
+      within(screen.getByRole('group', { name: 'Variant 1' })).getByLabelText('Preu (€)'),
+    ).not.toHaveAttribute('aria-invalid')
+    expect(createAdminProduct).not.toHaveBeenCalled()
+  })
 })
