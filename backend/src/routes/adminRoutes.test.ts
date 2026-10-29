@@ -192,7 +192,10 @@ const validProduct = {
   variants: [{ name: '6 racions', priceCents: 3900, stock: 5 }],
 }
 
-const postProduct = (body: object, headers: Record<string, string> = { Authorization: 'Bearer token' }) =>
+const postProduct = (
+  body: object,
+  headers: Record<string, string> = { Authorization: 'Bearer token' },
+) =>
   fetch(`${server.baseUrl}/api/admin/products`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },

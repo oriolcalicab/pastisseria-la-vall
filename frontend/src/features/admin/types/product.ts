@@ -21,3 +21,21 @@ export type AdminProductPage = {
   total: number
   totalPages: number
 }
+
+export type NewProductVariant = {
+  name: string
+  priceCents: number
+  stock: number
+}
+
+export type NewProduct = {
+  categoryId: number
+  name: string
+  description: string
+  allergens: string
+  isGlutenFree: boolean
+  isPlantMilk: boolean
+  isVegan: boolean
+  isActive: boolean
+  variants: NewProductVariant[]
+}

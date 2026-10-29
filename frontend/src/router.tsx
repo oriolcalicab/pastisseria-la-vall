@@ -10,6 +10,7 @@ import AdminRoute from './features/auth/components/AdminRoute'
 import AdminLayout from './features/admin/components/AdminLayout'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminProductsPage from './pages/admin/AdminProductsPage'
+import NewProductPage from './pages/admin/NewProductPage'
 
 export const router = createBrowserRouter([
   { path: '/', element: <HomePage /> },
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <AdminDashboardPage /> },
           { path: 'productes', element: <AdminProductsPage /> },
+          { path: 'productes/nou', element: <NewProductPage /> },
         ],
       },
     ],
