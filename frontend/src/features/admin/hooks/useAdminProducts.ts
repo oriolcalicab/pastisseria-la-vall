@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { fetchAdminProducts } from '../services/adminProductsApi'
-import type { AdminProductPage } from '../types/product'
+import type { AdminProduct, AdminProductPage, AdminProductVariant } from '../types/product'
 
 type AdminProductsParams = {
   page: number
@@ -17,7 +17,11 @@ type AdminProductsState = (
   | { status: 'loading' }
   | { status: 'error' }
   | { status: 'success'; data: AdminProductPage }
-) & { retry: () => void }
+) & {
+  retry: () => void
+  replaceProduct: (product: AdminProduct) => void
+  replaceVariant: (productId: number, variant: AdminProductVariant) => void
+}
 
 export const useAdminProducts = ({ page, search }: AdminProductsParams): AdminProductsState => {
   const { user } = useAuth()
@@ -47,8 +51,34 @@ export const useAdminProducts = ({ page, search }: AdminProductsParams): AdminPr
 
   const retry = () => setAttempt((current) => current + 1)
 
-  if (result?.key !== key) return { status: 'loading', retry }
-  if (!result.data) return { status: 'error', retry }
+    const updateData = (update: (data: AdminProductPage) => AdminProductPage) =>
+    setResult((current) => (current?.data ? { ...current, data: update(current.data) } : current))
 
-  return { status: 'success', data: result.data, retry }
+  const replaceProduct = (product: AdminProduct) =>
+    updateData((data) => ({
+      ...data,
+      items: data.items.map((item) => (item.id === product.id ? product : item)),
+    }))
+
+  const replaceVariant = (productId: number, variant: AdminProductVariant) =>
+    updateData((data) => ({
+      ...data,
+      items: data.items.map((item) =>
+        item.id === productId
+          ? {
+              ...item,
+              variants: item.variants.map((current) =>
+                current.id === variant.id ? variant : current,
+              ),
+            }
+          : item,
+      ),
+    }))
+
+  const actions = { retry, replaceProduct, replaceVariant }
+
+  if (result?.key !== key) return { status: 'loading', ...actions }
+  if (!result.data) return { status: 'error', ...actions }
+
+  return { status: 'success', data: result.data, ...actions }
 }

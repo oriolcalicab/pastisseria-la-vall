@@ -9,6 +9,7 @@ import { MemoryRouter } from 'react-router-dom'
 vi.mock('../../features/admin/hooks/useAdminProducts', () => ({ useAdminProducts: vi.fn() }))
 
 const retry = vi.fn()
+const actions = { retry, replaceProduct: vi.fn(), replaceVariant: vi.fn() }
 
 const productPage = (overrides: Partial<AdminProductPage> = {}): AdminProductPage => ({
   items: [
@@ -44,7 +45,7 @@ describe('AdminProductsPage', () => {
 
   it('shows a message while the products are loading', () => {
     // Given the products are loading
-    vi.mocked(useAdminProducts).mockReturnValue({ status: 'loading', retry })
+    vi.mocked(useAdminProducts).mockReturnValue({ status: 'loading', ...actions })
 
     // When the page is shown
     renderPage()
@@ -55,7 +56,7 @@ describe('AdminProductsPage', () => {
 
   it('shows an error and lets the admin retry', async () => {
     // Given the products could not be loaded
-    vi.mocked(useAdminProducts).mockReturnValue({ status: 'error', retry })
+    vi.mocked(useAdminProducts).mockReturnValue({ status: 'error', ...actions })
     renderPage()
     // When the admin clicks retry
     await userEvent.setup().click(screen.getByRole('button', { name: 'Torna-ho a provar' }))
@@ -68,7 +69,7 @@ describe('AdminProductsPage', () => {
   it('shows a message when there are no products', () => {
     // Given there are no products
     const data = productPage({ items: [], total: 0, totalPages: 0 })
-    vi.mocked(useAdminProducts).mockReturnValue({ status: 'success', data, retry })
+    vi.mocked(useAdminProducts).mockReturnValue({ status: 'success', data, ...actions })
 
     // When the page is shown
     renderPage()
@@ -78,7 +79,11 @@ describe('AdminProductsPage', () => {
 
   it('shows a row with the product summary', () => {
     // Given a product with two active variants
-    vi.mocked(useAdminProducts).mockReturnValue({ status: 'success', data: productPage(), retry })
+    vi.mocked(useAdminProducts).mockReturnValue({
+      status: 'success',
+      data: productPage(),
+      ...actions,
+    })
 
     // When the page is shown
     renderPage()
@@ -94,7 +99,7 @@ describe('AdminProductsPage', () => {
   it('searches from the first page', async () => {
     // Given a page without results
     const data = productPage({ items: [], total: 0, totalPages: 0 })
-    vi.mocked(useAdminProducts).mockReturnValue({ status: 'success', data, retry })
+    vi.mocked(useAdminProducts).mockReturnValue({ status: 'success', data, ...actions })
     renderPage()
     // When the admin searches "croi"
     const user = userEvent.setup()
@@ -111,7 +116,7 @@ describe('AdminProductsPage', () => {
   it('asks for the next page', async () => {
     // Given a first page of two
     const data = productPage({ total: 25, totalPages: 2 })
-    vi.mocked(useAdminProducts).mockReturnValue({ status: 'success', data, retry })
+    vi.mocked(useAdminProducts).mockReturnValue({ status: 'success', data, ...actions })
     renderPage()
     // When the admin clicks next
     await userEvent.setup().click(screen.getByRole('button', { name: 'Següent »' }))
@@ -123,7 +128,7 @@ describe('AdminProductsPage', () => {
   it('keeps the search when going to the next page', async () => {
     // Given a search with two pages of results
     const data = productPage({ total: 25, totalPages: 2 })
-    vi.mocked(useAdminProducts).mockReturnValue({ status: 'success', data, retry })
+    vi.mocked(useAdminProducts).mockReturnValue({ status: 'success', data, ...actions })
     renderPage()
     const user = userEvent.setup()
     await user.type(screen.getByLabelText('Cerca per nom'), 'pastis')
@@ -136,9 +141,13 @@ describe('AdminProductsPage', () => {
     expect(useAdminProducts).toHaveBeenLastCalledWith({ page: 2, search: 'pastis' })
   })
 
-    it('shows the notice sent after creating a product', async () => {
+  it('shows the notice sent after creating a product', async () => {
     // Given the admin comes back from creating a product
-    vi.mocked(useAdminProducts).mockReturnValue({ status: 'success', data: productPage(), retry })
+    vi.mocked(useAdminProducts).mockReturnValue({
+      status: 'success',
+      data: productPage(),
+      ...actions,
+    })
     renderPage({ notice: 'Producte "Pastís de maduixa" creat correctament' })
 
     // When the admin closes the notice
@@ -146,12 +155,18 @@ describe('AdminProductsPage', () => {
     await userEvent.setup().click(screen.getByRole('button', { name: 'Tanca' }))
 
     // Then the notice is gone
-    expect(screen.queryByText('Producte "Pastís de maduixa" creat correctament')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('Producte "Pastís de maduixa" creat correctament'),
+    ).not.toBeInTheDocument()
   })
 
   it('links to the new product form', () => {
     // Given the products list
-    vi.mocked(useAdminProducts).mockReturnValue({ status: 'success', data: productPage(), retry })
+    vi.mocked(useAdminProducts).mockReturnValue({
+      status: 'success',
+      data: productPage(),
+      ...actions,
+    })
 
     // When the page is shown
     renderPage()

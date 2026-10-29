@@ -9,7 +9,21 @@ import { useAdminProducts } from './useAdminProducts'
 vi.mock('../../auth/hooks/useAuth', () => ({ useAuth: vi.fn() }))
 vi.mock('../services/adminProductsApi', () => ({ fetchAdminProducts: vi.fn() }))
 
-const productPage: AdminProductPage = { items: [], page: 2, pageSize: 20, total: 0, totalPages: 0 }
+const productPage: AdminProductPage = {
+  items: [
+    {
+      id: 7,
+      name: 'Pastís de xocolata',
+      isActive: true,
+      category: { id: 1, name: 'Pastissos' },
+      variants: [{ id: 12, name: '6 racions', priceCents: 3900, stock: 5, isActive: true }],
+    },
+  ],
+  page: 2,
+  pageSize: 20,
+  total: 1,
+  totalPages: 1,
+}
 
 describe('useAdminProducts', () => {
   beforeEach(() => {
@@ -57,5 +71,34 @@ describe('useAdminProducts', () => {
     // Then the products are loaded
     await waitFor(() => expect(result.current.status).toBe('success'))
     expect(fetchAdminProducts).toHaveBeenCalledTimes(2)
+  })
+    it('replaces a product without asking the backend again', async () => {
+    // Given a loaded page
+    vi.mocked(fetchAdminProducts).mockResolvedValue(productPage)
+    const { result } = renderHook(() => useAdminProducts({ page: 1, search: '' }))
+    await waitFor(() => expect(result.current.status).toBe('success'))
+
+    // When the product is replaced by its deactivated version
+    act(() => result.current.replaceProduct({ ...productPage.items[0], isActive: false }))
+
+    // Then the page shows the new status and the backend is not called again
+    expect(result.current).toMatchObject({ data: { items: [{ id: 7, isActive: false }] } })
+    expect(fetchAdminProducts).toHaveBeenCalledOnce()
+  })
+
+  it('replaces a variant inside its product', async () => {
+    // Given a loaded page
+    vi.mocked(fetchAdminProducts).mockResolvedValue(productPage)
+    const { result } = renderHook(() => useAdminProducts({ page: 1, search: '' }))
+    await waitFor(() => expect(result.current.status).toBe('success'))
+
+    // When the variant is replaced by its deactivated version
+    const variant = { ...productPage.items[0].variants[0], isActive: false }
+    act(() => result.current.replaceVariant(7, variant))
+
+    // Then only that variant changes
+    expect(result.current).toMatchObject({
+      data: { items: [{ id: 7, isActive: true, variants: [{ id: 12, isActive: false }] }] },
+    })
   })
 })
