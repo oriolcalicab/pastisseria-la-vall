@@ -3,12 +3,16 @@ import type { FormEvent } from 'react'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { createAdminProduct } from '../services/adminProductsApi'
 import type { AdminProduct } from '../types/product'
-import type { ProductFormErrors, ProductFormValues, VariantFormValues } from '../types/productForm'
+import type {
+  ProductFlag,
+  ProductFormErrors,
+  ProductFormValues,
+  VariantField,
+  VariantFormValues,
+} from '../types/productForm'
 import { validateProductForm } from '../utils/productForm'
 
 type ProductTextField = 'categoryId' | 'name' | 'description' | 'allergens'
-type ProductFlag = 'isGlutenFree' | 'isPlantMilk' | 'isVegan' | 'isActive'
-type VariantField = 'name' | 'price' | 'stock'
 
 const createEmptyVariant = (key: number): VariantFormValues => ({ key, name: '', price: '', stock: '' })
 

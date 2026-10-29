@@ -5,6 +5,7 @@ type FormFieldProps = {
   value: string
   error: string | undefined
   autoComplete?: string | undefined
+  inputMode?: 'text' | 'decimal' | 'numeric' | undefined
   onChange: (value: string) => void
 }
 
@@ -15,6 +16,7 @@ export default function FormField({
   value,
   error,
   autoComplete,
+  inputMode,
   onChange,
 }: FormFieldProps) {
   const errorId = `${id}-error`
@@ -29,6 +31,7 @@ export default function FormField({
         id={id}
         value={value}
         autoComplete={autoComplete}
+        inputMode={inputMode}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         onChange={(event) => onChange(event.target.value)}

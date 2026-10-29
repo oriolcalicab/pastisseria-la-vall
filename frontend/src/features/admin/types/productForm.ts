@@ -1,3 +1,7 @@
+export type VariantField = 'name' | 'price' | 'stock'
+
+export type ProductFlag = 'isGlutenFree' | 'isPlantMilk' | 'isVegan' | 'isActive'
+
 export type VariantFormValues = {
   key: number
   name: string
@@ -17,7 +21,7 @@ export type ProductFormValues = {
   variants: VariantFormValues[]
 }
 
-export type VariantFormErrors = Partial<Record<'name' | 'price' | 'stock', string>>
+export type VariantFormErrors = Partial<Record<VariantField, string>>
 
 export type ProductFormErrors = Partial<
   Record<'categoryId' | 'name' | 'description' | 'allergens' | 'variants', string>
