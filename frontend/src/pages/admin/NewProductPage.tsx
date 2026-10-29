@@ -60,7 +60,7 @@ const NewProductPage = () => {
 
         <FormField
           id="name"
-          label="Nom"
+          label="Nom del producte"
           type="text"
           value={values.name}
           error={errors.name}
