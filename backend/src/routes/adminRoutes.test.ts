@@ -252,6 +252,23 @@ describe('POST /api/admin/products', () => {
     expect(createProduct).not.toHaveBeenCalled()
   })
 
+  it.each([
+    ['a negative price', { priceCents: -100 }, 'El preu de la variant 1'],
+    ['a negative stock', { stock: -1 }, "L'stock de la variant 1"],
+  ])('responds 400 when a variant has %s', async (_case, overrides, message) => {
+    // Given a logged admin
+    loginAs('admin')
+
+    // When the admin sends a variant with an invalid value
+    const variants = [{ ...validProduct.variants[0], ...overrides }]
+    const response = await postProduct({ ...validProduct, variants })
+
+    // Then the request is rejected with the reason and nothing is created
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({ error: expect.stringContaining(message) })
+    expect(createProduct).not.toHaveBeenCalled()
+  })
+
   it('responds 400 when the category does not exist', async () => {
     // Given a logged admin and a category that does not exist
     loginAs('admin')
