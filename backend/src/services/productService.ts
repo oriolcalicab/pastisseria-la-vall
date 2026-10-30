@@ -1,12 +1,36 @@
 import type { Prisma } from '../generated/prisma/client.js'
 import { prisma } from '../lib/prisma.js'
-import type { NewProduct, ProductListQuery } from '../types/product.js'
+import type { NewProduct, ProductListQuery, PublicProductQuery } from '../types/product.js'
 import { containsPattern } from '../utils/likePattern.js'
 
 const productInclude = {
   category: true,
   variants: { orderBy: { sortOrder: 'asc' } },
 } satisfies Prisma.ProductInclude
+
+const publicProductSelect = {
+  id: true,
+  name: true,
+  description: true,
+  imageUrl: true,
+  allergens: true,
+  isGlutenFree: true,
+  isPlantMilk: true,
+  isVegan: true,
+  category: { select: { id: true, name: true, slug: true } },
+  variants: {
+    where: { isActive: true },
+    orderBy: { sortOrder: 'asc' },
+    select: { id: true, name: true, priceCents: true, stock: true },
+  },
+} satisfies Prisma.ProductSelect
+
+type PublicProductRow = Prisma.ProductGetPayload<{ select: typeof publicProductSelect }>
+
+const toPublicProduct = ({ variants, ...product }: PublicProductRow) => ({
+  ...product,
+  variants: variants.map(({ stock, ...variant }) => ({ ...variant, inStock: stock > 0 })),
+})
 
 const findProductIdsByName = async (search: string): Promise<number[]> => {
   const rows = await prisma.$queryRaw<{ id: number }[]>`
@@ -65,4 +89,31 @@ export const setVariantActive = async (productId: number, variantId: number, isA
   if (count === 0) return null
 
   return prisma.productVariant.findUnique({ where: { id: variantId } })
+}
+
+export const listPublicProducts = async ({ page, pageSize, category }: PublicProductQuery) => {
+  const where: Prisma.ProductWhereInput = {
+    isActive: true,
+    variants: { some: { isActive: true } },
+    ...(category ? { category: { slug: category } } : {}),
+  }
+
+  const [items, total] = await prisma.$transaction([
+    prisma.product.findMany({
+      where,
+      select: publicProductSelect,
+      orderBy: [{ name: 'asc' }, { id: 'asc' }],
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.product.count({ where }),
+  ])
+
+  return {
+    items: items.map(toPublicProduct),
+    page,
+    pageSize,
+    total,
+    totalPages: Math.ceil(total / pageSize),
+  }
 }

@@ -3,6 +3,7 @@ import { prisma } from '../lib/prisma.js'
 import {
   createProduct,
   listProducts,
+  listPublicProducts,
   setProductActive,
   setVariantActive,
 } from './productService.js'
@@ -203,5 +204,68 @@ describe('setVariantActive', () => {
     // Then nothing is changed or returned
     expect(result).toBeNull()
     expect(prisma.productVariant.findUnique).not.toHaveBeenCalled()
+  })
+})
+
+describe('listPublicProducts', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+    vi.mocked(prisma.$transaction).mockImplementation(((queries: Promise<unknown>[]) =>
+      Promise.all(queries)) as never)
+    vi.mocked(prisma.product.findMany).mockResolvedValue([])
+    vi.mocked(prisma.product.count).mockResolvedValue(25 as never)
+  })
+
+  it('only lists active products with an active variant', async () => {
+    // Given the second page of 12 products is requested
+    // When the products are listed
+    const result = await listPublicProducts({ page: 2, pageSize: 12, category: undefined })
+
+    // Then only the products that can be bought are paginated
+    expect(prisma.product.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { isActive: true, variants: { some: { isActive: true } } },
+        skip: 12,
+        take: 12,
+      }),
+    )
+    expect(result).toMatchObject({ page: 2, pageSize: 12, total: 25, totalPages: 3 })
+  })
+
+  it('filters by the slug of the category', async () => {
+    // Given a category
+    // When the products of the category are listed
+    await listPublicProducts({ page: 1, pageSize: 20, category: 'pastissos' })
+
+    // Then the same filter is used for the list and the count
+    const where = {
+      isActive: true,
+      variants: { some: { isActive: true } },
+      category: { slug: 'pastissos' },
+    }
+    expect(prisma.product.findMany).toHaveBeenCalledWith(expect.objectContaining({ where }))
+    expect(prisma.product.count).toHaveBeenCalledWith({ where })
+  })
+
+  it('tells if a variant is in stock without showing the stock', async () => {
+    // Given a product with a variant in stock and another one sold out
+    const row = {
+      id: 1,
+      name: 'Pastís de xocolata',
+      variants: [
+        { id: 12, name: '6 racions', priceCents: 3900, stock: 5 },
+        { id: 13, name: '10 racions', priceCents: 4900, stock: 0 },
+      ],
+    }
+    vi.mocked(prisma.product.findMany).mockResolvedValue([row] as never)
+
+    // When the products are listed
+    const { items } = await listPublicProducts({ page: 1, pageSize: 20, category: undefined })
+
+    // Then the variants have inStock and not the real stock
+    expect(items[0]?.variants).toEqual([
+      { id: 12, name: '6 racions', priceCents: 3900, inStock: true },
+      { id: 13, name: '10 racions', priceCents: 4900, inStock: false },
+    ])
   })
 })

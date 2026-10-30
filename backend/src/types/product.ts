@@ -26,3 +26,9 @@ export type ProductListQuery = {
 export type ActiveBody = {
   isActive: boolean
 }
+
+export type PublicProductQuery = {
+  page: number
+  pageSize: number
+  category: string | undefined
+}
