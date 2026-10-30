@@ -185,4 +185,25 @@ describe('AdminProductsPage', () => {
       '/admin/productes/nou',
     )
   })
+
+    it('shows the error when a status change fails', () => {
+    // Given a status change that failed
+    vi.mocked(useAdminProducts).mockReturnValue({
+      status: 'success',
+      data: productPage(),
+      ...actions,
+    })
+    vi.mocked(useActiveToggles).mockReturnValue({
+      pendingKey: null,
+      error: "No s'ha pogut canviar l'estat",
+      toggleProduct: vi.fn(),
+      toggleVariant: vi.fn(),
+    })
+
+    // When the page is shown
+    renderPage()
+
+    // Then the error is shown above the table
+    expect(screen.getByRole('alert')).toHaveTextContent("No s'ha pogut canviar l'estat")
+  })
 })
