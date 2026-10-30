@@ -56,4 +56,14 @@ describe('GET /api/products', () => {
     expect(response.status).toBe(400)
     expect(listPublicProducts).not.toHaveBeenCalled()
   })
+
+    it('responds 400 when the page size is too big', async () => {
+    // Given a visitor
+    // When the visitor asks for too many products at once
+    const response = await fetch(`${server.baseUrl}/api/products?pageSize=51`)
+
+    // Then the request is rejected and the database is not queried
+    expect(response.status).toBe(400)
+    expect(listPublicProducts).not.toHaveBeenCalled()
+  })
 })
