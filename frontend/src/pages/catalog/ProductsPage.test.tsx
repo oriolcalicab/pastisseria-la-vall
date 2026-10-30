@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useProducts } from '../../features/catalog/hooks/useProducts'
 import type { ProductPage } from '../../features/catalog/types/product'
 import ProductsPage from './ProductsPage'
+import noProductImage from '../../assets/no-product.svg'
 
 vi.mock('../../features/catalog/hooks/useProducts', () => ({ useProducts: vi.fn() }))
 
@@ -102,5 +103,32 @@ describe('ProductsPage', () => {
 
     // Then the second page is requested
     expect(useProducts).toHaveBeenLastCalledWith(2)
+  })
+
+    it('shows the placeholder when the product has no image', () => {
+    // Given a product without image
+    const [product] = productPage().items
+    const data = productPage({ items: [{ ...product!, imageUrl: null }] })
+    vi.mocked(useProducts).mockReturnValue({ status: 'success', data, retry })
+
+    // When the page is shown
+    render(<ProductsPage />)
+
+    // Then the card shows the placeholder image
+    expect(screen.getByRole('img', { name: 'Pastís de xocolata' })).toHaveAttribute(
+      'src',
+      noProductImage,
+    )
+  })
+
+  it('does not show the pagination when there is only one page', () => {
+    // Given a single page of products
+    vi.mocked(useProducts).mockReturnValue({ status: 'success', data: productPage(), retry })
+
+    // When the page is shown
+    render(<ProductsPage />)
+
+    // Then there are no page buttons
+    expect(screen.queryByRole('navigation', { name: 'Paginació' })).not.toBeInTheDocument()
   })
 })
