@@ -34,7 +34,7 @@ const renderPage = () =>
   )
 
 const fillValidForm = async () => {
-  const user = userEvent.setup()
+  const user = userEvent.setup({ delay: null })
   await screen.findByRole('option', { name: 'Pastissos' })
   await user.selectOptions(screen.getByLabelText('Categoria'), 'Pastissos')
   await user.type(screen.getByLabelText('Nom del producte'), 'Pastís de maduixa')
