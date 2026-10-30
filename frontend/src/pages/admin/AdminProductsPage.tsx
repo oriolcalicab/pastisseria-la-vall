@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import Pagination from '../../features/admin/components/Pagination'
+import Pagination from '../../components/Pagination'
 import ProductSearch from '../../features/admin/components/ProductSearch'
 import ProductsTable from '../../features/admin/components/ProductsTable'
 import { useAdminProducts } from '../../features/admin/hooks/useAdminProducts'

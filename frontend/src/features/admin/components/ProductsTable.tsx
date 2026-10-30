@@ -1,6 +1,7 @@
 import { Fragment, useState } from 'react'
 import type { AdminProduct, AdminProductVariant } from '../types/product'
-import { formatPrice, getFromPriceCents, getTotalStock } from '../utils/productSummary'
+import { getFromPriceCents, getTotalStock } from '../utils/productSummary'
+import { formatPrice } from '../../../lib/formatPrice'
 import StatusBadge from './StatusBadge'
 
 type ProductsTableProps = {

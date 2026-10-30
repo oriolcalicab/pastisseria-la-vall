@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { AdminProductVariant } from '../types/product'
-import { formatPrice, getFromPriceCents, getTotalStock } from './productSummary'
+import { getFromPriceCents, getTotalStock } from './productSummary'
 
 const variant = (priceCents: number, stock: number, isActive = true): AdminProductVariant => ({
   id: priceCents,
@@ -8,15 +8,6 @@ const variant = (priceCents: number, stock: number, isActive = true): AdminProdu
   priceCents,
   stock,
   isActive,
-})
-
-describe('formatPrice', () => {
-  it('formats cents as euros', () => {
-    // Given a price of 150 cents
-    // When it is formatted
-    // Then it is shown as euros with a comma
-    expect(formatPrice(150)).toMatch(/^1,50\s€$/)
-  })
 })
 
 describe('getFromPriceCents', () => {
