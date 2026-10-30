@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import AuthStatus from '../features/auth/components/AuthStatus'
 
 export default function HomePage() {
@@ -16,6 +17,9 @@ export default function HomePage() {
       <h1 className="text-3xl font-bold">Pastisseria La Vall</h1>
       <p className="mt-4">Estat del servidor: {status}</p>
       <AuthStatus />
+            <Link to="/productes" className="mt-4 inline-block underline">
+        Veure els productes
+      </Link>
     </main>
   )
 }

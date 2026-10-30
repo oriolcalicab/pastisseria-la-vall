@@ -11,9 +11,11 @@ import AdminLayout from './features/admin/components/AdminLayout'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminProductsPage from './pages/admin/AdminProductsPage'
 import NewProductPage from './pages/admin/NewProductPage'
+import ProductsPage from './pages/catalog/ProductsPage'
 
 export const router = createBrowserRouter([
   { path: '/', element: <HomePage /> },
+  { path: '/productes', element: <ProductsPage /> },
   { path: '/login', element: <LoginPage /> },
   { path: '/registre', element: <RegisterPage /> },
   {
@@ -21,7 +23,7 @@ export const router = createBrowserRouter([
     children: [{ path: '/compte', element: <AccountPage /> }],
   },
   { path: '/contrasenya-oblidada', element: <ForgotPasswordPage /> },
-    {
+  {
     path: '/admin',
     element: <AdminRoute />,
     children: [
