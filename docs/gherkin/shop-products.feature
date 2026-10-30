@@ -35,3 +35,36 @@ Feature: Public products list
     Given a visitor
     When the visitor calls "/api/products?category=Cupcakes"
     Then the backend responds 400
+
+    
+  Scenario: Products are paginated
+    Given there are 13 products available
+    When a visitor opens "/productes"
+    Then the page shows the first 12 products
+    And the page shows "Pàgina 1 de 2"
+
+  Scenario: Only one page of products
+    Given there are 8 products available
+    When a visitor opens "/productes"
+    Then the page buttons are not shown
+
+  Scenario: Too many products at once
+    Given a visitor
+    When the visitor calls "/api/products?pageSize=51"
+    Then the backend responds 400
+
+  Scenario: No products available
+    Given there are no products available
+    When a visitor opens "/productes"
+    Then the page shows "De moment no hi ha cap producte disponible."
+
+  Scenario: Backend error
+    Given the backend is stopped
+    When a visitor opens "/productes"
+    Then the page shows "No s'han pogut carregar els productes."
+    And the visitor can retry
+
+  Scenario: Product without image
+    Given a product without image
+    When a visitor opens "/productes"
+    Then the card shows the placeholder image

@@ -268,4 +268,30 @@ describe('listPublicProducts', () => {
       { id: 13, name: '10 racions', priceCents: 4900, inStock: false },
     ])
   })
+
+    it('only returns the active variants of each product', async () => {
+    // Given the products are listed
+    // When the query is sent
+    await listPublicProducts({ page: 1, pageSize: 20, category: undefined })
+
+    // Then the inactive variants are left out
+    expect(prisma.product.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: expect.objectContaining({
+          variants: expect.objectContaining({ where: { isActive: true } }),
+        }),
+      }),
+    )
+  })
+
+  it('returns an empty page when there are no products', async () => {
+    // Given there are no products
+    vi.mocked(prisma.product.count).mockResolvedValue(0 as never)
+
+    // When the products are listed
+    const result = await listPublicProducts({ page: 1, pageSize: 20, category: undefined })
+
+    // Then the page is empty and there are no pages
+    expect(result).toMatchObject({ items: [], total: 0, totalPages: 0 })
+  })
 })
