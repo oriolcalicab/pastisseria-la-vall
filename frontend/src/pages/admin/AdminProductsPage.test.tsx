@@ -1,12 +1,14 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { useActiveToggles } from '../../features/admin/hooks/useActiveToggles'
 import { useAdminProducts } from '../../features/admin/hooks/useAdminProducts'
 import type { AdminProductPage } from '../../features/admin/types/product'
 import AdminProductsPage from './AdminProductsPage'
 import { MemoryRouter } from 'react-router-dom'
 
 vi.mock('../../features/admin/hooks/useAdminProducts', () => ({ useAdminProducts: vi.fn() }))
+vi.mock('../../features/admin/hooks/useActiveToggles', () => ({ useActiveToggles: vi.fn() }))
 
 const retry = vi.fn()
 const actions = { retry, replaceProduct: vi.fn(), replaceVariant: vi.fn() }
@@ -41,6 +43,12 @@ const renderPage = (state?: object) =>
 describe('AdminProductsPage', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    vi.mocked(useActiveToggles).mockReturnValue({
+      pendingKey: null,
+      error: '',
+      toggleProduct: vi.fn(),
+      toggleVariant: vi.fn(),
+    })
   })
 
   it('shows a message while the products are loading', () => {
