@@ -51,10 +51,12 @@ export const createAdminProduct = async (
   token: string,
   product: NewProduct,
 ): Promise<AdminProduct> => {
-  const response = await fetch(apiUrl('/api/admin/products'), {
+    const response = await fetch(apiUrl('/api/admin/products'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify(product),
+  }).catch(() => {
+    throw new Error(CREATE_PRODUCT_ERROR)
   })
 
   if (!response.ok) {
