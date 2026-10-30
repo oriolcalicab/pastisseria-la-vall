@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { prisma } from '../lib/prisma.js'
-import { listProducts, createProduct } from './productService.js'
+import {
+  createProduct,
+  listProducts,
+  setProductActive,
+  setVariantActive,
+} from './productService.js'
 import { NewProduct } from '../types/product.js'
 
 vi.mock('../lib/prisma.js', () => ({
@@ -8,7 +13,14 @@ vi.mock('../lib/prisma.js', () => ({
     $queryRaw: vi.fn(),
     $transaction: vi.fn(),
     category: { findUnique: vi.fn() },
-    product: { findMany: vi.fn(), count: vi.fn(), create: vi.fn() },
+    product: {
+      findMany: vi.fn(),
+      count: vi.fn(),
+      create: vi.fn(),
+      updateMany: vi.fn(),
+      findUnique: vi.fn(),
+    },
+    productVariant: { updateMany: vi.fn(), findUnique: vi.fn() },
   },
 }))
 
@@ -120,5 +132,76 @@ describe('createProduct', () => {
       include: { category: true, variants: { orderBy: { sortOrder: 'asc' } } },
     })
     expect(result).toEqual({ id: 10 })
+  })
+})
+
+describe('setProductActive', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
+  it('returns null when the product does not exist', async () => {
+    // Given no product with this id
+    vi.mocked(prisma.product.updateMany).mockResolvedValue({ count: 0 })
+
+    // When the product is deactivated
+    const result = await setProductActive(99, false)
+
+    // Then nothing is returned
+    expect(result).toBeNull()
+    expect(prisma.product.findUnique).not.toHaveBeenCalled()
+  })
+
+  it('changes the status and returns the product', async () => {
+    // Given an existing product
+    vi.mocked(prisma.product.updateMany).mockResolvedValue({ count: 1 })
+    vi.mocked(prisma.product.findUnique).mockResolvedValue({ id: 7, isActive: false } as never)
+
+    // When the product is deactivated
+    const result = await setProductActive(7, false)
+
+    // Then only isActive is changed and the product is returned
+    expect(prisma.product.updateMany).toHaveBeenCalledWith({
+      where: { id: 7 },
+      data: { isActive: false },
+    })
+    expect(result).toEqual({ id: 7, isActive: false })
+  })
+})
+
+describe('setVariantActive', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
+  it('only changes the variant when it belongs to the product', async () => {
+    // Given a variant
+    vi.mocked(prisma.productVariant.updateMany).mockResolvedValue({ count: 1 })
+    vi.mocked(prisma.productVariant.findUnique).mockResolvedValue({
+      id: 12,
+      isActive: true,
+    } as never)
+
+    // When the variant of the product is activated
+    const result = await setVariantActive(7, 12, true)
+
+    // Then the product is part of the condition and the variant is returned
+    expect(prisma.productVariant.updateMany).toHaveBeenCalledWith({
+      where: { id: 12, productId: 7 },
+      data: { isActive: true },
+    })
+    expect(result).toEqual({ id: 12, isActive: true })
+  })
+
+  it('returns null when the variant is not of that product', async () => {
+    // Given a variant that belongs to another product
+    vi.mocked(prisma.productVariant.updateMany).mockResolvedValue({ count: 0 })
+
+    // When it is changed through the wrong product
+    const result = await setVariantActive(7, 12, false)
+
+    // Then nothing is changed or returned
+    expect(result).toBeNull()
+    expect(prisma.productVariant.findUnique).not.toHaveBeenCalled()
   })
 })

@@ -4,6 +4,7 @@ import Pagination from '../../features/admin/components/Pagination'
 import ProductSearch from '../../features/admin/components/ProductSearch'
 import ProductsTable from '../../features/admin/components/ProductsTable'
 import { useAdminProducts } from '../../features/admin/hooks/useAdminProducts'
+import { useActiveToggles } from '../../features/admin/hooks/useActiveToggles'
 
 const readNotice = (state: unknown): string | null => {
   if (typeof state !== 'object' || state === null || !('notice' in state)) return null
@@ -18,6 +19,10 @@ const AdminProductsPage = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const [notice, setNotice] = useState(() => readNotice(location.state))
+  const toggles = useActiveToggles({
+    onProductChange: products.replaceProduct,
+    onVariantChange: products.replaceVariant,
+  })
 
   useEffect(() => {
     if (readNotice(location.state)) navigate(location.pathname, { replace: true, state: null })
@@ -81,7 +86,17 @@ const AdminProductsPage = () => {
 
         {products.status === 'success' && products.data.items.length > 0 && (
           <>
-            <ProductsTable products={products.data.items} />
+            {toggles.error && (
+              <p role="alert" className="mb-4 text-sm text-red-600">
+                {toggles.error}
+              </p>
+            )}
+            <ProductsTable
+              products={products.data.items}
+              pendingKey={toggles.pendingKey}
+              onToggleProduct={toggles.toggleProduct}
+              onToggleVariant={toggles.toggleVariant}
+            />
             <Pagination
               page={products.data.page}
               totalPages={products.data.totalPages}

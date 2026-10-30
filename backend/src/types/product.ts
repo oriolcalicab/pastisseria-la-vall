@@ -22,3 +22,7 @@ export type ProductListQuery = {
   pageSize: number
   search: string | undefined
 }
+
+export type ActiveBody = {
+  isActive: boolean
+}
