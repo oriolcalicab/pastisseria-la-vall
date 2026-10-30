@@ -116,6 +116,17 @@ describe('createAdminProduct', () => {
       "No s'ha pogut crear el producte",
     )
   })
+
+    it('throws a generic message when the backend can not be reached', async () => {
+    // Given a backend that is not running
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')))
+
+    // When the product is created
+    // Then the error has the generic message instead of the browser one
+    await expect(createAdminProduct('token-123', newProduct)).rejects.toThrow(
+      "No s'ha pogut crear el producte",
+    )
+  })
 })
 
 describe('setAdminProductActive', () => {
@@ -153,6 +164,16 @@ describe('setAdminProductActive', () => {
     // Then the error has the backend message
     await expect(setAdminProductActive('token-123', 9999, false)).rejects.toThrow(
       'El producte no existeix',
+    )
+  })
+    it('throws a generic message when the backend can not be reached', async () => {
+    // Given a backend that is not running
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')))
+
+    // When the product is deactivated
+    // Then the error has the generic message instead of the browser one
+    await expect(setAdminProductActive('token-123', 7, false)).rejects.toThrow(
+      "No s'ha pogut canviar l'estat",
     )
   })
 })

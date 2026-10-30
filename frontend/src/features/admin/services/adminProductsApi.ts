@@ -72,7 +72,9 @@ const sendActiveStatus = async <T>(token: string, path: string, isActive: boolea
   const response = await fetch(apiUrl(`/api/admin${path}`), {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ isActive }),
+       body: JSON.stringify({ isActive }),
+  }).catch(() => {
+    throw new Error(UPDATE_STATUS_ERROR)
   })
 
   if (!response.ok) {
