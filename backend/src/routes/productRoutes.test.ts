@@ -34,7 +34,12 @@ describe('GET /api/products', () => {
 
     // Then the first page is returned
     expect(response.status).toBe(200)
-    expect(listPublicProducts).toHaveBeenCalledWith({ page: 1, pageSize: 20, category: undefined })
+    expect(listPublicProducts).toHaveBeenCalledWith({
+      page: 1,
+      pageSize: 20,
+      category: undefined,
+      diets: [],
+    })
     expect(await response.json()).toEqual(productPage)
   })
 
@@ -44,7 +49,12 @@ describe('GET /api/products', () => {
     await fetch(`${server.baseUrl}/api/products?page=2&pageSize=12&category=pastissos`)
 
     // Then the service receives the parsed values
-    expect(listPublicProducts).toHaveBeenCalledWith({ page: 2, pageSize: 12, category: 'pastissos' })
+    expect(listPublicProducts).toHaveBeenCalledWith({
+      page: 2,
+      pageSize: 12,
+      category: 'pastissos',
+      diets: [],
+    })
   })
 
   it('responds 400 when the category is not valid', async () => {
@@ -57,10 +67,34 @@ describe('GET /api/products', () => {
     expect(listPublicProducts).not.toHaveBeenCalled()
   })
 
-    it('responds 400 when the page size is too big', async () => {
+  it('responds 400 when the page size is too big', async () => {
     // Given a visitor
     // When the visitor asks for too many products at once
     const response = await fetch(`${server.baseUrl}/api/products?pageSize=51`)
+
+    // Then the request is rejected and the database is not queried
+    expect(response.status).toBe(400)
+    expect(listPublicProducts).not.toHaveBeenCalled()
+  })
+
+  it('passes the diets to the service', async () => {
+    // Given a visitor
+    // When the visitor filters by two diets
+    await fetch(`${server.baseUrl}/api/products?diet=vegan,plant_milk`)
+
+    // Then the service receives both diets
+    expect(listPublicProducts).toHaveBeenCalledWith({
+      page: 1,
+      pageSize: 20,
+      category: undefined,
+      diets: ['vegan', 'plant_milk'],
+    })
+  })
+
+  it('responds 400 when the diet is not valid', async () => {
+    // Given a visitor
+    // When the visitor sends an unknown diet
+    const response = await fetch(`${server.baseUrl}/api/products?diet=keto`)
 
     // Then the request is rejected and the database is not queried
     expect(response.status).toBe(400)
