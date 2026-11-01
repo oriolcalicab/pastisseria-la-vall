@@ -1,6 +1,6 @@
 import type { Prisma } from '../generated/prisma/client.js'
 import { prisma } from '../lib/prisma.js'
-import type { NewProduct, ProductListQuery, PublicProductQuery } from '../types/product.js'
+import type { Diet, NewProduct, ProductListQuery, PublicProductQuery } from '../types/product.js'
 import { containsPattern } from '../utils/likePattern.js'
 
 const productInclude = {
@@ -31,6 +31,12 @@ const toPublicProduct = ({ variants, ...product }: PublicProductRow) => ({
   ...product,
   variants: variants.map(({ stock, ...variant }) => ({ ...variant, inStock: stock > 0 })),
 })
+
+const dietFilters: Record<Diet, Prisma.ProductWhereInput> = {
+  gluten_free: { isGlutenFree: true },
+  plant_milk: { isPlantMilk: true },
+  vegan: { isVegan: true },
+}
 
 const findProductIdsByName = async (search: string): Promise<number[]> => {
   const rows = await prisma.$queryRaw<{ id: number }[]>`
@@ -91,11 +97,17 @@ export const setVariantActive = async (productId: number, variantId: number, isA
   return prisma.productVariant.findUnique({ where: { id: variantId } })
 }
 
-export const listPublicProducts = async ({ page, pageSize, category }: PublicProductQuery) => {
+export const listPublicProducts = async ({
+  page,
+  pageSize,
+  category,
+  diets,
+}: PublicProductQuery) => {
   const where: Prisma.ProductWhereInput = {
     isActive: true,
     variants: { some: { isActive: true } },
     ...(category ? { category: { slug: category } } : {}),
+    ...(diets.length > 0 ? { AND: diets.map((diet) => dietFilters[diet]) } : {}),
   }
 
   const [items, total] = await prisma.$transaction([
