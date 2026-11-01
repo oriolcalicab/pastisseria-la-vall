@@ -329,4 +329,35 @@ describe('listPublicProducts', () => {
     expect(prisma.product.findMany).toHaveBeenCalledWith(expect.objectContaining({ where }))
     expect(prisma.product.count).toHaveBeenCalledWith({ where })
   })
+
+    it.each([
+    ['gluten_free', { isGlutenFree: true }],
+    ['plant_milk', { isPlantMilk: true }],
+    ['vegan', { isVegan: true }],
+  ] as const)('translates the diet %s to its field', async (diet, condition) => {
+    // Given one diet
+    // When the products are listed
+    await listPublicProducts({ page: 1, pageSize: 20, category: undefined, diets: [diet] })
+
+    // Then the field of that diet is required
+    expect(prisma.product.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ AND: [condition] }) }),
+    )
+  })
+
+  it('combines the diets with the category', async () => {
+    // Given a category and a diet
+    // When the products are listed
+    await listPublicProducts({ page: 1, pageSize: 20, category: 'cupcakes', diets: ['vegan'] })
+
+    // Then the product has to match both
+    const where = {
+      isActive: true,
+      variants: { some: { isActive: true } },
+      category: { slug: 'cupcakes' },
+      AND: [{ isVegan: true }],
+    }
+    expect(prisma.product.findMany).toHaveBeenCalledWith(expect.objectContaining({ where }))
+    expect(prisma.product.count).toHaveBeenCalledWith({ where })
+  })
 })

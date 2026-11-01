@@ -100,4 +100,18 @@ describe('GET /api/products', () => {
     expect(response.status).toBe(400)
     expect(listPublicProducts).not.toHaveBeenCalled()
   })
+
+    it('passes the diet, the category and the page together', async () => {
+    // Given a visitor
+    // When the visitor combines all the filters
+    await fetch(`${server.baseUrl}/api/products?diet=vegan&category=cupcakes&page=2`)
+
+    // Then the service receives all of them
+    expect(listPublicProducts).toHaveBeenCalledWith({
+      page: 2,
+      pageSize: 20,
+      category: 'cupcakes',
+      diets: ['vegan'],
+    })
+  })
 })

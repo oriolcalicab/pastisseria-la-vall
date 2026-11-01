@@ -101,3 +101,14 @@ Feature: Public products list
     Given a visitor on the second page of products
     When the visitor checks a diet
     Then the first page is shown
+
+    
+  Scenario: Combine a diet with a category
+    Given vegan cupcakes and vegan cakes
+    When a visitor calls "/api/products?diet=vegan&category=cupcakes"
+    Then only the vegan cupcakes are in the list
+
+  Scenario: Diets are kept when changing page
+    Given a filtered list with two pages
+    When the visitor clicks "Següent »"
+    Then the second page of the same filter is shown
