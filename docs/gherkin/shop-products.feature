@@ -68,3 +68,19 @@ Feature: Public products list
     Given a product without image
     When a visitor opens "/productes"
     Then the card shows the placeholder image
+
+    
+  Scenario: Filter by one diet
+    Given vegan and non vegan products
+    When a visitor calls "/api/products?diet=vegan"
+    Then only the vegan products are in the list
+
+  Scenario: Combine several diets
+    Given a vegan product with gluten and a vegan product without gluten
+    When a visitor calls "/api/products?diet=vegan,gluten_free"
+    Then only the vegan product without gluten is in the list
+
+  Scenario: Unknown diet
+    Given a visitor
+    When the visitor calls "/api/products?diet=keto"
+    Then the backend responds 400
