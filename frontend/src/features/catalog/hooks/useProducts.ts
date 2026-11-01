@@ -7,21 +7,26 @@ type ProductsResult = {
   data: ProductPage | null
 }
 
+type ProductsParams = {
+  page: number
+  diet: string
+}
+
 type ProductsState = (
   | { status: 'loading' }
   | { status: 'error' }
   | { status: 'success'; data: ProductPage }
 ) & { retry: () => void }
 
-export const useProducts = (page: number): ProductsState => {
+export const useProducts = ({ page, diet }: ProductsParams): ProductsState => {
   const [result, setResult] = useState<ProductsResult | null>(null)
   const [attempt, setAttempt] = useState(0)
-  const key = `${page}|${attempt}`
+  const key = `${page}|${diet}|${attempt}`
 
   useEffect(() => {
     let isActive = true
 
-    fetchProducts(page)
+    fetchProducts(page, diet)
       .then((data) => {
         if (isActive) setResult({ key, data })
       })
@@ -32,7 +37,7 @@ export const useProducts = (page: number): ProductsState => {
     return () => {
       isActive = false
     }
-  }, [page, key])
+  }, [page, diet, key])
 
   const retry = () => setAttempt((current) => current + 1)
 

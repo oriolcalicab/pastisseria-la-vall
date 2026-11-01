@@ -3,8 +3,11 @@ import type { ProductPage } from '../types/product'
 
 const PAGE_SIZE = 12
 
-export const fetchProducts = async (page: number): Promise<ProductPage> => {
+export const fetchProducts = async (page: number, diet: string): Promise<ProductPage> => {
   const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) })
+
+  if (diet) params.set('diet', diet)
+
   const response = await fetch(apiUrl(`/api/products?${params}`))
 
   if (!response.ok) {

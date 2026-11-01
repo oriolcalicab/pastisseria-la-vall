@@ -102,7 +102,7 @@ describe('ProductsPage', () => {
     await userEvent.setup().click(screen.getByRole('button', { name: 'Següent »' }))
 
     // Then the second page is requested
-    expect(useProducts).toHaveBeenLastCalledWith(2)
+        expect(useProducts).toHaveBeenLastCalledWith({ page: 2, diet: '' })
   })
 
     it('shows the placeholder when the product has no image', () => {

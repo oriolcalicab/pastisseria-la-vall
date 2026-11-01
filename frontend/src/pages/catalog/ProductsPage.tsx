@@ -5,8 +5,7 @@ import { useProducts } from '../../features/catalog/hooks/useProducts'
 
 const ProductsPage = () => {
   const [page, setPage] = useState(1)
-  const products = useProducts(page)
-
+  const products = useProducts({ page, diet: '' })
   return (
     <main className="mx-auto max-w-5xl p-4 sm:p-8">
       <h1 className="text-3xl font-bold">Els nostres productes</h1>
