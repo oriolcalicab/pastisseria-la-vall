@@ -1,3 +1,5 @@
+export type Diet = 'gluten_free' | 'plant_milk' | 'vegan'
+
 export type ProductVariant = {
   id: number
   name: string

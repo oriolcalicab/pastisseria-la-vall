@@ -13,7 +13,7 @@ describe('fetchProducts', () => {
     vi.stubGlobal('fetch', fetchMock)
 
     // When the second page is requested
-    const result = await fetchProducts(2)
+    const result = await fetchProducts(2, '')
 
     // Then the public endpoint is called with the page and the page is returned
     expect(fetchMock).toHaveBeenCalledWith(
@@ -28,6 +28,18 @@ describe('fetchProducts', () => {
 
     // When the products are requested
     // Then the call fails
-    await expect(fetchProducts(1)).rejects.toThrow()
+    await expect(fetchProducts(1, '')).rejects.toThrow()
+  })
+
+    it('sends the diets when there are any', async () => {
+    // Given a backend that answers correctly
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) })
+    vi.stubGlobal('fetch', fetchMock)
+
+    // When the products are requested with two diets
+    await fetchProducts(1, 'vegan,gluten_free')
+
+    // Then the URL has the diets
+    expect(fetchMock.mock.calls[0]?.[0]).toContain('diet=vegan%2Cgluten_free')
   })
 })

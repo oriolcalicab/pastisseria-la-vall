@@ -18,13 +18,13 @@ describe('useProducts', () => {
     vi.mocked(fetchProducts).mockResolvedValue(productPage)
 
     // When the hook asks for the second page
-    const { result } = renderHook(() => useProducts(2))
+    const { result } = renderHook(() => useProducts({ page: 2, diet: 'vegan' }))
 
     // Then it is loading first and then it has the data
     expect(result.current.status).toBe('loading')
     await waitFor(() => expect(result.current.status).toBe('success'))
     expect(result.current).toMatchObject({ data: productPage })
-    expect(fetchProducts).toHaveBeenCalledWith(2)
+    expect(fetchProducts).toHaveBeenCalledWith(2, 'vegan')
   })
 
   it('returns an error when the request fails', async () => {
@@ -32,7 +32,7 @@ describe('useProducts', () => {
     vi.mocked(fetchProducts).mockRejectedValue(new Error('Request failed'))
 
     // When the hook asks for the products
-    const { result } = renderHook(() => useProducts(1))
+    const { result } = renderHook(() =>useProducts({ page: 1, diet: '' }))
 
     // Then the status is error
     await waitFor(() => expect(result.current.status).toBe('error'))
@@ -43,7 +43,7 @@ describe('useProducts', () => {
     vi.mocked(fetchProducts)
       .mockRejectedValueOnce(new Error('Request failed'))
       .mockResolvedValueOnce(productPage)
-    const { result } = renderHook(() => useProducts(1))
+    const { result } = renderHook(() => useProducts({ page: 1, diet: '' }))
     await waitFor(() => expect(result.current.status).toBe('error'))
 
     // When the user retries
