@@ -129,3 +129,12 @@ export const listPublicProducts = async ({
     totalPages: Math.ceil(total / pageSize),
   }
 }
+
+export const getPublicProduct = async (id: number) => {
+  const product = await prisma.product.findFirst({
+    where: { id, isActive: true, variants: { some: { isActive: true } } },
+    select: publicProductSelect,
+  })
+
+  return product ? toPublicProduct(product) : null
+}
