@@ -183,4 +183,19 @@ describe('ProductsPage', () => {
     expect(useProducts).toHaveBeenLastCalledWith({ page: 1, diet: '' })
     expect(screen.getByRole('checkbox', { name: 'Vegà' })).not.toBeChecked()
   })
+
+    it('keeps the diets when going to the next page', async () => {
+    // Given a filtered list with two pages
+    const data = productPage({ total: 13, totalPages: 2 })
+    vi.mocked(useProducts).mockReturnValue({ status: 'success', data, retry })
+    render(<ProductsPage />)
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('checkbox', { name: 'Vegà' }))
+
+    // When the visitor clicks next
+    await user.click(screen.getByRole('button', { name: 'Següent »' }))
+
+    // Then the second page of the same filter is requested
+    expect(useProducts).toHaveBeenLastCalledWith({ page: 2, diet: 'vegan' })
+  })
 })
