@@ -1,12 +1,14 @@
 import express from 'express'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { listPublicProducts } from '../services/productService.js'
+import { listPublicProducts, getPublicProduct } from '../services/productService.js'
 import { startTestServer } from '../test/startTestServer.js'
 import type { TestServer } from '../test/startTestServer.js'
 import productRouter from './productRoutes.js'
 
-vi.mock('../services/productService.js', () => ({ listPublicProducts: vi.fn() }))
-
+vi.mock('../services/productService.js', () => ({
+  getPublicProduct: vi.fn(),
+  listPublicProducts: vi.fn(),
+}))
 let server: TestServer
 
 const productPage = { items: [], page: 1, pageSize: 20, total: 0, totalPages: 0 }
@@ -113,5 +115,41 @@ describe('GET /api/products', () => {
       category: 'cupcakes',
       diets: ['vegan'],
     })
+  })
+
+    it('returns one product without login', async () => {
+    // Given an available product
+    const product = { id: 7, name: 'Pastís de xocolata' }
+    vi.mocked(getPublicProduct).mockResolvedValue(product as never)
+
+    // When a visitor without token asks for it
+    const response = await fetch(`${server.baseUrl}/api/products/7`)
+
+    // Then the product is returned
+    expect(response.status).toBe(200)
+    expect(getPublicProduct).toHaveBeenCalledWith(7)
+    expect(await response.json()).toEqual(product)
+  })
+
+  it('responds 404 when the product does not exist', async () => {
+    // Given a product that is not available
+    vi.mocked(getPublicProduct).mockResolvedValue(null)
+
+    // When a visitor asks for it
+    const response = await fetch(`${server.baseUrl}/api/products/9999`)
+
+    // Then the request is answered with 404
+    expect(response.status).toBe(404)
+    expect(await response.json()).toEqual({ error: 'El producte no existeix' })
+  })
+
+  it('responds 400 when the id is not valid', async () => {
+    // Given a visitor
+    // When the visitor uses an id that is not a number
+    const response = await fetch(`${server.baseUrl}/api/products/abc`)
+
+    // Then the request is rejected and the database is not queried
+    expect(response.status).toBe(400)
+    expect(getPublicProduct).not.toHaveBeenCalled()
   })
 })
