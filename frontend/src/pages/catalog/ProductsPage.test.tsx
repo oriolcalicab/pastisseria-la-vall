@@ -131,4 +131,56 @@ describe('ProductsPage', () => {
     // Then there are no page buttons
     expect(screen.queryByRole('navigation', { name: 'Paginació' })).not.toBeInTheDocument()
   })
+
+    it('combines the diets and removes them when unchecked', async () => {
+    // Given the products page
+    vi.mocked(useProducts).mockReturnValue({ status: 'success', data: productPage(), retry })
+    render(<ProductsPage />)
+    const user = userEvent.setup()
+
+    // When the visitor checks two diets
+    await user.click(screen.getByRole('checkbox', { name: 'Vegà' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Sense gluten' }))
+
+    // Then both diets are requested
+    expect(useProducts).toHaveBeenLastCalledWith({ page: 1, diet: 'vegan,gluten_free' })
+
+    // When the visitor unchecks one of them
+    await user.click(screen.getByRole('checkbox', { name: 'Vegà' }))
+
+    // Then only the other one is requested
+    expect(useProducts).toHaveBeenLastCalledWith({ page: 1, diet: 'gluten_free' })
+  })
+
+  it('goes back to the first page when a diet changes', async () => {
+    // Given the second page of products
+    const data = productPage({ total: 13, totalPages: 2 })
+    vi.mocked(useProducts).mockReturnValue({ status: 'success', data, retry })
+    render(<ProductsPage />)
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: 'Següent »' }))
+
+    // When the visitor checks a diet
+    await user.click(screen.getByRole('checkbox', { name: 'Vegà' }))
+
+    // Then the first page is requested
+    expect(useProducts).toHaveBeenLastCalledWith({ page: 1, diet: 'vegan' })
+  })
+
+  it('shows a message when no product matches the diets and clears them', async () => {
+    // Given no product matches the filters
+    const data = productPage({ items: [], total: 0, totalPages: 0 })
+    vi.mocked(useProducts).mockReturnValue({ status: 'success', data, retry })
+    render(<ProductsPage />)
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('checkbox', { name: 'Vegà' }))
+    expect(screen.getByText('No hi ha cap producte amb aquests filtres.')).toBeInTheDocument()
+
+    // When the visitor clears the filters
+    await user.click(screen.getByRole('button', { name: 'Treu els filtres' }))
+
+    // Then the filters are removed
+    expect(useProducts).toHaveBeenLastCalledWith({ page: 1, diet: '' })
+    expect(screen.getByRole('checkbox', { name: 'Vegà' })).not.toBeChecked()
+  })
 })
