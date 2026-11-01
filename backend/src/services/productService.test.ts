@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { prisma } from '../lib/prisma.js'
 import {
   createProduct,
+  getPublicProduct,
   listProducts,
   listPublicProducts,
   setProductActive,
@@ -20,6 +21,7 @@ vi.mock('../lib/prisma.js', () => ({
       create: vi.fn(),
       updateMany: vi.fn(),
       findUnique: vi.fn(),
+      findFirst: vi.fn(),
     },
     productVariant: { updateMany: vi.fn(), findUnique: vi.fn() },
   },
@@ -330,7 +332,7 @@ describe('listPublicProducts', () => {
     expect(prisma.product.count).toHaveBeenCalledWith({ where })
   })
 
-    it.each([
+  it.each([
     ['gluten_free', { isGlutenFree: true }],
     ['plant_milk', { isPlantMilk: true }],
     ['vegan', { isVegan: true }],
@@ -359,5 +361,47 @@ describe('listPublicProducts', () => {
     }
     expect(prisma.product.findMany).toHaveBeenCalledWith(expect.objectContaining({ where }))
     expect(prisma.product.count).toHaveBeenCalledWith({ where })
+  })
+})
+
+describe('getPublicProduct', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
+  it('only looks for a product that can be bought', async () => {
+    // Given a product that is not available
+    vi.mocked(prisma.product.findFirst).mockResolvedValue(null)
+
+    // When the product is requested
+    const result = await getPublicProduct(7)
+
+    // Then only active products with an active variant are searched
+    expect(prisma.product.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 7, isActive: true, variants: { some: { isActive: true } } },
+      }),
+    )
+    expect(result).toBeNull()
+  })
+
+  it('returns the product without the real stock', async () => {
+    // Given a product with a variant in stock
+    const row = {
+      id: 7,
+      name: 'Pastís de xocolata',
+      variants: [{ id: 12, name: '6 racions', priceCents: 3900, stock: 5 }],
+    }
+    vi.mocked(prisma.product.findFirst).mockResolvedValue(row as never)
+
+    // When the product is requested
+    const result = await getPublicProduct(7)
+
+    // Then the variant has inStock and not the real stock
+    expect(result).toEqual({
+      id: 7,
+      name: 'Pastís de xocolata',
+      variants: [{ id: 12, name: '6 racions', priceCents: 3900, inStock: true }],
+    })
   })
 })
