@@ -219,7 +219,12 @@ describe('listPublicProducts', () => {
   it('only lists active products with an active variant', async () => {
     // Given the second page of 12 products is requested
     // When the products are listed
-    const result = await listPublicProducts({ page: 2, pageSize: 12, category: undefined })
+    const result = await listPublicProducts({
+      page: 2,
+      pageSize: 12,
+      category: undefined,
+      diets: [],
+    })
 
     // Then only the products that can be bought are paginated
     expect(prisma.product.findMany).toHaveBeenCalledWith(
@@ -235,7 +240,7 @@ describe('listPublicProducts', () => {
   it('filters by the slug of the category', async () => {
     // Given a category
     // When the products of the category are listed
-    await listPublicProducts({ page: 1, pageSize: 20, category: 'pastissos' })
+    await listPublicProducts({ page: 1, pageSize: 20, category: 'pastissos', diets: [] })
 
     // Then the same filter is used for the list and the count
     const where = {
@@ -260,7 +265,12 @@ describe('listPublicProducts', () => {
     vi.mocked(prisma.product.findMany).mockResolvedValue([row] as never)
 
     // When the products are listed
-    const { items } = await listPublicProducts({ page: 1, pageSize: 20, category: undefined })
+    const { items } = await listPublicProducts({
+      page: 1,
+      pageSize: 20,
+      category: undefined,
+      diets: [],
+    })
 
     // Then the variants have inStock and not the real stock
     expect(items[0]?.variants).toEqual([
@@ -269,10 +279,10 @@ describe('listPublicProducts', () => {
     ])
   })
 
-    it('only returns the active variants of each product', async () => {
+  it('only returns the active variants of each product', async () => {
     // Given the products are listed
     // When the query is sent
-    await listPublicProducts({ page: 1, pageSize: 20, category: undefined })
+    await listPublicProducts({ page: 1, pageSize: 20, category: undefined, diets: [] })
 
     // Then the inactive variants are left out
     expect(prisma.product.findMany).toHaveBeenCalledWith(
@@ -289,9 +299,34 @@ describe('listPublicProducts', () => {
     vi.mocked(prisma.product.count).mockResolvedValue(0 as never)
 
     // When the products are listed
-    const result = await listPublicProducts({ page: 1, pageSize: 20, category: undefined })
+    const result = await listPublicProducts({
+      page: 1,
+      pageSize: 20,
+      category: undefined,
+      diets: [],
+    })
 
     // Then the page is empty and there are no pages
     expect(result).toMatchObject({ items: [], total: 0, totalPages: 0 })
+  })
+
+  it('requires all the diets at once', async () => {
+    // Given two diets
+    // When the products are listed
+    await listPublicProducts({
+      page: 1,
+      pageSize: 20,
+      category: undefined,
+      diets: ['vegan', 'gluten_free'],
+    })
+
+    // Then the same filter is used for the list and the count
+    const where = {
+      isActive: true,
+      variants: { some: { isActive: true } },
+      AND: [{ isVegan: true }, { isGlutenFree: true }],
+    }
+    expect(prisma.product.findMany).toHaveBeenCalledWith(expect.objectContaining({ where }))
+    expect(prisma.product.count).toHaveBeenCalledWith({ where })
   })
 })
