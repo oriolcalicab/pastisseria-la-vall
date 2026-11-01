@@ -84,3 +84,20 @@ Feature: Public products list
     Given a visitor
     When the visitor calls "/api/products?diet=keto"
     Then the backend responds 400
+
+    
+  Scenario: Visitor filters by diet in the page
+    Given a visitor on "/productes"
+    When the visitor checks "Vegà"
+    Then only the vegan products are shown
+
+  Scenario: No product matches the diets
+    Given no product matches the selected diets
+    When a visitor checks them
+    Then the page shows "No hi ha cap producte amb aquests filtres."
+    And the visitor can remove the filters
+
+  Scenario: Changing a diet goes back to the first page
+    Given a visitor on the second page of products
+    When the visitor checks a diet
+    Then the first page is shown
