@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -181,5 +181,55 @@ describe('CartPage', () => {
     // Then the visitor is warned and the cart does not change
     expect(screen.getByRole('alert')).toHaveTextContent("No s'ha pogut comprovar el carretó.")
     expect(loadCart()).toEqual([cake])
+  })
+
+    it('adjusts the quantity when there is not enough stock', async () => {
+    // Given more units than the stock
+    saveCart([{ ...cake, quantity: 9 }])
+    vi.mocked(validateCart).mockResolvedValue({
+      lines: [{ ...cake, quantity: 3 }],
+      warnings: [{ variantId: 12, type: 'quantity_reduced' }],
+      totalCents: 11700,
+    })
+
+    // When the page is shown
+    await renderPage()
+
+    // Then the visitor is warned and the quantity is the stock
+    expect(screen.getByRole('alert')).toHaveTextContent('No queden prou unitats')
+    expect(screen.getByLabelText(`Quantitat de ${cakeLabel}`)).toHaveTextContent('3')
+  })
+
+  it('keeps the updated cart after reloading the page', async () => {
+    // Given a cart that was adjusted by the backend
+    saveCart([{ ...cake, quantity: 9 }])
+    vi.mocked(validateCart).mockResolvedValueOnce({
+      lines: [{ ...cake, quantity: 3 }],
+      warnings: [{ variantId: 12, type: 'quantity_reduced' }],
+      totalCents: 11700,
+    })
+    await renderPage()
+
+    // When the page is loaded again
+    cleanup()
+    await renderPage()
+
+    // Then the adjusted quantity is kept and there is nothing to warn about
+    expect(screen.getByLabelText(`Quantitat de ${cakeLabel}`)).toHaveTextContent('3')
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('does not validate again when the quantity changes', async () => {
+    // Given a validated cart
+    saveCart([cake])
+    await renderPage()
+
+    // When the visitor adds a unit
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: `Afegeix una unitat de ${cakeLabel}` }))
+
+    // Then the backend was only called when the page was opened
+    expect(validateCart).toHaveBeenCalledOnce()
   })
 })

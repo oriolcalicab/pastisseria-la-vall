@@ -71,3 +71,16 @@ Feature: Cart
     When the visitor opens "/carreto"
     Then the cart does not change
     And the page warns that it could not be checked
+
+    
+  Scenario: Empty cart
+    Given an empty cart
+    When the visitor opens "/carreto"
+    Then the page shows "El teu carretó està buit."
+    And the cart is not sent to the backend
+
+  Scenario: Keep the adjusted cart after reloading
+    Given a cart that the backend adjusted
+    When the visitor reloads the page
+    Then the adjusted cart is kept
+    And there are no warnings
