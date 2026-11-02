@@ -13,11 +13,19 @@ import AdminProductsPage from './pages/admin/AdminProductsPage'
 import NewProductPage from './pages/admin/NewProductPage'
 import ProductsPage from './pages/catalog/ProductsPage'
 import ProductDetailPage from './pages/catalog/ProductDetailPage'
+import ShopLayout from './components/ShopLayout'
+import CartPage from './pages/cart/CartPage'
 
 export const router = createBrowserRouter([
-  { path: '/', element: <HomePage /> },
-  { path: '/productes', element: <ProductsPage /> },
-  { path: '/productes/:id', element: <ProductDetailPage /> },
+   {
+    element: <ShopLayout />,
+    children: [
+      { path: '/', element: <HomePage /> },
+      { path: '/productes', element: <ProductsPage /> },
+      { path: '/productes/:id', element: <ProductDetailPage /> },
+      { path: '/carreto', element: <CartPage /> },
+    ],
+  },
   { path: '/login', element: <LoginPage /> },
   { path: '/registre', element: <RegisterPage /> },
   {
