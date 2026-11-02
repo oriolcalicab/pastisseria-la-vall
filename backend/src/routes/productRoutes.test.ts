@@ -152,4 +152,14 @@ describe('GET /api/products', () => {
     expect(response.status).toBe(400)
     expect(getPublicProduct).not.toHaveBeenCalled()
   })
+
+    it('responds 400 when the id is too big for the database', async () => {
+    // Given a visitor
+    // When the visitor uses an id bigger than the database can store
+    const response = await fetch(`${server.baseUrl}/api/products/2147483648`)
+
+    // Then the request is rejected and the database is not queried
+    expect(response.status).toBe(400)
+    expect(getPublicProduct).not.toHaveBeenCalled()
+  })
 })
