@@ -38,7 +38,13 @@ Feature: Public product detail
     Then that variant shows "Esgotat" and can not be chosen
     And the first variant in stock is selected
 
-  Scenario: Product not available
+   Scenario: Product not available
     Given a product that is not available
     When a visitor opens its page
-    Then the page shows "Aquest producte no està disponible"
+    Then the page shows "Pàgina no trobada"
+
+  Scenario: Unknown route
+    Given a visitor
+    When the visitor opens a route that does not exist
+    Then the page shows "Pàgina no trobada"
+    And the visitor can go to the products
