@@ -130,4 +130,18 @@ describe('ProductDetailPage', () => {
     expect(screen.getByText('Esgotat', { selector: 'p' })).toBeInTheDocument()
     expect(screen.getByRole('radio', { name: /6 racions/ })).not.toBeChecked()
   })
+
+    it('has a link back to the products', () => {
+    // Given a product
+    showProduct()
+
+    // When the page is opened
+    renderPage()
+
+    // Then the user can go back to the list
+    expect(screen.getByRole('link', { name: '« Torna als productes' })).toHaveAttribute(
+      'href',
+      '/productes',
+    )
+  })
 })

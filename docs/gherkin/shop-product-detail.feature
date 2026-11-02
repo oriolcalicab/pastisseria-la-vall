@@ -48,3 +48,14 @@ Feature: Public product detail
     When the visitor opens a route that does not exist
     Then the page shows "Pàgina no trobada"
     And the visitor can go to the products
+
+    
+  Scenario: Inactive variant
+    Given a product with an active and an inactive variant
+    When a visitor opens the product page
+    Then only the active variant can be chosen
+
+  Scenario: Id too big
+    Given a visitor
+    When the visitor calls "/api/products/2147483648"
+    Then the backend responds 400

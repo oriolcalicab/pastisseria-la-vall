@@ -404,4 +404,21 @@ describe('getPublicProduct', () => {
       variants: [{ id: 12, name: '6 racions', priceCents: 3900, inStock: true }],
     })
   })
+
+    it('only returns the active variants', async () => {
+    // Given a product
+    vi.mocked(prisma.product.findFirst).mockResolvedValue(null)
+
+    // When the product is requested
+    await getPublicProduct(7)
+
+    // Then the inactive variants are left out
+    expect(prisma.product.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: expect.objectContaining({
+          variants: expect.objectContaining({ where: { isActive: true } }),
+        }),
+      }),
+    )
+  })
 })
