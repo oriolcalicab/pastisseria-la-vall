@@ -64,4 +64,21 @@ describe('useProduct', () => {
     await waitFor(() => expect(result.current.status).toBe('success'))
     expect(fetchProduct).toHaveBeenCalledTimes(2)
   })
+
+    it('asks for the new product when the id changes', async () => {
+    // Given a loaded product
+    vi.mocked(fetchProduct).mockResolvedValue(product)
+    const { result, rerender } = renderHook(({ id }) => useProduct(id), {
+      initialProps: { id: '7' },
+    })
+    await waitFor(() => expect(result.current.status).toBe('success'))
+
+    // When the id changes
+    rerender({ id: '8' })
+
+    // Then it is loading again and the new product is requested
+    expect(result.current.status).toBe('loading')
+    await waitFor(() => expect(result.current.status).toBe('success'))
+    expect(fetchProduct).toHaveBeenLastCalledWith('8')
+  })
 })
