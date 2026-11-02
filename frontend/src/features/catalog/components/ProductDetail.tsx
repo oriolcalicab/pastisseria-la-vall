@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { formatPrice } from '../../../lib/formatPrice'
 import type { Product } from '../types/product'
+import { useCart } from '../../cart/hooks/useCart'
 import { getDefaultVariant } from '../utils/defaultVariant'
 import { getProductImageUrl } from '../utils/productImage'
 import VariantSelector from './VariantSelector'
@@ -17,9 +19,32 @@ const getDietLabels = (product: Product) =>
   ].filter((label) => label !== false)
 
 const ProductDetail = ({ product }: ProductDetailProps) => {
-  const [selectedId, setSelectedId] = useState(() => getDefaultVariant(product.variants)?.id ?? null)
+  const [selectedId, setSelectedId] = useState(
+    () => getDefaultVariant(product.variants)?.id ?? null,
+  )
   const selectedVariant = product.variants.find((variant) => variant.id === selectedId)
   const dietLabels = getDietLabels(product)
+  const { addItem } = useCart()
+  const [isAdded, setIsAdded] = useState(false)
+
+  const handleSelect = (id: number) => {
+    setSelectedId(id)
+    setIsAdded(false)
+  }
+
+  const handleAdd = () => {
+    if (!selectedVariant) return
+
+    addItem({
+      variantId: selectedVariant.id,
+      productId: product.id,
+      productName: product.name,
+      variantName: selectedVariant.name,
+      priceCents: selectedVariant.priceCents,
+      imageUrl: product.imageUrl,
+    })
+    setIsAdded(true)
+  }
 
   return (
     <article className="mt-4 grid gap-8 md:grid-cols-2">
@@ -55,9 +80,26 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
           <VariantSelector
             variants={product.variants}
             selectedId={selectedId}
-            onSelect={setSelectedId}
+            onSelect={handleSelect}
           />
         </div>
+        <button
+          type="button"
+          onClick={handleAdd}
+          disabled={!selectedVariant}
+          className="mt-6 rounded bg-gray-900 px-4 py-2 text-white disabled:opacity-50"
+        >
+          Afegeix al carretó
+        </button>
+
+        {isAdded && (
+          <p role="status" className="mt-3 text-sm text-green-800">
+            Afegit al carretó ·{' '}
+            <Link to="/carreto" className="underline">
+              Veure el carretó
+            </Link>
+          </p>
+        )}
       </div>
     </article>
   )

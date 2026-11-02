@@ -5,6 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useProduct } from '../../features/catalog/hooks/useProduct'
 import type { Product } from '../../features/catalog/types/product'
 import ProductDetailPage from './ProductDetailPage'
+import { CartProvider } from '../../features/cart/CartProvider'
+import { loadCart } from '../../features/cart/services/cartStorage'
 
 vi.mock('../../features/catalog/hooks/useProduct', () => ({ useProduct: vi.fn() }))
 
@@ -29,11 +31,13 @@ const product: Product = {
 
 const renderPage = () =>
   render(
-    <MemoryRouter initialEntries={['/productes/7']}>
-      <Routes>
-        <Route path="/productes/:id" element={<ProductDetailPage />} />
-      </Routes>
-    </MemoryRouter>,
+    <CartProvider>
+      <MemoryRouter initialEntries={['/productes/7']}>
+        <Routes>
+          <Route path="/productes/:id" element={<ProductDetailPage />} />
+        </Routes>
+      </MemoryRouter>
+    </CartProvider>,
   )
 
 const showProduct = (shownProduct: Product = product) =>
@@ -42,6 +46,7 @@ const showProduct = (shownProduct: Product = product) =>
 describe('ProductDetailPage', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    localStorage.clear()
   })
 
   it('asks for the product of the URL while it is loading', () => {
@@ -69,7 +74,7 @@ describe('ProductDetailPage', () => {
     expect(retry).toHaveBeenCalledOnce()
   })
 
-    it('shows the not found page when the product does not exist', () => {
+  it('shows the not found page when the product does not exist', () => {
     // Given a product that does not exist
     vi.mocked(useProduct).mockReturnValue({ status: 'not-found', retry })
 
@@ -131,7 +136,7 @@ describe('ProductDetailPage', () => {
     expect(screen.getByRole('radio', { name: /6 racions/ })).not.toBeChecked()
   })
 
-    it('has a link back to the products', () => {
+  it('has a link back to the products', () => {
     // Given a product
     showProduct()
 
@@ -143,5 +148,58 @@ describe('ProductDetailPage', () => {
       'href',
       '/productes',
     )
+  })
+
+    it('adds the chosen variant to the cart', async () => {
+    // Given a product with a variant chosen
+    showProduct()
+    renderPage()
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('radio', { name: /14 racions/ }))
+
+    // When the visitor adds it to the cart
+    await user.click(screen.getByRole('button', { name: 'Afegeix al carretó' }))
+
+    // Then that variant is in the cart and the page confirms it
+    expect(loadCart()).toEqual([
+      {
+        variantId: 13,
+        productId: 7,
+        productName: 'Pastís de xocolata',
+        variantName: '14 racions',
+        priceCents: 6500,
+        imageUrl: null,
+        quantity: 1,
+      },
+    ])
+    expect(screen.getByRole('link', { name: 'Veure el carretó' })).toHaveAttribute(
+      'href',
+      '/carreto',
+    )
+  })
+
+  it('hides the confirmation when another variant is chosen', async () => {
+    // Given a variant that was just added
+    showProduct()
+    renderPage()
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: 'Afegeix al carretó' }))
+
+    // When the visitor chooses another variant
+    await user.click(screen.getByRole('radio', { name: /14 racions/ }))
+
+    // Then the confirmation is gone
+    expect(screen.queryByRole('link', { name: 'Veure el carretó' })).not.toBeInTheDocument()
+  })
+
+  it('does not let the visitor add a sold out product', () => {
+    // Given a product with all the variants sold out
+    showProduct({ ...product, variants: [{ ...product.variants[0]! }] })
+
+    // When the page is opened
+    renderPage()
+
+    // Then the button can not be used
+    expect(screen.getByRole('button', { name: 'Afegeix al carretó' })).toBeDisabled()
   })
 })
