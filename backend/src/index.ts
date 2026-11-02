@@ -5,6 +5,7 @@ import authRouter from './routes/authRoutes.js'
 import adminRouter from './routes/adminRoutes.js'
 import categoryRouter from './routes/categoryRoutes.js'
 import productRouter from './routes/productRoutes.js'
+import cartRouter from './routes/cartRoutes.js'
 
 const app = express()
 const port = process.env.PORT ?? 3000
@@ -15,6 +16,7 @@ app.use('/api/auth', authRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api/categories', categoryRouter)
 app.use('/api/products', productRouter)
+app.use('/api/cart', cartRouter)
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' })
