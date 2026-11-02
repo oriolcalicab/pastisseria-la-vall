@@ -105,4 +105,27 @@ describe('reconcileCart', () => {
     expect(result.lines).toEqual([validLine])
     expect(result.warnings).toEqual([{ variantId: 99, type: 'unavailable' }])
   })
+
+    it('returns an empty cart when there are no lines', () => {
+    // Given an empty cart
+    // When the cart is reconciled
+    // Then there are no lines, warnings or total
+    expect(reconcileCart([], [])).toEqual({ lines: [], warnings: [], totalCents: 0 })
+  })
+
+  it('gives two warnings when the price and the stock changed', () => {
+    // Given a line with too many units and an old price
+    const changedVariant = { ...variant, priceCents: 4200, stock: 1 }
+
+    // When the cart is reconciled
+    const result = reconcileCart([{ ...requested, quantity: 2 }], [changedVariant])
+
+    // Then both changes are applied and explained
+    expect(result.lines[0]).toMatchObject({ quantity: 1, priceCents: 4200 })
+    expect(result.warnings).toEqual([
+      { variantId: 12, type: 'quantity_reduced' },
+      { variantId: 12, type: 'price_changed' },
+    ])
+    expect(result.totalCents).toBe(4200)
+  })
 })

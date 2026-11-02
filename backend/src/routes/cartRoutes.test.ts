@@ -59,4 +59,17 @@ describe('POST /api/cart/validate', () => {
     expect(await response.json()).toEqual({ error: 'El carretó no és vàlid' })
     expect(validateCart).not.toHaveBeenCalled()
   })
+
+    it('accepts an empty cart', async () => {
+    // Given an empty validated cart
+    const result = { lines: [], warnings: [], totalCents: 0 }
+    vi.mocked(validateCart).mockResolvedValue(result)
+
+    // When a visitor validates an empty cart
+    const response = await validate({ lines: [] })
+
+    // Then the empty cart is returned
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual(result)
+  })
 })
