@@ -1,14 +1,30 @@
 import { Link } from 'react-router-dom'
 import CartLineItem from '../../features/cart/components/CartLineItem'
 import { useCart } from '../../features/cart/hooks/useCart'
+import { useCartValidation } from '../../features/cart/hooks/useCartValidation'
 import { formatPrice } from '../../lib/formatPrice'
 
 const CartPage = () => {
   const { lines, totalCents, setQuantity, removeItem } = useCart()
+  const { notices, hasFailed } = useCartValidation()
 
   return (
     <main className="mx-auto max-w-3xl p-4 sm:p-8">
       <h1 className="text-3xl font-bold">El teu carretó</h1>
+
+      {notices.length > 0 && (
+        <ul role="alert" className="mt-4 space-y-1 rounded border border-yellow-300 bg-yellow-50 p-4">
+          {notices.map((notice) => (
+            <li key={notice}>{notice}</li>
+          ))}
+        </ul>
+      )}
+
+      {hasFailed && (
+        <p role="alert" className="mt-4 text-sm text-red-600">
+          No s'ha pogut comprovar el carretó. Els preus i l'stock podrien no estar actualitzats.
+        </p>
+      )}
 
       {lines.length === 0 ? (
         <div className="mt-6">

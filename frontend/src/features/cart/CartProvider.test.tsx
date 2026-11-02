@@ -90,6 +90,19 @@ describe('CartProvider', () => {
     expect(loadCart()).toEqual([])
   })
 
+    it('replaces the lines and saves them', () => {
+    // Given a cart with a product
+    const { result } = renderCart()
+    act(() => result.current.addItem(cake))
+
+    // When the lines are replaced
+    act(() => result.current.replaceLines([{ ...cake, priceCents: 4200, quantity: 2 }]))
+
+    // Then the totals use the new lines and they are saved
+    expect(result.current.totalCents).toBe(8400)
+    expect(loadCart()[0]?.priceCents).toBe(4200)
+  })
+
   it('fails when useCart is used outside the provider', () => {
     // Given no provider
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
