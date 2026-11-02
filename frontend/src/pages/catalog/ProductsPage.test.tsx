@@ -5,6 +5,7 @@ import { useProducts } from '../../features/catalog/hooks/useProducts'
 import type { ProductPage } from '../../features/catalog/types/product'
 import ProductsPage from './ProductsPage'
 import noProductImage from '../../assets/no-product.svg'
+import { MemoryRouter } from 'react-router-dom'
 
 vi.mock('../../features/catalog/hooks/useProducts', () => ({ useProducts: vi.fn() }))
 
@@ -35,6 +36,13 @@ const productPage = (overrides: Partial<ProductPage> = {}): ProductPage => ({
   ...overrides,
 })
 
+const renderPage = () =>
+  render(
+    <MemoryRouter>
+      <ProductsPage />
+    </MemoryRouter>,
+  )
+
 describe('ProductsPage', () => {
   beforeEach(() => {
     vi.resetAllMocks()
@@ -45,7 +53,7 @@ describe('ProductsPage', () => {
     vi.mocked(useProducts).mockReturnValue({ status: 'loading', retry })
 
     // When the page is shown
-    render(<ProductsPage />)
+    renderPage()
 
     // Then the loading message is shown
     expect(screen.getByText('Carregant productes...')).toBeInTheDocument()
@@ -54,7 +62,7 @@ describe('ProductsPage', () => {
   it('shows an error and lets the user retry', async () => {
     // Given the products could not be loaded
     vi.mocked(useProducts).mockReturnValue({ status: 'error', retry })
-    render(<ProductsPage />)
+    renderPage()
 
     // When the user clicks retry
     await userEvent.setup().click(screen.getByRole('button', { name: 'Torna-ho a provar' }))
@@ -70,7 +78,7 @@ describe('ProductsPage', () => {
     vi.mocked(useProducts).mockReturnValue({ status: 'success', data, retry })
 
     // When the page is shown
-    render(<ProductsPage />)
+    renderPage()
 
     // Then the empty message is shown
     expect(screen.getByText('De moment no hi ha cap producte disponible.')).toBeInTheDocument()
@@ -81,7 +89,7 @@ describe('ProductsPage', () => {
     vi.mocked(useProducts).mockReturnValue({ status: 'success', data: productPage(), retry })
 
     // When the page is shown
-    render(<ProductsPage />)
+    renderPage()
 
     // Then the card shows the image, the name and the lowest price
     expect(screen.getByRole('img', { name: 'Pastís de xocolata' })).toHaveAttribute(
@@ -96,23 +104,23 @@ describe('ProductsPage', () => {
     // Given a first page of two
     const data = productPage({ total: 13, totalPages: 2 })
     vi.mocked(useProducts).mockReturnValue({ status: 'success', data, retry })
-    render(<ProductsPage />)
+    renderPage()
 
     // When the user clicks next
     await userEvent.setup().click(screen.getByRole('button', { name: 'Següent »' }))
 
     // Then the second page is requested
-        expect(useProducts).toHaveBeenLastCalledWith({ page: 2, diet: '' })
+    expect(useProducts).toHaveBeenLastCalledWith({ page: 2, diet: '' })
   })
 
-    it('shows the placeholder when the product has no image', () => {
+  it('shows the placeholder when the product has no image', () => {
     // Given a product without image
     const [product] = productPage().items
     const data = productPage({ items: [{ ...product!, imageUrl: null }] })
     vi.mocked(useProducts).mockReturnValue({ status: 'success', data, retry })
 
     // When the page is shown
-    render(<ProductsPage />)
+    renderPage()
 
     // Then the card shows the placeholder image
     expect(screen.getByRole('img', { name: 'Pastís de xocolata' })).toHaveAttribute(
@@ -126,16 +134,16 @@ describe('ProductsPage', () => {
     vi.mocked(useProducts).mockReturnValue({ status: 'success', data: productPage(), retry })
 
     // When the page is shown
-    render(<ProductsPage />)
+    renderPage()
 
     // Then there are no page buttons
     expect(screen.queryByRole('navigation', { name: 'Paginació' })).not.toBeInTheDocument()
   })
 
-    it('combines the diets and removes them when unchecked', async () => {
+  it('combines the diets and removes them when unchecked', async () => {
     // Given the products page
     vi.mocked(useProducts).mockReturnValue({ status: 'success', data: productPage(), retry })
-    render(<ProductsPage />)
+    renderPage()
     const user = userEvent.setup()
 
     // When the visitor checks two diets
@@ -156,7 +164,7 @@ describe('ProductsPage', () => {
     // Given the second page of products
     const data = productPage({ total: 13, totalPages: 2 })
     vi.mocked(useProducts).mockReturnValue({ status: 'success', data, retry })
-    render(<ProductsPage />)
+    renderPage()
     const user = userEvent.setup()
     await user.click(screen.getByRole('button', { name: 'Següent »' }))
 
@@ -171,7 +179,7 @@ describe('ProductsPage', () => {
     // Given no product matches the filters
     const data = productPage({ items: [], total: 0, totalPages: 0 })
     vi.mocked(useProducts).mockReturnValue({ status: 'success', data, retry })
-    render(<ProductsPage />)
+    renderPage()
     const user = userEvent.setup()
     await user.click(screen.getByRole('checkbox', { name: 'Vegà' }))
     expect(screen.getByText('No hi ha cap producte amb aquests filtres.')).toBeInTheDocument()
@@ -184,11 +192,11 @@ describe('ProductsPage', () => {
     expect(screen.getByRole('checkbox', { name: 'Vegà' })).not.toBeChecked()
   })
 
-    it('keeps the diets when going to the next page', async () => {
+  it('keeps the diets when going to the next page', async () => {
     // Given a filtered list with two pages
     const data = productPage({ total: 13, totalPages: 2 })
     vi.mocked(useProducts).mockReturnValue({ status: 'success', data, retry })
-    render(<ProductsPage />)
+    renderPage()
     const user = userEvent.setup()
     await user.click(screen.getByRole('checkbox', { name: 'Vegà' }))
 
@@ -197,5 +205,16 @@ describe('ProductsPage', () => {
 
     // Then the second page of the same filter is requested
     expect(useProducts).toHaveBeenLastCalledWith({ page: 2, diet: 'vegan' })
+  })
+
+    it('links each card to its detail page', () => {
+    // Given a product
+    vi.mocked(useProducts).mockReturnValue({ status: 'success', data: productPage(), retry })
+
+    // When the page is shown
+    renderPage()
+
+    // Then the card opens the detail of the product
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/productes/1')
   })
 })

@@ -12,10 +12,12 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminProductsPage from './pages/admin/AdminProductsPage'
 import NewProductPage from './pages/admin/NewProductPage'
 import ProductsPage from './pages/catalog/ProductsPage'
+import ProductDetailPage from './pages/catalog/ProductDetailPage'
 
 export const router = createBrowserRouter([
   { path: '/', element: <HomePage /> },
   { path: '/productes', element: <ProductsPage /> },
+  { path: '/productes/:id', element: <ProductDetailPage /> },
   { path: '/login', element: <LoginPage /> },
   { path: '/registre', element: <RegisterPage /> },
   {

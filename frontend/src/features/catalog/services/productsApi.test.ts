@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fetchProducts } from './productsApi'
+import { fetchProducts, fetchProduct } from './productsApi'
 
 describe('fetchProducts', () => {
   afterEach(() => {
@@ -41,5 +41,55 @@ describe('fetchProducts', () => {
 
     // Then the URL has the diets
     expect(fetchMock.mock.calls[0]?.[0]).toContain('diet=vegan%2Cgluten_free')
+  })
+})
+
+describe('fetchProduct', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('returns the product', async () => {
+    // Given a backend with the product
+    const product = { id: 7, name: 'Pastís de xocolata' }
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => product })
+    vi.stubGlobal('fetch', fetchMock)
+
+    // When the product is requested
+    const result = await fetchProduct('7')
+
+    // Then the product is returned
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/\/api\/products\/7$/))
+    expect(result).toEqual(product)
+  })
+
+  it('encodes the id of the URL', async () => {
+    // Given a text in the address instead of an id
+    const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 400 })
+    vi.stubGlobal('fetch', fetchMock)
+
+    // When the product is requested
+    await fetchProduct('../admin')
+
+    // Then the text can not change the path of the request
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/api/products/..%2Fadmin'))
+  })
+
+  it.each([400, 404])('returns null when the backend answers %i', async (status) => {
+    // Given a backend that does not find the product
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status }))
+
+    // When the product is requested
+    // Then there is no product
+    await expect(fetchProduct('9999')).resolves.toBeNull()
+  })
+
+  it('throws when the backend fails', async () => {
+    // Given a backend that fails
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500 }))
+
+    // When the product is requested
+    // Then the call fails
+    await expect(fetchProduct('7')).rejects.toThrow()
   })
 })
