@@ -69,17 +69,16 @@ describe('ProductDetailPage', () => {
     expect(retry).toHaveBeenCalledOnce()
   })
 
-  it('tells when the product is not available', () => {
+    it('shows the not found page when the product does not exist', () => {
     // Given a product that does not exist
     vi.mocked(useProduct).mockReturnValue({ status: 'not-found', retry })
 
     // When the page is opened
     renderPage()
 
-    // Then the message is shown
-    expect(
-      screen.getByRole('heading', { name: 'Aquest producte no està disponible' }),
-    ).toBeInTheDocument()
+    // Then the not found page is shown
+    expect(screen.getByRole('heading', { name: 'Pàgina no trobada' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: '« Torna als productes' })).not.toBeInTheDocument()
   })
 
   it('shows the product with the first variant in stock selected', () => {

@@ -1,10 +1,13 @@
 import { Link, useParams } from 'react-router-dom'
 import ProductDetail from '../../features/catalog/components/ProductDetail'
 import { useProduct } from '../../features/catalog/hooks/useProduct'
+import NotFoundPage from '../errors/NotFoundPage'
 
 const ProductDetailPage = () => {
   const { id = '' } = useParams()
   const product = useProduct(id)
+  
+  if (product.status === 'not-found') return <NotFoundPage />
 
   return (
     <main className="mx-auto max-w-5xl p-4 sm:p-8">
@@ -25,11 +28,7 @@ const ProductDetailPage = () => {
             Torna-ho a provar
           </button>
         </div>
-      )}
-
-      {product.status === 'not-found' && (
-        <h1 className="mt-6 text-2xl font-bold">Aquest producte no està disponible</h1>
-      )}
+      )}      
 
       {product.status === 'success' && (
         <ProductDetail key={product.product.id} product={product.product} />
