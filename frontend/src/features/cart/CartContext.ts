@@ -9,6 +9,7 @@ export type CartContextValue = {
   setQuantity: (variantId: number, quantity: number) => void
   removeItem: (variantId: number) => void
   clear: () => void
+  replaceLines: (lines: CartLine[]) => void
 }
 
 export const CartContext = createContext<CartContextValue | undefined>(undefined)

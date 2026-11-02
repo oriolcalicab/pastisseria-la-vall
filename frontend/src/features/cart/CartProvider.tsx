@@ -28,8 +28,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
   const setQuantity = (variantId: number, quantity: number) =>
     setLines((current) => setLineQuantity(current, variantId, quantity))
 
-  const removeItem = (variantId: number) =>
-    setLines((current) => removeLine(current, variantId))
+  const removeItem = (variantId: number) => setLines((current) => removeLine(current, variantId))
 
   const clear = () => setLines([])
 
@@ -41,6 +40,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
     setQuantity,
     removeItem,
     clear,
+    replaceLines: setLines,
   }
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
