@@ -19,3 +19,24 @@ Feature: Cart
     Given a saved cart that is not valid
     When the visitor opens the shop
     Then the cart is empty and the page works
+
+    
+  Scenario: Add from the product page
+    Given a product page with a variant chosen
+    When the visitor clicks "Afegeix al carretó"
+    Then the variant is in the cart
+    And the header count goes up
+
+  Scenario: Change the quantity
+    Given a line in the cart
+    When the visitor clicks "+"
+    Then the subtotal and the total change
+
+  Scenario: Minimum quantity
+    Given a line with one unit
+    Then the "−" button is disabled
+
+  Scenario: Remove a line
+    Given a cart with one line
+    When the visitor clicks "Elimina"
+    Then the page shows "El teu carretó està buit."
