@@ -25,3 +25,20 @@ Feature: Public product detail
     Given a visitor
     When the visitor calls "/api/products/abc"
     Then the backend responds 400
+
+    
+  Scenario: Visitor chooses a variant
+    Given a product page with two variants in stock
+    When the visitor chooses the other variant
+    Then the price changes
+
+  Scenario: Sold out variant
+    Given a product with a variant without stock
+    When a visitor opens the product page
+    Then that variant shows "Esgotat" and can not be chosen
+    And the first variant in stock is selected
+
+  Scenario: Product not available
+    Given a product that is not available
+    When a visitor opens its page
+    Then the page shows "Aquest producte no està disponible"
