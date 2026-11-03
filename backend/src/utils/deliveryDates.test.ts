@@ -127,4 +127,25 @@ describe('getDeliveryDay', () => {
       getDeliveryDay('2026-11-04', { ...custom, orderCounts: new Map([['2026-11-04', 1]]) }).reason,
     ).toBe('full')
   })
+
+    it('gives the first reason when several rules block the day', () => {
+    // Given a Sunday that is also a holiday and is full
+    const custom = rules({
+      closedDates: new Set(['2026-11-15']),
+      orderCounts: new Map([['2026-11-15', 5]]),
+    })
+
+    // When the day is checked
+    // Then the reason is that it is Sunday
+    expect(getDeliveryDay('2026-11-15', custom).reason).toBe('sunday')
+  })
+
+  it('blocks a day with more orders than the maximum', () => {
+    // Given a day with 6 orders, for example after the maximum was lowered
+    const orderCounts = new Map([['2026-11-06', 6]])
+
+    // When the day is checked
+    // Then it is full
+    expect(getDeliveryDay('2026-11-06', rules({ orderCounts })).reason).toBe('full')
+  })
 })
