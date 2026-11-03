@@ -42,3 +42,14 @@ Feature: Delivery dates
   Scenario: Invalid month
     When a visitor calls "/api/delivery-dates?month=2026-13"
     Then the backend responds 400
+
+    
+  Scenario: Several rules block the same day
+    Given Sunday 15 November is also a holiday and full
+    When a visitor asks for the delivery dates of November
+    Then 15 November is blocked because it is Sunday
+
+  Scenario: More orders than the maximum
+    Given 6 orders for 6 November and a maximum of 5
+    When a visitor asks for the delivery dates of November
+    Then 6 November is blocked because it is full
