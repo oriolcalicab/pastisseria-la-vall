@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { DeliveryRules } from '../types/delivery.js'
-import { getDeliveryDay, getMadridNowMs, getMonthDays } from './deliveryDates.js'
+import { getCurrentMonth, getDeliveryDay, getMadridNowMs, getMonthDays } from './deliveryDates.js'
 
 const rules = (overrides: Partial<DeliveryRules> = {}): DeliveryRules => ({
   nowMs: Date.UTC(2026, 10, 2, 10, 0),
@@ -24,6 +24,15 @@ describe('getMadridNowMs', () => {
     // When it is converted to the time in Barcelona
     // Then it is two hours later than UTC
     expect(getMadridNowMs(new Date('2026-07-01T10:00:00Z'))).toBe(Date.UTC(2026, 6, 1, 12, 0))
+  })
+})
+
+describe('getCurrentMonth', () => {
+  it('uses the month in Barcelona', () => {
+    // Given the last night of October in UTC, already November in Barcelona
+    // When the current month is calculated
+    // Then it is November
+    expect(getCurrentMonth(new Date('2026-10-31T23:30:00Z'))).toBe('2026-11')
   })
 })
 

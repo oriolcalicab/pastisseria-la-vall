@@ -28,6 +28,9 @@ export const getMadridNowMs = (now: Date): number => {
   )
 }
 
+export const getCurrentMonth = (now: Date): string =>
+  new Date(getMadridNowMs(now)).toISOString().slice(0, 7)
+
 export const getMonthDays = (month: string): string[] => {
   const year = Number(month.slice(0, 4))
   const monthNumber = Number(month.slice(5, 7))
