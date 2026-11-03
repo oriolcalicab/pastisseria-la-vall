@@ -147,4 +147,25 @@ describe('DeliveryCalendar', () => {
     expect(screen.getByRole('heading', { name: /desembre/ })).toBeInTheDocument()
     expect(previous).toBeEnabled()
   })
+
+    it.each([
+    ['a holiday', '2026-11-11', 'closed', /és festiu/],
+    ['a full day', '2026-11-12', 'full', /no queden places/],
+  ] as const)('explains why %s can not be chosen', (_case, date, reason, label) => {
+    // Given a day blocked for this reason
+    const days = novemberDays.map((day) =>
+      day.date === date ? { date, available: false, reason } : day,
+    )
+    vi.mocked(useDeliveryDates).mockReturnValue({ status: 'success', days, retry })
+
+    // When the calendar is shown
+    renderCalendar()
+
+    // Then the day explains why it is blocked
+    const button = screen
+      .getAllByRole('button')
+      .find((item) => item.dataset.date === date)
+    expect(button).toHaveAttribute('aria-disabled', 'true')
+    expect(button).toHaveAccessibleName(label)
+  })
 })
