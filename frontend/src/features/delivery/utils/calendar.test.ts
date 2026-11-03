@@ -7,6 +7,7 @@ import {
   getDayLabel,
   getMonthLabel,
   getMonthOf,
+  getCurrentMonth,
 } from './calendar'
 
 describe('addMonths', () => {
@@ -89,5 +90,14 @@ describe('labels', () => {
     // When the reason is shown
     // Then the visitor knows why
     expect(blockReasonLabels.sunday).toBe('els diumenges no fem lliuraments')
+  })
+})
+
+describe('getCurrentMonth', () => {
+  it('uses the month in Barcelona', () => {
+    // Given the last night of October in UTC, already November in Barcelona
+    // When the current month is calculated
+    // Then it is November
+    expect(getCurrentMonth(new Date('2026-10-31T23:30:00Z'))).toBe('2026-11')
   })
 })

@@ -15,6 +15,20 @@ const dayFormatter = new Intl.DateTimeFormat('ca-ES', {
   timeZone: 'UTC',
 })
 
+const madridMonthFormatter = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Europe/Madrid',
+  year: 'numeric',
+  month: '2-digit',
+})
+
+export const getCurrentMonth = (now: Date): string => {
+  const parts = Object.fromEntries(
+    madridMonthFormatter.formatToParts(now).map((part) => [part.type, part.value]),
+  )
+
+  return `${parts.year}-${parts.month}`
+}
+
 const toUtcDate = (date: string) => new Date(`${date}T00:00:00Z`)
 
 const toDateKey = (date: Date) => date.toISOString().slice(0, 10)
