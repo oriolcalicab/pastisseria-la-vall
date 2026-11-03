@@ -66,6 +66,7 @@ describe('CartPage', () => {
       '/productes',
     )
     expect(validateCart).not.toHaveBeenCalled()
+    expect(screen.queryByRole('link', { name: 'Tramita la comanda' })).not.toBeInTheDocument()
   })
 
   it('shows the lines with their subtotal and the total', async () => {
@@ -183,7 +184,7 @@ describe('CartPage', () => {
     expect(loadCart()).toEqual([cake])
   })
 
-    it('adjusts the quantity when there is not enough stock', async () => {
+  it('adjusts the quantity when there is not enough stock', async () => {
     // Given more units than the stock
     saveCart([{ ...cake, quantity: 9 }])
     vi.mocked(validateCart).mockResolvedValue({
@@ -231,5 +232,19 @@ describe('CartPage', () => {
 
     // Then the backend was only called when the page was opened
     expect(validateCart).toHaveBeenCalledOnce()
+  })
+
+    it('offers to go to the checkout', async () => {
+    // Given a cart with products
+    saveCart([cake])
+
+    // When the page is shown
+    await renderPage()
+
+    // Then there is a link to the checkout
+    expect(screen.getByRole('link', { name: 'Tramita la comanda' })).toHaveAttribute(
+      'href',
+      '/checkout',
+    )
   })
 })
