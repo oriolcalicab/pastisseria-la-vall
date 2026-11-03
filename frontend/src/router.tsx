@@ -15,6 +15,7 @@ import ProductsPage from './pages/catalog/ProductsPage'
 import ProductDetailPage from './pages/catalog/ProductDetailPage'
 import ShopLayout from './components/ShopLayout'
 import CartPage from './pages/cart/CartPage'
+import CheckoutPage from './pages/checkout/CheckoutPage'
 
 export const router = createBrowserRouter([
    {
@@ -24,6 +25,10 @@ export const router = createBrowserRouter([
       { path: '/productes', element: <ProductsPage /> },
       { path: '/productes/:id', element: <ProductDetailPage /> },
       { path: '/carreto', element: <CartPage /> },
+            {
+        element: <ProtectedRoute />,
+        children: [{ path: '/checkout', element: <CheckoutPage /> }],
+      },
     ],
   },
   { path: '/login', element: <LoginPage /> },

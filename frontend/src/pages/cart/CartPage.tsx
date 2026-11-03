@@ -13,7 +13,10 @@ const CartPage = () => {
       <h1 className="text-3xl font-bold">El teu carretó</h1>
 
       {notices.length > 0 && (
-        <ul role="alert" className="mt-4 space-y-1 rounded border border-yellow-300 bg-yellow-50 p-4">
+        <ul
+          role="alert"
+          className="mt-4 space-y-1 rounded border border-yellow-300 bg-yellow-50 p-4"
+        >
           {notices.map((notice) => (
             <li key={notice}>{notice}</li>
           ))}
@@ -49,6 +52,14 @@ const CartPage = () => {
           <p className="border-t pt-4 text-right text-xl font-bold">
             Total: {formatPrice(totalCents)}
           </p>
+          <div className="mt-4 text-right">
+            <Link
+              to="/checkout"
+              className="inline-block rounded-sm bg-gray-900 px-4 py-2 text-white"
+            >
+              Tramita la comanda
+            </Link>
+          </div>
         </>
       )}
     </main>
