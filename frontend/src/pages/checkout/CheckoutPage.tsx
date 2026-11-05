@@ -5,14 +5,15 @@ import DeliveryCalendar from '../../features/delivery/components/DeliveryCalenda
 import { getCurrentMonth, getDayLabel } from '../../features/delivery/utils/calendar'
 import { formatPrice } from '../../lib/formatPrice'
 import PickupPoints from '../../features/pickup/components/PickupPoints'
+import type { PickupPoint } from '../../features/pickup/types/pickupPoint'
 
-type CheckoutStep = 'date' | 'method'
+type CheckoutStep = 'date' | 'method' | 'review'
 
 const CheckoutPage = () => {
   const { lines, totalCents } = useCart()
   const [step, setStep] = useState<CheckoutStep>('date')
   const [deliveryDate, setDeliveryDate] = useState<string | null>(null)
-  const [pickupPointId, setPickupPointId] = useState<number | null>(null)
+  const [pickupPoint, setPickupPoint] = useState<PickupPoint | null>(null)
   const [initialMonth] = useState(() => getCurrentMonth(new Date()))
 
   if (lines.length === 0) return <Navigate to="/carreto" replace />
@@ -65,7 +66,49 @@ const CheckoutPage = () => {
               >
                 Canvia la data
               </button>
-              <PickupPoints selectedId={pickupPointId} onSelect={setPickupPointId} />
+              <PickupPoints selectedId={pickupPoint?.id ?? null} onSelect={setPickupPoint} />
+              {!pickupPoint && (
+                <p id="pickup-hint" className="mt-4 text-sm text-gray-600">
+                  Tria un punt de recollida per continuar.
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={() => setStep('review')}
+                disabled={!pickupPoint}
+                aria-describedby={pickupPoint ? undefined : 'pickup-hint'}
+                className="mt-4 rounded-sm bg-gray-900 px-4 py-2 text-white disabled:opacity-50"
+              >
+                Continua
+              </button>
+            </section>
+          )}
+
+          {step === 'review' && deliveryDate && pickupPoint && (
+            <section aria-labelledby="review-title">
+              <h2 id="review-title" className="text-xl font-semibold">
+                Pas 3 · Revisió
+              </h2>
+              <dl className="mt-4 space-y-2">
+                <div>
+                  <dt className="font-medium">Data de lliurament</dt>
+                  <dd>{getDayLabel(deliveryDate)}</dd>
+                </div>
+                <div>
+                  <dt className="font-medium">Recollida</dt>
+                  <dd>
+                    {pickupPoint.name}, {pickupPoint.address}, {pickupPoint.city}
+                  </dd>
+                  <dd className="text-sm text-gray-600">{pickupPoint.openingHours}</dd>
+                </div>
+              </dl>
+              <button
+                type="button"
+                onClick={() => setStep('method')}
+                className="mt-4 text-sm underline"
+              >
+                Canvia el punt de recollida
+              </button>
             </section>
           )}
         </div>

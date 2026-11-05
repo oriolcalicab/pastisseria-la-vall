@@ -45,3 +45,20 @@ Feature: Pickup points
     When the pickup points are shown
     Then the map does not fill the screen
     And the list is below the map
+
+    
+  Scenario: Pickup without a point
+    Given a customer on the second step of the checkout
+    When no pickup point is chosen
+    Then the "Continua" button is disabled
+    And the page shows "Tria un punt de recollida per continuar."
+
+  Scenario: Pickup with a point
+    Given a customer on the second step of the checkout
+    When the customer chooses a pickup point and clicks "Continua"
+    Then the review shows the chosen point with its address
+
+  Scenario: Change the pickup point
+    Given a customer on the review step
+    When the customer clicks "Canvia el punt de recollida"
+    Then the second step is shown with the point still chosen

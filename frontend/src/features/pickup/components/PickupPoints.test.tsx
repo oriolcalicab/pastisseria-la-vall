@@ -82,6 +82,6 @@ describe('PickupPoints', () => {
     await userEvent.setup().click(screen.getByRole('radio', { name: /Punt 2/ }))
 
     // Then the page is told
-    expect(onSelect).toHaveBeenCalledWith(2)
+        expect(onSelect).toHaveBeenCalledWith(points[1])
   })
 })
