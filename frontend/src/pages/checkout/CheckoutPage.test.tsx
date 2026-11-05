@@ -10,11 +10,16 @@ import { saveCart } from '../../features/cart/services/cartStorage'
 import { useDeliveryDates } from '../../features/delivery/hooks/useDeliveryDates'
 import { getCalendarWeeks, getCurrentMonth } from '../../features/delivery/utils/calendar'
 import CheckoutPage from './CheckoutPage'
+import type { PickupPoint } from '../../features/pickup/types/pickupPoint'
 
 vi.mock('../../features/auth/hooks/useAuth', () => ({ useAuth: vi.fn() }))
 vi.mock('../../features/delivery/hooks/useDeliveryDates', () => ({ useDeliveryDates: vi.fn() }))
 vi.mock('../../features/pickup/components/PickupPoints', () => ({
-  default: () => <p>Punts de recollida</p>,
+  default: ({ onSelect }: { onSelect: (point: PickupPoint) => void }) => (
+    <button type="button" onClick={() => onSelect(eixample)}>
+      Tria Eixample
+    </button>
+  ),
 }))
 
 const cartLine = {
@@ -28,6 +33,16 @@ const cartLine = {
 }
 
 const availableDate = `${getCurrentMonth(new Date())}-15`
+
+const eixample: PickupPoint = {
+  id: 2,
+  name: 'La Vall · Eixample',
+  address: 'Carrer de Girona, 84',
+  city: 'Barcelona',
+  latitude: 41.3965,
+  longitude: 2.1675,
+  openingHours: 'De dt. a ds., de 9 a 19 h',
+}
 
 const renderCheckout = () =>
   render(
@@ -151,6 +166,56 @@ describe('CheckoutPage', () => {
     await user.click(screen.getByRole('button', { name: 'Canvia la data' }))
 
     // Then the chosen date is still selected
+    expect(screen.getByRole('button', { name: 'Continua' })).toBeEnabled()
+  })
+
+    const goToPickupStep = async (user: ReturnType<typeof userEvent.setup>) => {
+    login()
+    saveCart([cartLine])
+    renderCheckout()
+    await chooseDate(user)
+    await user.click(screen.getByRole('button', { name: 'Continua' }))
+  }
+
+  it('does not confirm a pickup without a pickup point', async () => {
+    // Given a customer on the second step
+    const user = userEvent.setup()
+    await goToPickupStep(user)
+
+    // When no pickup point is chosen
+    // Then the customer can not continue
+    expect(screen.getByRole('button', { name: 'Continua' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Continua' })).toHaveAccessibleDescription(
+      'Tria un punt de recollida per continuar.',
+    )
+  })
+
+  it('continues to the review with the chosen pickup point', async () => {
+    // Given a customer on the second step
+    const user = userEvent.setup()
+    await goToPickupStep(user)
+
+    // When the customer chooses a pickup point and continues
+    await user.click(screen.getByRole('button', { name: 'Tria Eixample' }))
+    await user.click(screen.getByRole('button', { name: 'Continua' }))
+
+    // Then the review shows the date and the pickup point
+    expect(screen.getByRole('heading', { name: 'Pas 3 · Revisió' })).toBeInTheDocument()
+    expect(screen.getByText('La Vall · Eixample, Carrer de Girona, 84, Barcelona')).toBeInTheDocument()
+    expect(screen.getByText(/15/)).toBeInTheDocument()
+  })
+
+  it('keeps the pickup point when going back', async () => {
+    // Given a customer on the review step
+    const user = userEvent.setup()
+    await goToPickupStep(user)
+    await user.click(screen.getByRole('button', { name: 'Tria Eixample' }))
+    await user.click(screen.getByRole('button', { name: 'Continua' }))
+
+    // When the customer goes back to change the pickup point
+    await user.click(screen.getByRole('button', { name: 'Canvia el punt de recollida' }))
+
+    // Then the point is still chosen
     expect(screen.getByRole('button', { name: 'Continua' })).toBeEnabled()
   })
 })
