@@ -1,1 +1,6 @@
 @import 'tailwindcss';
+
+
+.pickup-marker-selected {
+  filter: hue-rotate(150deg) saturate(1.6);
+}

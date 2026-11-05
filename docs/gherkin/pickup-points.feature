@@ -27,3 +27,21 @@ Feature: Pickup points
     When the customer opens the second step of the checkout
     Then the page shows "No s'han pogut carregar els punts de recollida."
     And the customer can retry
+
+    
+  Scenario: Choose a point in the list
+    Given the pickup points in the checkout
+    When the customer chooses a point in the list
+    Then its marker is highlighted on the map
+    And its popup is opened
+
+  Scenario: Choose a point on the map
+    Given the pickup points in the checkout
+    When the customer clicks a marker on the map
+    Then that point is checked in the list
+
+  Scenario: Map on a phone
+    Given a customer on a phone
+    When the pickup points are shown
+    Then the map does not fill the screen
+    And the list is below the map
