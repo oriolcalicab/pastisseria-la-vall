@@ -33,3 +33,26 @@ Feature: Checkout
     Given a customer on the second step
     When the customer clicks "Canvia la data"
     Then the calendar is shown with the chosen date
+
+    
+  Scenario: Choose the delivery method
+    Given a customer on the second step of the checkout
+    When no delivery method is chosen
+    Then the "Continua" button is disabled
+
+  Scenario: Home delivery with an address of Barcelona
+    Given a customer who chose home delivery
+    When the customer writes an address with the postal code "08036"
+    And clicks "Continua"
+    Then the review shows the address
+
+  Scenario: Home delivery outside Barcelona
+    Given a customer who chose home delivery
+    When the customer writes the postal code "28001"
+    And clicks "Continua"
+    Then the page shows "El codi postal ha de ser de Barcelona (080xx)"
+    And the step does not change
+
+  Scenario: Pickup in a point
+    Given a customer who chose to pick up the order
+    Then the map and the list of pickup points are shown
