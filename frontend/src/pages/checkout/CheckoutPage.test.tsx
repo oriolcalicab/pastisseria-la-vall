@@ -63,9 +63,7 @@ const login = () =>
   vi.mocked(useAuth).mockReturnValue({ user: { uid: 'u1' } as User, isLoading: false })
 
 const chooseDate = (user: ReturnType<typeof userEvent.setup>) => {
-  const day = screen
-    .getAllByRole('button')
-    .find((button) => button.dataset.date === availableDate)
+  const day = screen.getAllByRole('button').find((button) => button.dataset.date === availableDate)
 
   return user.click(day!)
 }
@@ -149,7 +147,9 @@ describe('CheckoutPage', () => {
     await user.click(screen.getByRole('button', { name: 'Continua' }))
 
     // Then the next step shows the chosen date
-    expect(screen.getByRole('heading', { name: 'Pas 2 · Mètode de lliurament' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Pas 2 · Mètode de lliurament' }),
+    ).toBeInTheDocument()
     expect(screen.getByText(/Data de lliurament: .*15/)).toBeInTheDocument()
   })
 
@@ -169,12 +169,13 @@ describe('CheckoutPage', () => {
     expect(screen.getByRole('button', { name: 'Continua' })).toBeEnabled()
   })
 
-    const goToPickupStep = async (user: ReturnType<typeof userEvent.setup>) => {
+  const goToPickupStep = async (user: ReturnType<typeof userEvent.setup>) => {
     login()
     saveCart([cartLine])
     renderCheckout()
     await chooseDate(user)
     await user.click(screen.getByRole('button', { name: 'Continua' }))
+    await user.click(screen.getByRole('radio', { name: /Recollida en un punt/ }))
   }
 
   it('does not confirm a pickup without a pickup point', async () => {
@@ -201,7 +202,9 @@ describe('CheckoutPage', () => {
 
     // Then the review shows the date and the pickup point
     expect(screen.getByRole('heading', { name: 'Pas 3 · Revisió' })).toBeInTheDocument()
-    expect(screen.getByText('La Vall · Eixample, Carrer de Girona, 84, Barcelona')).toBeInTheDocument()
+    expect(
+      screen.getByText('La Vall · Eixample, Carrer de Girona, 84, Barcelona'),
+    ).toBeInTheDocument()
     expect(screen.getByText(/15/)).toBeInTheDocument()
   })
 
@@ -217,5 +220,72 @@ describe('CheckoutPage', () => {
 
     // Then the point is still chosen
     expect(screen.getByRole('button', { name: 'Continua' })).toBeEnabled()
+  })
+
+    const goToMethodStep = async (user: ReturnType<typeof userEvent.setup>) => {
+    login()
+    saveCart([cartLine])
+    renderCheckout()
+    await chooseDate(user)
+    await user.click(screen.getByRole('button', { name: 'Continua' }))
+  }
+
+  it('asks for a delivery method first', async () => {
+    // Given a customer on the second step
+    const user = userEvent.setup()
+    await goToMethodStep(user)
+
+    // When no method is chosen
+    // Then the customer can not continue
+    expect(screen.getByRole('button', { name: 'Continua' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Continua' })).toHaveAccessibleDescription(
+      'Tria com vols rebre la comanda per continuar.',
+    )
+  })
+
+  it('only shows the pickup points for a pickup', async () => {
+    // Given a customer on the second step
+    const user = userEvent.setup()
+    await goToMethodStep(user)
+
+    // When the customer chooses home delivery
+    await user.click(screen.getByRole('radio', { name: /Lliurament a domicili/ }))
+
+    // Then the address form is shown instead of the pickup points
+    expect(screen.getByLabelText('Codi postal')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Tria Eixample' })).not.toBeInTheDocument()
+  })
+
+  it('does not continue with an address outside Barcelona', async () => {
+    // Given a customer who chose home delivery
+    const user = userEvent.setup()
+    await goToMethodStep(user)
+    await user.click(screen.getByRole('radio', { name: /Lliurament a domicili/ }))
+    await user.type(screen.getByLabelText('Adreça'), 'Carrer Major, 1')
+    await user.type(screen.getByLabelText('Codi postal'), '28001')
+
+    // When the customer continues
+    await user.click(screen.getByRole('button', { name: 'Continua' }))
+
+    // Then the postal code is marked and the step does not change
+    expect(screen.getByLabelText('Codi postal')).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByRole('heading', { name: 'Pas 2 · Mètode de lliurament' })).toBeInTheDocument()
+  })
+
+  it('continues to the review with a valid address', async () => {
+    // Given a customer who chose home delivery
+    const user = userEvent.setup()
+    await goToMethodStep(user)
+    await user.click(screen.getByRole('radio', { name: /Lliurament a domicili/ }))
+    await user.type(screen.getByLabelText('Adreça'), 'Carrer de Mallorca, 120')
+    await user.type(screen.getByLabelText('Codi postal'), '08036')
+
+    // When the customer continues
+    await user.click(screen.getByRole('button', { name: 'Continua' }))
+
+    // Then the review shows the address
+    expect(screen.getByRole('heading', { name: 'Pas 3 · Revisió' })).toBeInTheDocument()
+    expect(screen.getByText('Carrer de Mallorca, 120, 08036 Barcelona')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: "Canvia l'adreça" })).toBeInTheDocument()
   })
 })

@@ -1,22 +1,66 @@
 import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useCart } from '../../features/cart/hooks/useCart'
+import AddressForm from '../../features/checkout/components/AddressForm'
+import DeliveryMethodSelector from '../../features/checkout/components/DeliveryMethodSelector'
+import type {
+  DeliveryMethod,
+  ShippingAddress,
+  ShippingAddressErrors,
+} from '../../features/checkout/types/checkout'
+import { validateShippingAddress } from '../../features/checkout/utils/shippingAddress'
 import DeliveryCalendar from '../../features/delivery/components/DeliveryCalendar'
 import { getCurrentMonth, getDayLabel } from '../../features/delivery/utils/calendar'
-import { formatPrice } from '../../lib/formatPrice'
 import PickupPoints from '../../features/pickup/components/PickupPoints'
 import type { PickupPoint } from '../../features/pickup/types/pickupPoint'
+import { formatPrice } from '../../lib/formatPrice'
 
 type CheckoutStep = 'date' | 'method' | 'review'
+
+const emptyAddress: ShippingAddress = { address: '', city: 'Barcelona', postalCode: '' }
+
+const getMethodHint = (method: DeliveryMethod | null, pickupPoint: PickupPoint | null) => {
+  if (!method) return 'Tria com vols rebre la comanda per continuar.'
+  if (method === 'pickup' && !pickupPoint) return 'Tria un punt de recollida per continuar.'
+
+  return null
+}
 
 const CheckoutPage = () => {
   const { lines, totalCents } = useCart()
   const [step, setStep] = useState<CheckoutStep>('date')
   const [deliveryDate, setDeliveryDate] = useState<string | null>(null)
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod | null>(null)
   const [pickupPoint, setPickupPoint] = useState<PickupPoint | null>(null)
+  const [address, setAddress] = useState<ShippingAddress>(emptyAddress)
+  const [addressErrors, setAddressErrors] = useState<ShippingAddressErrors>({})
   const [initialMonth] = useState(() => getCurrentMonth(new Date()))
 
   if (lines.length === 0) return <Navigate to="/carreto" replace />
+
+  const methodHint = getMethodHint(deliveryMethod, pickupPoint)
+
+  const handleAddressChange = (field: keyof ShippingAddress, value: string) => {
+    setAddress((current) => ({ ...current, [field]: value }))
+    setAddressErrors((current) =>
+      Object.fromEntries(Object.entries(current).filter(([key]) => key !== field)),
+    )
+  }
+
+  const handleMethodContinue = () => {
+    if (deliveryMethod === 'delivery') {
+      const result = validateShippingAddress(address)
+
+      if (!result.ok) {
+        setAddressErrors(result.errors)
+        return
+      }
+
+      setAddress(result.address)
+    }
+
+    setStep('review')
+  }
 
   return (
     <main className="mx-auto max-w-5xl p-4 sm:p-8">
@@ -66,17 +110,35 @@ const CheckoutPage = () => {
               >
                 Canvia la data
               </button>
-              <PickupPoints selectedId={pickupPoint?.id ?? null} onSelect={setPickupPoint} />
-              {!pickupPoint && (
-                <p id="pickup-hint" className="mt-4 text-sm text-gray-600">
-                  Tria un punt de recollida per continuar.
+
+              <div className="mt-6">
+                <DeliveryMethodSelector value={deliveryMethod} onChange={setDeliveryMethod} />
+              </div>
+
+              {deliveryMethod === 'delivery' && (
+                <div className="mt-6">
+                  <AddressForm
+                    values={address}
+                    errors={addressErrors}
+                    onChange={handleAddressChange}
+                  />
+                </div>
+              )}
+
+              {deliveryMethod === 'pickup' && (
+                <PickupPoints selectedId={pickupPoint?.id ?? null} onSelect={setPickupPoint} />
+              )}
+
+              {methodHint && (
+                <p id="method-hint" className="mt-4 text-sm text-gray-600">
+                  {methodHint}
                 </p>
               )}
               <button
                 type="button"
-                onClick={() => setStep('review')}
-                disabled={!pickupPoint}
-                aria-describedby={pickupPoint ? undefined : 'pickup-hint'}
+                onClick={handleMethodContinue}
+                disabled={methodHint !== null}
+                aria-describedby={methodHint ? 'method-hint' : undefined}
                 className="mt-4 rounded-sm bg-gray-900 px-4 py-2 text-white disabled:opacity-50"
               >
                 Continua
@@ -84,7 +146,7 @@ const CheckoutPage = () => {
             </section>
           )}
 
-          {step === 'review' && deliveryDate && pickupPoint && (
+          {step === 'review' && deliveryDate && deliveryMethod && (
             <section aria-labelledby="review-title">
               <h2 id="review-title" className="text-xl font-semibold">
                 Pas 3 · Revisió
@@ -94,20 +156,32 @@ const CheckoutPage = () => {
                   <dt className="font-medium">Data de lliurament</dt>
                   <dd>{getDayLabel(deliveryDate)}</dd>
                 </div>
-                <div>
-                  <dt className="font-medium">Recollida</dt>
-                  <dd>
-                    {pickupPoint.name}, {pickupPoint.address}, {pickupPoint.city}
-                  </dd>
-                  <dd className="text-sm text-gray-600">{pickupPoint.openingHours}</dd>
-                </div>
+
+                {deliveryMethod === 'delivery' && (
+                  <div>
+                    <dt className="font-medium">Lliurament a domicili</dt>
+                    <dd>
+                      {address.address}, {address.postalCode} {address.city}
+                    </dd>
+                  </div>
+                )}
+
+                {deliveryMethod === 'pickup' && pickupPoint && (
+                  <div>
+                    <dt className="font-medium">Recollida</dt>
+                    <dd>
+                      {pickupPoint.name}, {pickupPoint.address}, {pickupPoint.city}
+                    </dd>
+                    <dd className="text-sm text-gray-600">{pickupPoint.openingHours}</dd>
+                  </div>
+                )}
               </dl>
               <button
                 type="button"
                 onClick={() => setStep('method')}
                 className="mt-4 text-sm underline"
               >
-                Canvia el punt de recollida
+                {deliveryMethod === 'delivery' ? "Canvia l'adreça" : 'Canvia el punt de recollida'}
               </button>
             </section>
           )}
