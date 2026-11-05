@@ -4,6 +4,7 @@ import { useCart } from '../../features/cart/hooks/useCart'
 import DeliveryCalendar from '../../features/delivery/components/DeliveryCalendar'
 import { getCurrentMonth, getDayLabel } from '../../features/delivery/utils/calendar'
 import { formatPrice } from '../../lib/formatPrice'
+import PickupPoints from '../../features/pickup/components/PickupPoints'
 
 type CheckoutStep = 'date' | 'method'
 
@@ -63,6 +64,7 @@ const CheckoutPage = () => {
               >
                 Canvia la data
               </button>
+              <PickupPoints />
             </section>
           )}
         </div>

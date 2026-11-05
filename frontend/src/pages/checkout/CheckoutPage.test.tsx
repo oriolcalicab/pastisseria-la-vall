@@ -13,6 +13,9 @@ import CheckoutPage from './CheckoutPage'
 
 vi.mock('../../features/auth/hooks/useAuth', () => ({ useAuth: vi.fn() }))
 vi.mock('../../features/delivery/hooks/useDeliveryDates', () => ({ useDeliveryDates: vi.fn() }))
+vi.mock('../../features/pickup/components/PickupPoints', () => ({
+  default: () => <p>Punts de recollida</p>,
+}))
 
 const cartLine = {
   variantId: 12,
