@@ -1,7 +1,13 @@
 import { usePickupPoints } from '../hooks/usePickupPoints'
 import PickupMap from './PickupMap'
+import PickupPointList from './PickupPointList'
 
-const PickupPoints = () => {
+type PickupPointsProps = {
+  selectedId: number | null
+  onSelect: (id: number) => void
+}
+
+const PickupPoints = ({ selectedId, onSelect }: PickupPointsProps) => {
   const pickupPoints = usePickupPoints()
 
   return (
@@ -30,8 +36,15 @@ const PickupPoints = () => {
       )}
 
       {pickupPoints.status === 'success' && (
-        <div className="mt-2">
-          <PickupMap points={pickupPoints.points} />
+        <div className="mt-2 grid gap-4 md:grid-cols-2">
+          <PickupMap points={pickupPoints.points} selectedId={selectedId} onSelect={onSelect} />
+          <div className="md:max-h-96 md:overflow-y-auto">
+            <PickupPointList
+              points={pickupPoints.points}
+              selectedId={selectedId}
+              onSelect={onSelect}
+            />
+          </div>
         </div>
       )}
     </section>

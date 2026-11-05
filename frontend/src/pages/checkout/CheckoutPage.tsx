@@ -12,6 +12,7 @@ const CheckoutPage = () => {
   const { lines, totalCents } = useCart()
   const [step, setStep] = useState<CheckoutStep>('date')
   const [deliveryDate, setDeliveryDate] = useState<string | null>(null)
+  const [pickupPointId, setPickupPointId] = useState<number | null>(null)
   const [initialMonth] = useState(() => getCurrentMonth(new Date()))
 
   if (lines.length === 0) return <Navigate to="/carreto" replace />
@@ -64,7 +65,7 @@ const CheckoutPage = () => {
               >
                 Canvia la data
               </button>
-              <PickupPoints />
+              <PickupPoints selectedId={pickupPointId} onSelect={setPickupPointId} />
             </section>
           )}
         </div>

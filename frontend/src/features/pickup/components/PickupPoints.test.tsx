@@ -7,12 +7,31 @@ import PickupPoints from './PickupPoints'
 
 vi.mock('../hooks/usePickupPoints', () => ({ usePickupPoints: vi.fn() }))
 vi.mock('./PickupMap', () => ({
-  default: ({ points }: { points: PickupPoint[] }) => (
-    <p>Mapa amb {points.length} punts</p>
+  default: ({ points, selectedId }: { points: PickupPoint[]; selectedId: number | null }) => (
+    <p>
+      Mapa amb {points.length} punts, triat: {selectedId ?? 'cap'}
+    </p>
   ),
 }))
 
 const retry = vi.fn()
+
+const points: PickupPoint[] = Array.from({ length: 4 }, (_, index) => ({
+  id: index + 1,
+  name: `Punt ${index + 1}`,
+  address: 'Carrer',
+  city: 'Barcelona',
+  latitude: 41.4,
+  longitude: 2.16,
+  openingHours: 'De 10 a 19 h',
+}))
+
+const renderSection = (selectedId: number | null = null) => {
+  const onSelect = vi.fn()
+  render(<PickupPoints selectedId={selectedId} onSelect={onSelect} />)
+
+  return { onSelect }
+}
 
 describe('PickupPoints', () => {
   beforeEach(() => {
@@ -24,7 +43,7 @@ describe('PickupPoints', () => {
     vi.mocked(usePickupPoints).mockReturnValue({ status: 'loading', retry })
 
     // When the section is shown
-    render(<PickupPoints />)
+    renderSection()
 
     // Then the loading message is shown
     expect(screen.getByText('Carregant els punts de recollida...')).toBeInTheDocument()
@@ -33,7 +52,7 @@ describe('PickupPoints', () => {
   it('shows an error and lets the user retry', async () => {
     // Given the points could not be loaded
     vi.mocked(usePickupPoints).mockReturnValue({ status: 'error', retry })
-    render(<PickupPoints />)
+    renderSection()
 
     // When the user clicks retry
     await userEvent.setup().click(screen.getByRole('button', { name: 'Torna-ho a provar' }))
@@ -42,23 +61,27 @@ describe('PickupPoints', () => {
     expect(retry).toHaveBeenCalledOnce()
   })
 
-  it('shows the map with the points', () => {
-    // Given four pickup points
-    const points = Array.from({ length: 4 }, (_, index) => ({
-      id: index + 1,
-      name: `Punt ${index + 1}`,
-      address: 'Carrer',
-      city: 'Barcelona',
-      latitude: 41.4,
-      longitude: 2.16,
-      openingHours: 'De 10 a 19 h',
-    }))
+  it('shows the map and the list with the same selection', () => {
+    // Given four points and the third one selected
     vi.mocked(usePickupPoints).mockReturnValue({ status: 'success', points, retry })
 
     // When the section is shown
-    render(<PickupPoints />)
+    renderSection(3)
 
-    // Then the map receives the four points
-    expect(screen.getByText('Mapa amb 4 punts')).toBeInTheDocument()
+    // Then the map and the list show the same point
+    expect(screen.getByText('Mapa amb 4 punts, triat: 3')).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: /Punt 3/ })).toBeChecked()
+  })
+
+  it('tells which point was chosen in the list', async () => {
+    // Given the four points
+    vi.mocked(usePickupPoints).mockReturnValue({ status: 'success', points, retry })
+    const { onSelect } = renderSection()
+
+    // When the customer chooses a point in the list
+    await userEvent.setup().click(screen.getByRole('radio', { name: /Punt 2/ }))
+
+    // Then the page is told
+    expect(onSelect).toHaveBeenCalledWith(2)
   })
 })
