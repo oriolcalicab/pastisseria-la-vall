@@ -6,7 +6,7 @@ type ShippingFeeResult = {
   feeCents: number | null
 }
 
-type ShippingFeeState = (
+export type ShippingFeeState = (
   | { status: 'loading' }
   | { status: 'error' }
   | { status: 'success'; feeCents: number }
