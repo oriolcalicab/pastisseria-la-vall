@@ -8,6 +8,7 @@ import productRouter from './routes/productRoutes.js'
 import cartRouter from './routes/cartRoutes.js'
 import deliveryRouter from './routes/deliveryRoutes.js'
 import pickupPointRouter from './routes/pickupPointRoutes.js'
+import checkoutRouter from './routes/checkoutRoutes.js'
 
 const app = express()
 const port = process.env.PORT ?? 3000
@@ -21,6 +22,7 @@ app.use('/api/products', productRouter)
 app.use('/api/cart', cartRouter)
 app.use('/api/delivery-dates', deliveryRouter)
 app.use('/api/pickup-points', pickupPointRouter)
+app.use('/api/checkout', checkoutRouter)
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' })

@@ -1,16 +1,11 @@
 import { prisma } from '../lib/prisma.js'
 import { getDeliveryDay, getMadridNowMs, getMonthDays } from '../utils/deliveryDates.js'
+import { readNumberSetting } from '../utils/settings.js'
 
 const DEFAULT_MIN_PREP_HOURS = 48
 const DEFAULT_MAX_ORDERS_PER_DAY = 5
 
-type SettingRow = { key: string; value: string }
 
-const readNumberSetting = (settings: SettingRow[], key: string, fallback: number): number => {
-  const value = Number(settings.find((setting) => setting.key === key)?.value)
-
-  return Number.isInteger(value) && value >= 0 ? value : fallback
-}
 
 const toDateKey = (date: Date): string => date.toISOString().slice(0, 10)
 
