@@ -5,8 +5,6 @@ import { readNumberSetting } from '../utils/settings.js'
 const DEFAULT_MIN_PREP_HOURS = 48
 const DEFAULT_MAX_ORDERS_PER_DAY = 5
 
-
-
 const toDateKey = (date: Date): string => date.toISOString().slice(0, 10)
 
 export const getDeliveryDates = async (month: string, now: Date) => {

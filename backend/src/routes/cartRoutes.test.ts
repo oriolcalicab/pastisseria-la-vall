@@ -60,7 +60,7 @@ describe('POST /api/cart/validate', () => {
     expect(validateCart).not.toHaveBeenCalled()
   })
 
-    it('accepts an empty cart', async () => {
+  it('accepts an empty cart', async () => {
     // Given an empty validated cart
     const result = { lines: [], warnings: [], totalCents: 0 }
     vi.mocked(validateCart).mockResolvedValue(result)

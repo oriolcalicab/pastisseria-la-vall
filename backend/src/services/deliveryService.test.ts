@@ -79,7 +79,7 @@ describe('getDeliveryDates', () => {
     expect(findDay(days, '2026-11-06')).toMatchObject({ reason: 'full' })
   })
 
-    it('only asks for the holidays of the month', async () => {
+  it('only asks for the holidays of the month', async () => {
     // Given the dates of a month
     // When they are requested
     await getDeliveryDates('2026-12', now)
