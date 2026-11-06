@@ -103,7 +103,7 @@ describe('GET /api/products', () => {
     expect(listPublicProducts).not.toHaveBeenCalled()
   })
 
-    it('passes the diet, the category and the page together', async () => {
+  it('passes the diet, the category and the page together', async () => {
     // Given a visitor
     // When the visitor combines all the filters
     await fetch(`${server.baseUrl}/api/products?diet=vegan&category=cupcakes&page=2`)
@@ -117,7 +117,7 @@ describe('GET /api/products', () => {
     })
   })
 
-    it('returns one product without login', async () => {
+  it('returns one product without login', async () => {
     // Given an available product
     const product = { id: 7, name: 'Pastís de xocolata' }
     vi.mocked(getPublicProduct).mockResolvedValue(product as never)
@@ -153,7 +153,7 @@ describe('GET /api/products', () => {
     expect(getPublicProduct).not.toHaveBeenCalled()
   })
 
-    it('responds 400 when the id is too big for the database', async () => {
+  it('responds 400 when the id is too big for the database', async () => {
     // Given a visitor
     // When the visitor uses an id bigger than the database can store
     const response = await fetch(`${server.baseUrl}/api/products/2147483648`)

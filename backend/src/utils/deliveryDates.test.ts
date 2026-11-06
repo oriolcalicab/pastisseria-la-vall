@@ -128,7 +128,7 @@ describe('getDeliveryDay', () => {
     ).toBe('full')
   })
 
-    it('gives the first reason when several rules block the day', () => {
+  it('gives the first reason when several rules block the day', () => {
     // Given a Sunday that is also a holiday and is full
     const custom = rules({
       closedDates: new Set(['2026-11-15']),

@@ -106,7 +106,7 @@ describe('reconcileCart', () => {
     expect(result.warnings).toEqual([{ variantId: 99, type: 'unavailable' }])
   })
 
-    it('returns an empty cart when there are no lines', () => {
+  it('returns an empty cart when there are no lines', () => {
     // Given an empty cart
     // When the cart is reconciled
     // Then there are no lines, warnings or total

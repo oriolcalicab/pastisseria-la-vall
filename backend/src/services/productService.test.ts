@@ -405,7 +405,7 @@ describe('getPublicProduct', () => {
     })
   })
 
-    it('only returns the active variants', async () => {
+  it('only returns the active variants', async () => {
     // Given a product
     vi.mocked(prisma.product.findFirst).mockResolvedValue(null)
 
