@@ -11,9 +11,11 @@ import { useDeliveryDates } from '../../features/delivery/hooks/useDeliveryDates
 import { getCalendarWeeks, getCurrentMonth } from '../../features/delivery/utils/calendar'
 import CheckoutPage from './CheckoutPage'
 import type { PickupPoint } from '../../features/pickup/types/pickupPoint'
+import { useShippingFee } from '../../features/checkout/hooks/useShippingFee'
 
 vi.mock('../../features/auth/hooks/useAuth', () => ({ useAuth: vi.fn() }))
 vi.mock('../../features/delivery/hooks/useDeliveryDates', () => ({ useDeliveryDates: vi.fn() }))
+vi.mock('../../features/checkout/hooks/useShippingFee', () => ({ useShippingFee: vi.fn() }))
 vi.mock('../../features/pickup/components/PickupPoints', () => ({
   default: ({ onSelect }: { onSelect: (point: PickupPoint) => void }) => (
     <button type="button" onClick={() => onSelect(eixample)}>
@@ -72,6 +74,7 @@ describe('CheckoutPage', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     localStorage.clear()
+    vi.mocked(useShippingFee).mockReturnValue({ status: 'success', feeCents: 500, retry: vi.fn() })
     vi.mocked(useDeliveryDates).mockImplementation((month) => ({
       status: 'success',
       days: getCalendarWeeks(month)
@@ -116,7 +119,7 @@ describe('CheckoutPage', () => {
     // Then the summary is shown
     expect(screen.getByRole('heading', { name: 'Finalitza la comanda' })).toBeInTheDocument()
     expect(screen.getByText('2 × Pastís de xocolata (6 racions)')).toBeInTheDocument()
-    expect(screen.getByText(/Total: 78,00\s€/)).toBeInTheDocument()
+    expect(screen.getByText(/Subtotal: 78,00\s€/)).toBeInTheDocument()
   })
 
   it('does not continue without a delivery date', () => {
@@ -222,7 +225,7 @@ describe('CheckoutPage', () => {
     expect(screen.getByRole('button', { name: 'Continua' })).toBeEnabled()
   })
 
-    const goToMethodStep = async (user: ReturnType<typeof userEvent.setup>) => {
+  const goToMethodStep = async (user: ReturnType<typeof userEvent.setup>) => {
     login()
     saveCart([cartLine])
     renderCheckout()
@@ -269,7 +272,9 @@ describe('CheckoutPage', () => {
 
     // Then the postal code is marked and the step does not change
     expect(screen.getByLabelText('Codi postal')).toHaveAttribute('aria-invalid', 'true')
-    expect(screen.getByRole('heading', { name: 'Pas 2 · Mètode de lliurament' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Pas 2 · Mètode de lliurament' }),
+    ).toBeInTheDocument()
   })
 
   it('continues to the review with a valid address', async () => {
@@ -287,5 +292,6 @@ describe('CheckoutPage', () => {
     expect(screen.getByRole('heading', { name: 'Pas 3 · Revisió' })).toBeInTheDocument()
     expect(screen.getByText('Carrer de Mallorca, 120, 08036 Barcelona')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: "Canvia l'adreça" })).toBeInTheDocument()
+    expect(screen.getByText(/^83,00\s€$/)).toBeInTheDocument()
   })
 })

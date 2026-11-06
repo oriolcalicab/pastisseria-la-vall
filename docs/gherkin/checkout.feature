@@ -56,3 +56,22 @@ Feature: Checkout
   Scenario: Pickup in a point
     Given a customer who chose to pick up the order
     Then the map and the list of pickup points are shown
+
+    
+  Scenario: Summary of a home delivery
+    Given a customer on the review step with a home delivery
+    And products for 92,00 €
+    Then the summary shows the date, the address and the products
+    And the subtotal is 92,00 €, the shipping 5,00 € and the total 97,00 €
+
+  Scenario: Summary of a pickup
+    Given a customer on the review step with a pickup
+    And products for 92,00 €
+    Then the shipping is "Gratuït"
+    And the total is 92,00 €
+
+  Scenario: Shipping fee not available
+    Given the shipping fee can not be loaded
+    When a customer reviews a home delivery
+    Then no total is shown
+    And the customer can retry

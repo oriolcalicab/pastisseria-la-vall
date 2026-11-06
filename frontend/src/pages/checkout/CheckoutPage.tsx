@@ -14,6 +14,8 @@ import { getCurrentMonth, getDayLabel } from '../../features/delivery/utils/cale
 import PickupPoints from '../../features/pickup/components/PickupPoints'
 import type { PickupPoint } from '../../features/pickup/types/pickupPoint'
 import { formatPrice } from '../../lib/formatPrice'
+import OrderReview from '../../features/checkout/components/OrderReview'
+import { useShippingFee } from '../../features/checkout/hooks/useShippingFee'
 
 type CheckoutStep = 'date' | 'method' | 'review'
 
@@ -35,6 +37,7 @@ const CheckoutPage = () => {
   const [address, setAddress] = useState<ShippingAddress>(emptyAddress)
   const [addressErrors, setAddressErrors] = useState<ShippingAddressErrors>({})
   const [initialMonth] = useState(() => getCurrentMonth(new Date()))
+  const shippingFee = useShippingFee()
 
   if (lines.length === 0) return <Navigate to="/carreto" replace />
 
@@ -151,31 +154,15 @@ const CheckoutPage = () => {
               <h2 id="review-title" className="text-xl font-semibold">
                 Pas 3 · Revisió
               </h2>
-              <dl className="mt-4 space-y-2">
-                <div>
-                  <dt className="font-medium">Data de lliurament</dt>
-                  <dd>{getDayLabel(deliveryDate)}</dd>
-                </div>
-
-                {deliveryMethod === 'delivery' && (
-                  <div>
-                    <dt className="font-medium">Lliurament a domicili</dt>
-                    <dd>
-                      {address.address}, {address.postalCode} {address.city}
-                    </dd>
-                  </div>
-                )}
-
-                {deliveryMethod === 'pickup' && pickupPoint && (
-                  <div>
-                    <dt className="font-medium">Recollida</dt>
-                    <dd>
-                      {pickupPoint.name}, {pickupPoint.address}, {pickupPoint.city}
-                    </dd>
-                    <dd className="text-sm text-gray-600">{pickupPoint.openingHours}</dd>
-                  </div>
-                )}
-              </dl>
+              <OrderReview
+                lines={lines}
+                subtotalCents={totalCents}
+                deliveryDate={deliveryDate}
+                method={deliveryMethod}
+                address={address}
+                pickupPoint={pickupPoint}
+                shippingFee={shippingFee}
+              />
               <button
                 type="button"
                 onClick={() => setStep('method')}
@@ -202,7 +189,7 @@ const CheckoutPage = () => {
             ))}
           </ul>
           <p className="mt-4 border-t pt-2 text-right font-bold">
-            Total: {formatPrice(totalCents)}
+            Subtotal: {formatPrice(totalCents)}
           </p>
         </aside>
       </div>
