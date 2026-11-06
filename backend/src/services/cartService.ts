@@ -2,9 +2,9 @@ import { prisma } from '../lib/prisma.js'
 import type { RequestedCartLine } from '../types/cart.js'
 import { reconcileCart } from '../utils/reconcileCart.js'
 
-export const validateCart = async (lines: RequestedCartLine[]) => {
-  const variants = await prisma.productVariant.findMany({
-    where: { id: { in: lines.map((line) => line.variantId) } },
+export const findCartVariants = (variantIds: number[]) =>
+  prisma.productVariant.findMany({
+    where: { id: { in: variantIds } },
     select: {
       id: true,
       name: true,
@@ -14,6 +14,9 @@ export const validateCart = async (lines: RequestedCartLine[]) => {
       product: { select: { id: true, name: true, imageUrl: true, isActive: true } },
     },
   })
+
+export const validateCart = async (lines: RequestedCartLine[]) => {
+  const variants = await findCartVariants(lines.map((line) => line.variantId))
 
   return reconcileCart(lines, variants)
 }
