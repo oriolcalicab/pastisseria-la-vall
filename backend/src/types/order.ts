@@ -15,3 +15,19 @@ export type CreateOrderRequest = {
   delivery: OrderDelivery
   lines: RequestedCartLine[]
 }
+
+export type OrderItemDraft = {
+  variantId: number
+  productName: string
+  variantName: string
+  unitPriceCents: number
+  quantity: number
+  lineTotalCents: number
+}
+
+export type OrderDraft = {
+  items: OrderItemDraft[]
+  subtotalCents: number
+  shippingCents: number
+  totalCents: number
+}
