@@ -207,7 +207,7 @@ describe('ProductsPage', () => {
     expect(useProducts).toHaveBeenLastCalledWith({ page: 2, diet: 'vegan' })
   })
 
-    it('links each card to its detail page', () => {
+  it('links each card to its detail page', () => {
     // Given a product
     vi.mocked(useProducts).mockReturnValue({ status: 'success', data: productPage(), retry })
 

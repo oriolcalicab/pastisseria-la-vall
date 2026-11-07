@@ -79,7 +79,8 @@ const OrderReview = ({
           <dd>
             {method === 'pickup' && 'Gratuït'}
             {method === 'delivery' && shippingFee.status === 'loading' && 'Calculant...'}
-            {method === 'delivery' && shippingFee.status === 'success' &&
+            {method === 'delivery' &&
+              shippingFee.status === 'success' &&
               formatPrice(shippingFee.feeCents)}
             {method === 'delivery' && shippingFee.status === 'error' && (
               <button type="button" onClick={shippingFee.retry} className="text-red-600 underline">

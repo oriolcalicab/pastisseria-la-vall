@@ -117,7 +117,7 @@ describe('createAdminProduct', () => {
     )
   })
 
-    it('throws a generic message when the backend can not be reached', async () => {
+  it('throws a generic message when the backend can not be reached', async () => {
     // Given a backend that is not running
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')))
 
@@ -166,7 +166,7 @@ describe('setAdminProductActive', () => {
       'El producte no existeix',
     )
   })
-    it('throws a generic message when the backend can not be reached', async () => {
+  it('throws a generic message when the backend can not be reached', async () => {
     // Given a backend that is not running
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')))
 

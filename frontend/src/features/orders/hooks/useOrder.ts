@@ -4,9 +4,7 @@ import { fetchOrder } from '../services/ordersApi'
 import type { OrderDetail } from '../types/order'
 
 type OrderOutcome =
-  | { status: 'error' }
-  | { status: 'not-found' }
-  | { status: 'success'; order: OrderDetail }
+  { status: 'error' } | { status: 'not-found' } | { status: 'success'; order: OrderDetail }
 
 type OrderResult = {
   key: string
@@ -30,9 +28,7 @@ export const useOrder = (id: string): OrderState => {
       .getIdToken()
       .then((token) => fetchOrder(token, id))
       .then((order) => {
-        const outcome: OrderOutcome = order
-          ? { status: 'success', order }
-          : { status: 'not-found' }
+        const outcome: OrderOutcome = order ? { status: 'success', order } : { status: 'not-found' }
 
         if (isActive) setResult({ key, outcome })
       })

@@ -14,7 +14,12 @@ import { validateProductForm } from '../utils/productForm'
 
 type ProductTextField = 'categoryId' | 'name' | 'description' | 'allergens'
 
-const createEmptyVariant = (key: number): VariantFormValues => ({ key, name: '', price: '', stock: '' })
+const createEmptyVariant = (key: number): VariantFormValues => ({
+  key,
+  name: '',
+  price: '',
+  stock: '',
+})
 
 const createInitialValues = (): ProductFormValues => ({
   categoryId: '',
@@ -53,7 +58,10 @@ export const useProductForm = (onSuccess: (product: AdminProduct) => void) => {
   const addVariant = () => {
     const key = nextVariantKey.current
     nextVariantKey.current += 1
-    setValues((current) => ({ ...current, variants: [...current.variants, createEmptyVariant(key)] }))
+    setValues((current) => ({
+      ...current,
+      variants: [...current.variants, createEmptyVariant(key)],
+    }))
   }
 
   const removeVariant = (key: number) => {

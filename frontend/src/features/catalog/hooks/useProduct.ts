@@ -3,9 +3,7 @@ import { fetchProduct } from '../services/productsApi'
 import type { Product } from '../types/product'
 
 type ProductOutcome =
-  | { status: 'error' }
-  | { status: 'not-found' }
-  | { status: 'success'; product: Product }
+  { status: 'error' } | { status: 'not-found' } | { status: 'success'; product: Product }
 
 type ProductResult = {
   key: string

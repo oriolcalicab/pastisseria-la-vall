@@ -186,7 +186,7 @@ describe('AdminProductsPage', () => {
     )
   })
 
-    it('shows the error when a status change fails', () => {
+  it('shows the error when a status change fails', () => {
     // Given a status change that failed
     vi.mocked(useAdminProducts).mockReturnValue({
       status: 'success',

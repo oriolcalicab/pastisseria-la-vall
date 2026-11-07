@@ -18,7 +18,8 @@ const MAX_STOCK = 100_000
 const PRICE_PATTERN = /^\d+([.,]\d{1,2})?$/
 const STOCK_PATTERN = /^\d+$/
 
-type ProductFormResult = { ok: true; product: NewProduct } | { ok: false; errors: ProductFormErrors }
+type ProductFormResult =
+  { ok: true; product: NewProduct } | { ok: false; errors: ProductFormErrors }
 
 export const parseEurosToCents = (value: string): number | null => {
   const trimmed = value.trim()

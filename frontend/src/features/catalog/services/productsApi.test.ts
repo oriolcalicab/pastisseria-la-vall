@@ -31,7 +31,7 @@ describe('fetchProducts', () => {
     await expect(fetchProducts(1, '')).rejects.toThrow()
   })
 
-    it('sends the diets when there are any', async () => {
+  it('sends the diets when there are any', async () => {
     // Given a backend that answers correctly
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) })
     vi.stubGlobal('fetch', fetchMock)
@@ -52,7 +52,9 @@ describe('fetchProduct', () => {
   it('returns the product', async () => {
     // Given a backend with the product
     const product = { id: 7, name: 'Pastís de xocolata' }
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => product })
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue({ ok: true, status: 200, json: async () => product })
     vi.stubGlobal('fetch', fetchMock)
 
     // When the product is requested

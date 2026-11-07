@@ -234,7 +234,7 @@ describe('CartPage', () => {
     expect(validateCart).toHaveBeenCalledOnce()
   })
 
-    it('offers to go to the checkout', async () => {
+  it('offers to go to the checkout', async () => {
     // Given a cart with products
     saveCart([cake])
 

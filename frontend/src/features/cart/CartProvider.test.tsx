@@ -90,7 +90,7 @@ describe('CartProvider', () => {
     expect(loadCart()).toEqual([])
   })
 
-    it('replaces the lines and saves them', () => {
+  it('replaces the lines and saves them', () => {
     // Given a cart with a product
     const { result } = renderCart()
     act(() => result.current.addItem(cake))

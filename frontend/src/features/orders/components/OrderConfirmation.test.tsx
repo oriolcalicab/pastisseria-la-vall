@@ -44,7 +44,9 @@ describe('OrderConfirmation', () => {
     expect(screen.getByRole('heading', { name: 'Comanda confirmada' })).toBeInTheDocument()
     expect(screen.getByText('LV-261106-4F2A9C')).toBeInTheDocument()
     expect(screen.getByText(/12 de novembre/)).toBeInTheDocument()
-    expect(screen.getByText('Recollida a La Vall · Eixample (Carrer de Girona, 84)')).toBeInTheDocument()
+    expect(
+      screen.getByText('Recollida a La Vall · Eixample (Carrer de Girona, 84)'),
+    ).toBeInTheDocument()
     expect(screen.getByText('2 × Pastís de xocolata (6 racions)')).toBeInTheDocument()
     expect(screen.getByText('Gratuït')).toBeInTheDocument()
   })
@@ -66,7 +68,9 @@ describe('OrderConfirmation', () => {
     render(<OrderConfirmation order={order} />)
 
     // Then the address and the totals are shown
-    expect(screen.getByText('A domicili: Carrer de Mallorca, 120, 08036 Barcelona')).toBeInTheDocument()
+    expect(
+      screen.getByText('A domicili: Carrer de Mallorca, 120, 08036 Barcelona'),
+    ).toBeInTheDocument()
     expect(screen.getByText(/^5,00\s€$/)).toBeInTheDocument()
     expect(screen.getByText(/^83,00\s€$/)).toBeInTheDocument()
   })

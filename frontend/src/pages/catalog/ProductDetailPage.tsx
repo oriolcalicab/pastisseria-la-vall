@@ -6,7 +6,7 @@ import NotFoundPage from '../errors/NotFoundPage'
 const ProductDetailPage = () => {
   const { id = '' } = useParams()
   const product = useProduct(id)
-  
+
   if (product.status === 'not-found') return <NotFoundPage />
 
   return (
@@ -28,7 +28,7 @@ const ProductDetailPage = () => {
             Torna-ho a provar
           </button>
         </div>
-      )}      
+      )}
 
       {product.status === 'success' && (
         <ProductDetail key={product.product.id} product={product.product} />

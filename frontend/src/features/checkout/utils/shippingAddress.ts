@@ -7,8 +7,7 @@ const MAX_CITY_LENGTH = 100
 const BARCELONA_POSTAL_CODE = /^080\d{2}$/
 
 type ShippingAddressResult =
-  | { ok: true; address: ShippingAddress }
-  | { ok: false; errors: ShippingAddressErrors }
+  { ok: true; address: ShippingAddress } | { ok: false; errors: ShippingAddressErrors }
 
 const isLengthBetween = (value: string, min: number, max: number) =>
   value.length >= min && value.length <= max

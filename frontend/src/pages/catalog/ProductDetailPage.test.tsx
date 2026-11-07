@@ -150,7 +150,7 @@ describe('ProductDetailPage', () => {
     )
   })
 
-    it('adds the chosen variant to the cart', async () => {
+  it('adds the chosen variant to the cart', async () => {
     // Given a product with a variant chosen
     showProduct()
     renderPage()

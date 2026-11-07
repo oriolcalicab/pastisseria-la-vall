@@ -8,9 +8,7 @@ type PickupPointsResult = {
 }
 
 type PickupPointsState = (
-  | { status: 'loading' }
-  | { status: 'error' }
-  | { status: 'success'; points: PickupPoint[] }
+  { status: 'loading' } | { status: 'error' } | { status: 'success'; points: PickupPoint[] }
 ) & { retry: () => void }
 
 export const usePickupPoints = (): PickupPointsState => {

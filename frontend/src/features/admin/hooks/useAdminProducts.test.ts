@@ -72,7 +72,7 @@ describe('useAdminProducts', () => {
     await waitFor(() => expect(result.current.status).toBe('success'))
     expect(fetchAdminProducts).toHaveBeenCalledTimes(2)
   })
-    it('replaces a product without asking the backend again', async () => {
+  it('replaces a product without asking the backend again', async () => {
     // Given a loaded page
     vi.mocked(fetchAdminProducts).mockResolvedValue(productPage)
     const { result } = renderHook(() => useAdminProducts({ page: 1, search: '' }))
