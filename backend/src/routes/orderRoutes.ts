@@ -27,15 +27,17 @@ const handleCreateOrder = async (req: Request, res: Response) => {
 
   const result = await createOrder(user.id, body.data, new Date())
 
-  if (!result.ok) {
+   if (!result.ok) {
     res.status(409).json({
       error: conflictMessages[result.reason],
+      reason: result.reason,
       ...(result.reason === 'cart_changed' ? { warnings: result.warnings } : {}),
     })
     return
   }
 
-  res.status(result.isNew ? 201 : 200).json(result.order)}
+  res.status(result.isNew ? 201 : 200).json(result.order)
+}
 
 const orderRouter = Router()
 

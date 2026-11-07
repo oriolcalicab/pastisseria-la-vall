@@ -75,3 +75,35 @@ Feature: Checkout
     When a customer reviews a home delivery
     Then no total is shown
     And the customer can retry
+
+    
+  Scenario: The day became full before confirming
+    Given a customer on the review step
+    And the chosen day became full
+    When the customer clicks "Confirma la comanda"
+    Then the page shows "La data de lliurament ja no està disponible"
+    And the customer can click "Tria una altra data"
+    And the first step is shown without a date
+
+  Scenario: The pickup point was deactivated before confirming
+    Given a customer on the review step with a pickup point
+    And the pickup point was deactivated
+    When the customer clicks "Confirma la comanda"
+    Then the page shows "El punt de recollida ja no està disponible"
+    And the customer can click "Tria un altre punt de recollida"
+    And the second step is shown without a pickup point
+
+  Scenario: The cart changed before confirming
+    Given a customer on the review step
+    And the price of a product changed
+    When the customer clicks "Confirma la comanda"
+    Then the page shows "Alguns productes han canviat. Revisa el carretó"
+    And the cart keeps its products
+    And there is a link to the cart
+
+  Scenario: The order could not be sent
+    Given a customer on the review step
+    And the backend can not be reached
+    When the customer clicks "Confirma la comanda"
+    Then the page shows "No s'ha pogut confirmar la comanda. Torna-ho a provar"
+    And the customer can confirm the order again

@@ -29,3 +29,5 @@ export type CreatedOrder = {
   status: string
   totalCents: number
 }
+
+export type OrderConflictReason = 'date_unavailable' | 'pickup_point_unavailable' | 'cart_changed'

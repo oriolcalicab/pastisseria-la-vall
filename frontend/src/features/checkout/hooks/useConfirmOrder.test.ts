@@ -75,4 +75,19 @@ describe('useConfirmOrder', () => {
     expect(createOrder).toHaveBeenCalledTimes(2)
     expect(result.current.status).toBe('done')
   })
+
+    it('clears the error when the customer goes back to change the order', async () => {
+    // Given an order that was rejected
+    vi.mocked(createOrder).mockRejectedValue(
+      new OrderRequestError('La data de lliurament ja no està disponible', [], 'date_unavailable'),
+    )
+    const { result } = renderHook(() => useConfirmOrder())
+    await act(() => result.current.confirm(payload))
+
+    // When the error is cleared
+    act(() => result.current.reset())
+
+    // Then the order can be sent again
+    expect(result.current).toMatchObject({ status: 'idle', error: null })
+  })
 })

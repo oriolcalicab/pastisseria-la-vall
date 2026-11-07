@@ -90,6 +90,7 @@ describe('POST /api/orders', () => {
     expect(response.status).toBe(409)
     expect(await response.json()).toEqual({
       error: 'Alguns productes han canviat. Revisa el carretó',
+      reason: 'cart_changed',
       warnings,
     })
   })
@@ -103,7 +104,10 @@ describe('POST /api/orders', () => {
 
     // Then the customer is told to choose another date
     expect(response.status).toBe(409)
-    expect(await response.json()).toEqual({ error: 'La data de lliurament ja no està disponible' })
+    expect(await response.json()).toEqual({
+      error: 'La data de lliurament ja no està disponible',
+      reason: 'date_unavailable',
+    })
   })
 
   it('responds 401 to a visitor without token', async () => {
@@ -116,7 +120,7 @@ describe('POST /api/orders', () => {
     expect(createOrder).not.toHaveBeenCalled()
   })
 
-    it('responds 200 with the same order when it was already created', async () => {
+  it('responds 200 with the same order when it was already created', async () => {
     // Given an order already created with this key
     const order = { id: 1, orderNumber: 'LV-261106-4F2A9C', status: 'pending', totalCents: 7800 }
     vi.mocked(createOrder).mockResolvedValue({ ok: true, order, isNew: false })
