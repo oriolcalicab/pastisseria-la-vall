@@ -7,3 +7,25 @@ export type ShippingAddress = {
 }
 
 export type ShippingAddressErrors = Partial<Record<keyof ShippingAddress, string>>
+
+export type OrderLinePayload = {
+  variantId: number
+  quantity: number
+  priceCents: number
+}
+
+export type OrderPayload = {
+  idempotencyKey: string
+  deliveryDate: string
+  deliveryMethod: DeliveryMethod
+  pickupPointId?: number
+  shippingAddress?: ShippingAddress
+  lines: OrderLinePayload[]
+}
+
+export type CreatedOrder = {
+  id: number
+  orderNumber: string
+  status: string
+  totalCents: number
+}
