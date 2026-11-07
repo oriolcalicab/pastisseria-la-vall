@@ -39,3 +39,27 @@ Feature: Create an order
     Given a visitor without token
     When the visitor sends an order
     Then the backend responds 401
+
+
+  Scenario: The stock is taken when the order is created
+    Given a variant with 5 units
+    When a customer orders 2 units
+    Then the variant has 3 units left
+
+  Scenario: Two customers want the last place of a day
+    Given a day with 4 orders and a maximum of 5
+    When two customers send an order for that day at the same time
+    Then only one order is saved
+    And the other customer is told the date is no longer available
+
+  Scenario: Two customers want the last unit
+    Given a variant with 1 unit
+    When two customers order it at the same time
+    Then only one order is saved
+    And the other customer is told it is sold out
+
+  Scenario: All or nothing
+    Given an order with two products
+    When the second product has no stock
+    Then nothing is saved
+    And the stock of the first product does not change
