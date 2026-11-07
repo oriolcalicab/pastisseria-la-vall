@@ -22,7 +22,10 @@ const validOrder = {
   lines: [{ variantId: 12, quantity: 2, priceCents: 3900 }],
 }
 
-const postOrder = (body: object, headers: Record<string, string> = { Authorization: 'Bearer token' }) =>
+const postOrder = (
+  body: object,
+  headers: Record<string, string> = { Authorization: 'Bearer token' },
+) =>
   fetch(`${server.baseUrl}/api/orders`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },
@@ -50,7 +53,7 @@ describe('POST /api/orders', () => {
   it('creates the order for the user of the token', async () => {
     // Given a logged customer
     const order = { id: 1, orderNumber: 'LV-261106-4F2A9C', status: 'pending', totalCents: 7800 }
-    vi.mocked(createOrder).mockResolvedValue({ ok: true, order })
+    vi.mocked(createOrder).mockResolvedValue({ ok: true, order, isNew: true })
 
     // When the customer sends an order that also tries to set another user
     const response = await postOrder(validOrder)
@@ -111,5 +114,18 @@ describe('POST /api/orders', () => {
     // Then the request is rejected and nothing is created
     expect(response.status).toBe(401)
     expect(createOrder).not.toHaveBeenCalled()
+  })
+
+    it('responds 200 with the same order when it was already created', async () => {
+    // Given an order already created with this key
+    const order = { id: 1, orderNumber: 'LV-261106-4F2A9C', status: 'pending', totalCents: 7800 }
+    vi.mocked(createOrder).mockResolvedValue({ ok: true, order, isNew: false })
+
+    // When the customer sends the same order again
+    const response = await postOrder(validOrder)
+
+    // Then the existing order is returned without creating another one
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual(order)
   })
 })

@@ -35,8 +35,7 @@ const handleCreateOrder = async (req: Request, res: Response) => {
     return
   }
 
-  res.status(201).json(result.order)
-}
+  res.status(result.isNew ? 201 : 200).json(result.order)}
 
 const orderRouter = Router()
 

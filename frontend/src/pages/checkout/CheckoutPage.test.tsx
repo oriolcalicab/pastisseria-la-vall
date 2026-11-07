@@ -12,6 +12,7 @@ import { getCalendarWeeks, getCurrentMonth } from '../../features/delivery/utils
 import CheckoutPage from './CheckoutPage'
 import type { PickupPoint } from '../../features/pickup/types/pickupPoint'
 import { useShippingFee } from '../../features/checkout/hooks/useShippingFee'
+import { createOrder, OrderRequestError } from '../../features/checkout/services/checkoutApi'
 
 vi.mock('../../features/auth/hooks/useAuth', () => ({ useAuth: vi.fn() }))
 vi.mock('../../features/delivery/hooks/useDeliveryDates', () => ({ useDeliveryDates: vi.fn() }))
@@ -22,6 +23,10 @@ vi.mock('../../features/pickup/components/PickupPoints', () => ({
       Tria Eixample
     </button>
   ),
+}))
+vi.mock('../../features/checkout/services/checkoutApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../features/checkout/services/checkoutApi')>()),
+  createOrder: vi.fn(),
 }))
 
 const cartLine = {
@@ -62,7 +67,10 @@ const renderCheckout = () =>
   )
 
 const login = () =>
-  vi.mocked(useAuth).mockReturnValue({ user: { uid: 'u1' } as User, isLoading: false })
+  vi.mocked(useAuth).mockReturnValue({
+    user: { uid: 'u1', getIdToken: vi.fn().mockResolvedValue('token-123') } as unknown as User,
+    isLoading: false,
+  })
 
 const chooseDate = (user: ReturnType<typeof userEvent.setup>) => {
   const day = screen.getAllByRole('button').find((button) => button.dataset.date === availableDate)
@@ -293,5 +301,61 @@ describe('CheckoutPage', () => {
     expect(screen.getByText('Carrer de Mallorca, 120, 08036 Barcelona')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: "Canvia l'adreça" })).toBeInTheDocument()
     expect(screen.getByText(/^83,00\s€$/)).toBeInTheDocument()
+  })
+
+    const goToReviewStep = async (user: ReturnType<typeof userEvent.setup>) => {
+    await goToPickupStep(user)
+    await user.click(screen.getByRole('button', { name: 'Tria Eixample' }))
+    await user.click(screen.getByRole('button', { name: 'Continua' }))
+  }
+
+  it('confirms the order and shows its number', async () => {
+    // Given a customer on the review step
+    vi.mocked(createOrder).mockResolvedValue({
+      id: 1,
+      orderNumber: 'LV-261106-4F2A9C',
+      status: 'pending',
+      totalCents: 7800,
+    })
+    const user = userEvent.setup()
+    await goToReviewStep(user)
+
+    // When the customer confirms the order
+    await user.click(screen.getByRole('button', { name: 'Confirma la comanda' }))
+
+    // Then the order is sent with a key and its number is shown
+    expect(createOrder).toHaveBeenCalledWith(
+      'token-123',
+      expect.objectContaining({
+        idempotencyKey: expect.stringMatching(/^[0-9a-f-]{36}$/),
+        deliveryMethod: 'pickup',
+        pickupPointId: 2,
+      }),
+    )
+    expect(screen.getByText('Número de comanda: LV-261106-4F2A9C')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Confirma la comanda' })).not.toBeInTheDocument()
+  })
+
+  it('explains why the order could not be confirmed', async () => {
+    // Given a backend that rejects the order because a price changed
+    vi.mocked(createOrder).mockRejectedValue(
+      new OrderRequestError('Alguns productes han canviat. Revisa el carretó', [
+        { variantId: 12, type: 'price_changed' },
+      ]),
+    )
+    const user = userEvent.setup()
+    await goToReviewStep(user)
+
+    // When the customer confirms the order
+    await user.click(screen.getByRole('button', { name: 'Confirma la comanda' }))
+
+    // Then the reason is shown with a link to the cart
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'El preu de Pastís de xocolata (6 racions) ha canviat.',
+    )
+    expect(screen.getByRole('link', { name: 'Revisa el carretó' })).toHaveAttribute(
+      'href',
+      '/carreto',
+    )
   })
 })

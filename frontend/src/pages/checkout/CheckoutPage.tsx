@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { useCart } from '../../features/cart/hooks/useCart'
 import AddressForm from '../../features/checkout/components/AddressForm'
 import DeliveryMethodSelector from '../../features/checkout/components/DeliveryMethodSelector'
@@ -16,6 +16,9 @@ import type { PickupPoint } from '../../features/pickup/types/pickupPoint'
 import { formatPrice } from '../../lib/formatPrice'
 import OrderReview from '../../features/checkout/components/OrderReview'
 import { useShippingFee } from '../../features/checkout/hooks/useShippingFee'
+import { useConfirmOrder } from '../../features/checkout/hooks/useConfirmOrder'
+import { buildOrderPayload } from '../../features/checkout/utils/orderPayload'
+import { getCartNotices } from '../../features/cart/utils/cartNotices'
 
 type CheckoutStep = 'date' | 'method' | 'review'
 
@@ -38,6 +41,8 @@ const CheckoutPage = () => {
   const [addressErrors, setAddressErrors] = useState<ShippingAddressErrors>({})
   const [initialMonth] = useState(() => getCurrentMonth(new Date()))
   const shippingFee = useShippingFee()
+  const [idempotencyKey] = useState(() => crypto.randomUUID())
+  const confirmOrder = useConfirmOrder()
 
   if (lines.length === 0) return <Navigate to="/carreto" replace />
 
@@ -170,6 +175,54 @@ const CheckoutPage = () => {
               >
                 {deliveryMethod === 'delivery' ? "Canvia l'adreça" : 'Canvia el punt de recollida'}
               </button>
+              
+              {confirmOrder.error && (
+                <div role="alert" className="mt-6 rounded-sm border border-red-300 bg-red-50 p-4">
+                  <p className="text-red-700">{confirmOrder.error.message}</p>
+                  {confirmOrder.error.warnings.length > 0 && (
+                    <>
+                      <ul className="mt-2 list-disc pl-5 text-sm">
+                        {getCartNotices(confirmOrder.error.warnings, lines).map((notice) => (
+                          <li key={notice}>{notice}</li>
+                        ))}
+                      </ul>
+                      <Link to="/carreto" className="mt-2 inline-block underline">
+                        Revisa el carretó
+                      </Link>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {confirmOrder.status === 'done' && confirmOrder.order ? (
+                <div
+                  role="status"
+                  className="mt-6 rounded-sm border border-green-300 bg-green-50 p-4"
+                >
+                  <p className="font-semibold text-green-800">Comanda confirmada</p>
+                  <p>Número de comanda: {confirmOrder.order.orderNumber}</p>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() =>
+                    confirmOrder.confirm(
+                      buildOrderPayload({
+                        idempotencyKey,
+                        deliveryDate,
+                        method: deliveryMethod,
+                        pickupPointId: pickupPoint?.id ?? null,
+                        address,
+                        lines,
+                      }),
+                    )
+                  }
+                  disabled={confirmOrder.status === 'sending'}
+                  className="mt-6 rounded-sm bg-gray-900 px-4 py-2 text-white disabled:opacity-50"
+                >
+                  {confirmOrder.status === 'sending' ? 'Confirmant...' : 'Confirma la comanda'}
+                </button>
+              )}
             </section>
           )}
         </div>
