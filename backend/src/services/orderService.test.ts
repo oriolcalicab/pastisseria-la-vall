@@ -5,6 +5,7 @@ import { findCartVariants } from './cartService.js'
 import { getDeliveryDates } from './deliveryService.js'
 import { createOrder } from './orderService.js'
 import { getMaxOrdersPerDay, getShippingFeeCents } from './settingsService.js'
+import { Prisma } from '../generated/prisma/client.js'
 
 const tx = vi.hoisted(() => ({
   $executeRaw: vi.fn(),
@@ -13,7 +14,11 @@ const tx = vi.hoisted(() => ({
 }))
 
 vi.mock('../lib/prisma.js', () => ({
-  prisma: { pickupPoint: { findFirst: vi.fn() }, $transaction: vi.fn() },
+  prisma: {
+    pickupPoint: { findFirst: vi.fn() },
+    order: { findUnique: vi.fn() },
+    $transaction: vi.fn(),
+  },
 }))
 vi.mock('./cartService.js', () => ({ findCartVariants: vi.fn() }))
 vi.mock('./deliveryService.js', () => ({ getDeliveryDates: vi.fn() }))
@@ -60,6 +65,7 @@ const deliveryRequest: CreateOrderRequest = {
 describe('createOrder', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    vi.mocked(prisma.order.findUnique).mockResolvedValue(null)
     vi.mocked(getDeliveryDates).mockResolvedValue({
       month: '2026-11',
       days: [{ date: '2026-11-12', available: true, reason: null }],
@@ -86,7 +92,11 @@ describe('createOrder', () => {
     const result = await createOrder(5, pickupRequest, now)
 
     // Then the day is locked, the stock is taken and the order is saved
-    expect(result).toMatchObject({ ok: true, order: { orderNumber: 'LV-261106-4F2A9C' } })
+    expect(result).toMatchObject({
+      ok: true,
+      isNew: true,
+      order: { orderNumber: 'LV-261106-4F2A9C' },
+    })
     expect(tx.$executeRaw.mock.calls[0]).toContain(20261112)
     expect(tx.order.count).toHaveBeenCalledWith({
       where: { deliveryDate: new Date('2026-11-12T00:00:00Z'), status: { not: 'cancelled' } },
@@ -237,5 +247,49 @@ describe('createOrder', () => {
     // When the order is created
     // Then the error goes up to become a server error
     await expect(createOrder(5, pickupRequest, now)).rejects.toThrow('Connection lost')
+  })
+
+  const existingOrder = {
+    id: 1,
+    orderNumber: 'LV-261106-4F2A9C',
+    status: 'pending',
+    totalCents: 7800,
+  }
+
+  it('returns the existing order when the same key is sent again', async () => {
+    // Given an order already created with this key
+    vi.mocked(prisma.order.findUnique).mockResolvedValue(existingOrder as never)
+
+    // When the same order is sent again
+    const result = await createOrder(5, pickupRequest, now)
+
+    // Then the same order is returned and nothing new is done
+    expect(result).toEqual({ ok: true, order: existingOrder, isNew: false })
+    expect(prisma.order.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          userId_idempotencyKey: { userId: 5, idempotencyKey: pickupRequest.idempotencyKey },
+        },
+      }),
+    )
+    expect(prisma.$transaction).not.toHaveBeenCalled()
+  })
+
+  it('returns the first order when two equal orders arrive at the same time', async () => {
+    // Given the other request saved the order while this one was waiting
+    const duplicated = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+      code: 'P2002',
+      clientVersion: 'test',
+    })
+    tx.order.create.mockRejectedValue(duplicated)
+    vi.mocked(prisma.order.findUnique)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(existingOrder as never)
+
+    // When this order is created
+    const result = await createOrder(5, pickupRequest, now)
+
+    // Then the order of the other request is returned
+    expect(result).toEqual({ ok: true, order: existingOrder, isNew: false })
   })
 })

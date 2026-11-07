@@ -8,12 +8,12 @@ import { createOrderNumber } from '../utils/orderNumber.js'
 import { findCartVariants } from './cartService.js'
 import { getDeliveryDates } from './deliveryService.js'
 import { getMaxOrdersPerDay, getShippingFeeCents } from './settingsService.js'
+import { isUniqueConstraintError } from './userService.js'
+
+type OrderSummary = { id: number; orderNumber: string; status: string; totalCents: number }
 
 type CreateOrderResult =
-  | {
-      ok: true
-      order: { id: number; orderNumber: string; status: string; totalCents: number }
-    }
+  | { ok: true; order: OrderSummary; isNew: boolean }
   | { ok: false; reason: 'date_unavailable' | 'pickup_point_unavailable' }
   | { ok: false; reason: 'cart_changed'; warnings: CartWarning[] }
 
@@ -27,6 +27,14 @@ const isPickupPointActive = async (id: number) =>
   (await prisma.pickupPoint.findFirst({ where: { id, isActive: true }, select: { id: true } })) !==
   null
 
+const orderSummarySelect = { id: true, orderNumber: true, status: true, totalCents: true } as const
+
+const findExistingOrder = (userId: number, idempotencyKey: string) =>
+  prisma.order.findUnique({
+    where: { userId_idempotencyKey: { userId, idempotencyKey } },
+    select: orderSummarySelect,
+  })
+
 const toConflictResult = (error: OrderConflictError): CreateOrderResult =>
   error.reason === 'cart_changed'
     ? { ok: false, reason: 'cart_changed', warnings: error.warnings }
@@ -38,6 +46,9 @@ export const createOrder = async (
   now: Date,
 ): Promise<CreateOrderResult> => {
   const { delivery, deliveryDate, idempotencyKey, lines } = request
+  const existingOrder = await findExistingOrder(userId, idempotencyKey)
+
+  if (existingOrder) return { ok: true, order: existingOrder, isNew: false }
 
   if (!(await isDateAvailable(deliveryDate, now))) return { ok: false, reason: 'date_unavailable' }
 
@@ -106,13 +117,19 @@ export const createOrder = async (
           items: { create: items },
           statusHistory: { create: { toStatus: 'pending', changedBy: userId } },
         },
-        select: { id: true, orderNumber: true, status: true, totalCents: true },
+        select: orderSummarySelect,
       })
     })
 
-    return { ok: true, order }
+    return { ok: true, order, isNew: true }
   } catch (error) {
     if (error instanceof OrderConflictError) return toConflictResult(error)
+
+    if (isUniqueConstraintError(error)) {
+      const duplicatedOrder = await findExistingOrder(userId, idempotencyKey)
+
+      if (duplicatedOrder) return { ok: true, order: duplicatedOrder, isNew: false }
+    }
 
     throw error
   }
