@@ -1,11 +1,12 @@
 import { prisma } from '../lib/prisma.js'
 import { readNumberSetting } from '../utils/settings.js'
 
-const SHIPPING_FEE_KEY = 'shipping_fee_cents'
-const DEFAULT_SHIPPING_FEE_CENTS = 500
+const getNumberSetting = async (key: string, fallback: number): Promise<number> => {
+  const setting = await prisma.setting.findUnique({ where: { key } })
 
-export const getShippingFeeCents = async (): Promise<number> => {
-  const setting = await prisma.setting.findUnique({ where: { key: SHIPPING_FEE_KEY } })
-
-  return readNumberSetting(setting ? [setting] : [], SHIPPING_FEE_KEY, DEFAULT_SHIPPING_FEE_CENTS)
+  return readNumberSetting(setting ? [setting] : [], key, fallback)
 }
+
+export const getShippingFeeCents = () => getNumberSetting('shipping_fee_cents', 500)
+
+export const getMaxOrdersPerDay = () => getNumberSetting('max_orders_per_day', 5)
