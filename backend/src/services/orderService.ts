@@ -1,3 +1,4 @@
+import type { Prisma } from '../generated/prisma/client.js'
 import { prisma } from '../lib/prisma.js'
 import type { CartWarning } from '../types/cart.js'
 import type { CreateOrderRequest } from '../types/order.js'
@@ -133,4 +134,42 @@ export const createOrder = async (
 
     throw error
   }
+}
+
+const orderDetailSelect = {
+  id: true,
+  orderNumber: true,
+  status: true,
+  deliveryMethod: true,
+  deliveryDate: true,
+  shippingAddress: true,
+  shippingCity: true,
+  shippingPostalCode: true,
+  subtotalCents: true,
+  shippingCents: true,
+  totalCents: true,
+  createdAt: true,
+  pickupPoint: { select: { name: true, address: true, city: true, openingHours: true } },
+  items: {
+    orderBy: { id: 'asc' },
+    select: {
+      id: true,
+      productName: true,
+      variantName: true,
+      unitPriceCents: true,
+      quantity: true,
+      lineTotalCents: true,
+    },
+  },
+} satisfies Prisma.OrderSelect
+
+export const getCustomerOrder = async (userId: number, orderId: number) => {
+  const order = await prisma.order.findFirst({
+    where: { id: orderId, userId },
+    select: orderDetailSelect,
+  })
+
+  if (!order) return null
+
+  return { ...order, deliveryDate: order.deliveryDate.toISOString().slice(0, 10) }
 }
