@@ -63,3 +63,21 @@ Feature: Create an order
     When the second product has no stock
     Then nothing is saved
     And the stock of the first product does not change
+
+    
+  Scenario: The same order is sent twice
+    Given an order already created with a key
+    When the same order is sent again with the same key
+    Then the backend returns the same order
+    And no new order is created
+
+  Scenario: Double click on confirm
+    Given a customer on the review step
+    When the customer clicks "Confirma la comanda" twice very fast
+    Then only one order is sent
+    And the button shows "Confirmant..." while it is sent
+
+  Scenario: The order is confirmed
+    Given a customer on the review step
+    When the customer clicks "Confirma la comanda"
+    Then the page shows the order number
