@@ -1,7 +1,9 @@
 import type { AdminProductVariant } from '../types/product'
 
 export const getFromPriceCents = (variants: AdminProductVariant[]): number | null => {
-  const activePrices = variants.filter((variant) => variant.isActive).map((variant) => variant.priceCents)
+  const activePrices = variants
+    .filter((variant) => variant.isActive)
+    .map((variant) => variant.priceCents)
 
   return activePrices.length > 0 ? Math.min(...activePrices) : null
 }

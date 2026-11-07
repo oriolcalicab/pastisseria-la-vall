@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { useCart } from '../../features/cart/hooks/useCart'
 import AddressForm from '../../features/checkout/components/AddressForm'
 import DeliveryMethodSelector from '../../features/checkout/components/DeliveryMethodSelector'
@@ -32,7 +32,8 @@ const getMethodHint = (method: DeliveryMethod | null, pickupPoint: PickupPoint |
 }
 
 const CheckoutPage = () => {
-  const { lines, totalCents } = useCart()
+  const { lines, totalCents, clear } = useCart()
+  const navigate = useNavigate()
   const [step, setStep] = useState<CheckoutStep>('date')
   const [deliveryDate, setDeliveryDate] = useState<string | null>(null)
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod | null>(null)
@@ -44,7 +45,9 @@ const CheckoutPage = () => {
   const [idempotencyKey] = useState(() => crypto.randomUUID())
   const confirmOrder = useConfirmOrder()
 
-  if (lines.length === 0) return <Navigate to="/carreto" replace />
+  if (lines.length === 0 && confirmOrder.status !== 'done') {
+    return <Navigate to="/carreto" replace />
+  }
 
   const methodHint = getMethodHint(deliveryMethod, pickupPoint)
 
@@ -85,6 +88,26 @@ const CheckoutPage = () => {
     confirmOrder.reset()
     setPickupPoint(null)
     setStep('method')
+  }
+
+  const handleConfirm = async () => {
+    if (!deliveryDate || !deliveryMethod) return
+
+    const order = await confirmOrder.confirm(
+      buildOrderPayload({
+        idempotencyKey,
+        deliveryDate,
+        method: deliveryMethod,
+        pickupPointId: pickupPoint?.id ?? null,
+        address,
+        lines,
+      }),
+    )
+
+    if (!order) return
+
+    clear()
+    navigate(`/confirmacio/${order.id}`, { replace: true })
   }
 
   return (
@@ -189,43 +212,24 @@ const CheckoutPage = () => {
                 {deliveryMethod === 'delivery' ? "Canvia l'adreça" : 'Canvia el punt de recollida'}
               </button>
 
-                            {confirmOrder.error && (
+              {confirmOrder.error && (
                 <OrderErrorNotice
                   error={confirmOrder.error}
                   onChangeDate={handleChangeDate}
                   onChangePickupPoint={handleChangePickupPoint}
                 />
               )}
-              
-              {confirmOrder.status === 'done' && confirmOrder.order ? (
-                <div
-                  role="status"
-                  className="mt-6 rounded-sm border border-green-300 bg-green-50 p-4"
-                >
-                  <p className="font-semibold text-green-800">Comanda confirmada</p>
-                  <p>Número de comanda: {confirmOrder.order.orderNumber}</p>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() =>
-                    confirmOrder.confirm(
-                      buildOrderPayload({
-                        idempotencyKey,
-                        deliveryDate,
-                        method: deliveryMethod,
-                        pickupPointId: pickupPoint?.id ?? null,
-                        address,
-                        lines,
-                      }),
-                    )
-                  }
-                  disabled={confirmOrder.status === 'sending'}
-                  className="mt-6 rounded-sm bg-gray-900 px-4 py-2 text-white disabled:opacity-50"
-                >
-                  {confirmOrder.status === 'sending' ? 'Confirmant...' : 'Confirma la comanda'}
-                </button>
-              )}
+
+              <button
+                type="button"
+                onClick={handleConfirm}
+                disabled={confirmOrder.status === 'sending' || confirmOrder.status === 'done'}
+                className="mt-6 rounded-sm bg-gray-900 px-4 py-2 text-white disabled:opacity-50"
+              >
+                {confirmOrder.status === 'idle' || confirmOrder.status === 'error'
+                  ? 'Confirma la comanda'
+                  : 'Confirmant...'}
+              </button>
             </section>
           )}
         </div>

@@ -130,7 +130,7 @@ describe('NewProductPage', () => {
     expect(screen.getByRole('heading', { name: 'Nou producte' })).toBeInTheDocument()
   })
 
-    it('marks a negative price in its variant and does not send the form', async () => {
+  it('marks a negative price in its variant and does not send the form', async () => {
     // Given a form with a second variant with a negative price
     renderPage()
     const user = await fillValidForm()

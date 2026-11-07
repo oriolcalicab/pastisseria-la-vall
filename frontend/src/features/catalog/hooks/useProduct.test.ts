@@ -65,7 +65,7 @@ describe('useProduct', () => {
     expect(fetchProduct).toHaveBeenCalledTimes(2)
   })
 
-    it('asks for the new product when the id changes', async () => {
+  it('asks for the new product when the id changes', async () => {
     // Given a loaded product
     vi.mocked(fetchProduct).mockResolvedValue(product)
     const { result, rerender } = renderHook(({ id }) => useProduct(id), {

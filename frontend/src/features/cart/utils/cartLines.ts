@@ -8,9 +8,7 @@ export const addLine = (lines: CartLine[], newLine: NewCartLine, quantity = 1): 
   if (!isInCart) return [...lines, { ...newLine, quantity }]
 
   return lines.map((line) =>
-    line.variantId === newLine.variantId
-      ? { ...line, quantity: line.quantity + quantity }
-      : line,
+    line.variantId === newLine.variantId ? { ...line, quantity: line.quantity + quantity } : line,
   )
 }
 

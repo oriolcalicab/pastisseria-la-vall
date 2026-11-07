@@ -10,18 +10,18 @@ export const useConfirmOrder = () => {
   const isSending = useRef(false)
   const [status, setStatus] = useState<ConfirmStatus>('idle')
   const [error, setError] = useState<OrderRequestError | null>(null)
-  const [order, setOrder] = useState<CreatedOrder | null>(null)
 
-  const confirm = async (payload: OrderPayload) => {
-    if (!user || isSending.current) return
+  const confirm = async (payload: OrderPayload): Promise<CreatedOrder | null> => {
+    if (!user || isSending.current) return null
 
     isSending.current = true
     setStatus('sending')
     setError(null)
 
     try {
-      setOrder(await createOrder(await user.getIdToken(), payload))
+      const order = await createOrder(await user.getIdToken(), payload)
       setStatus('done')
+      return order
     } catch (caught) {
       setError(
         caught instanceof OrderRequestError
@@ -30,13 +30,14 @@ export const useConfirmOrder = () => {
       )
       setStatus('error')
       isSending.current = false
+      return null
     }
   }
 
-   const reset = () => {
+  const reset = () => {
     setError(null)
     setStatus('idle')
   }
 
-  return { status, error, order, confirm, reset }
+  return { status, error, confirm, reset }
 }

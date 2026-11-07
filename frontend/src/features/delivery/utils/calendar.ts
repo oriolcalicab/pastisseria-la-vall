@@ -62,7 +62,8 @@ export const getCalendarWeeks = (month: string): (string | null)[][] => {
   return Array.from({ length: cells.length / 7 }, (_, week) => cells.slice(week * 7, week * 7 + 7))
 }
 
-export const getMonthLabel = (month: string): string => monthFormatter.format(toUtcDate(`${month}-01`))
+export const getMonthLabel = (month: string): string =>
+  monthFormatter.format(toUtcDate(`${month}-01`))
 
 export const getDayLabel = (date: string): string => dayFormatter.format(toUtcDate(date))
 

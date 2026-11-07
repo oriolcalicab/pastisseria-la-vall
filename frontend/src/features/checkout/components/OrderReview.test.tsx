@@ -74,7 +74,9 @@ describe('OrderReview', () => {
     renderReview('pickup', { status: 'success', feeCents: 500, retry })
 
     // Then the shipping is free and the total is the subtotal
-    expect(screen.getByText('La Vall · Eixample, Carrer de Girona, 84, Barcelona')).toBeInTheDocument()
+    expect(
+      screen.getByText('La Vall · Eixample, Carrer de Girona, 84, Barcelona'),
+    ).toBeInTheDocument()
     expect(screen.getByText('Gratuït')).toBeInTheDocument()
     expect(screen.getAllByText(/^92,00\s€$/)).toHaveLength(2)
   })

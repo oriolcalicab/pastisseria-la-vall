@@ -62,7 +62,7 @@ describe('createOrder', () => {
     expect(result).toEqual(order)
   })
 
-   it('throws the message, the warnings and the reason of the backend', async () => {
+  it('throws the message, the warnings and the reason of the backend', async () => {
     // Given a backend that rejects the order because a price changed
     const warnings = [{ variantId: 12, type: 'price_changed' }]
     const json = async () => ({

@@ -7,9 +7,7 @@ type ShippingFeeResult = {
 }
 
 export type ShippingFeeState = (
-  | { status: 'loading' }
-  | { status: 'error' }
-  | { status: 'success'; feeCents: number }
+  { status: 'loading' } | { status: 'error' } | { status: 'success'; feeCents: number }
 ) & { retry: () => void }
 
 export const useShippingFee = (): ShippingFeeState => {

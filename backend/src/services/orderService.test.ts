@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma.js'
 import type { CreateOrderRequest } from '../types/order.js'
 import { findCartVariants } from './cartService.js'
 import { getDeliveryDates } from './deliveryService.js'
-import { createOrder } from './orderService.js'
+import { createOrder, getCustomerOrder } from './orderService.js'
 import { getMaxOrdersPerDay, getShippingFeeCents } from './settingsService.js'
 import { Prisma } from '../generated/prisma/client.js'
 
@@ -16,7 +16,7 @@ const tx = vi.hoisted(() => ({
 vi.mock('../lib/prisma.js', () => ({
   prisma: {
     pickupPoint: { findFirst: vi.fn() },
-    order: { findUnique: vi.fn() },
+    order: { findUnique: vi.fn(), findFirst: vi.fn() },
     $transaction: vi.fn(),
   },
 }))
@@ -291,5 +291,38 @@ describe('createOrder', () => {
 
     // Then the order of the other request is returned
     expect(result).toEqual({ ok: true, order: existingOrder, isNew: false })
+  })
+})
+
+describe('getCustomerOrder', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
+  it('only looks for the order among the orders of the customer', async () => {
+    // Given an order of the customer
+    vi.mocked(prisma.order.findFirst).mockResolvedValue({
+      id: 1,
+      orderNumber: 'LV-261106-4F2A9C',
+      deliveryDate: new Date('2026-11-12T00:00:00Z'),
+    } as never)
+
+    // When the customer asks for it
+    const order = await getCustomerOrder(5, 1)
+
+    // Then it is searched with the customer and the date has the short format
+    expect(prisma.order.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 1, userId: 5 } }),
+    )
+    expect(order).toMatchObject({ id: 1, deliveryDate: '2026-11-12' })
+  })
+
+  it('returns null when the order is not of the customer', async () => {
+    // Given an order that belongs to another customer
+    vi.mocked(prisma.order.findFirst).mockResolvedValue(null)
+
+    // When the customer asks for it
+    // Then nothing is returned
+    expect(await getCustomerOrder(5, 1)).toBeNull()
   })
 })

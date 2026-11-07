@@ -33,7 +33,9 @@ const renderTable = (overrides: Partial<AdminProduct> = {}, pendingKey: string |
 }
 
 const showVariants = () =>
-  userEvent.setup().click(screen.getByRole('button', { name: 'Mostra les variants de Pastís de xocolata' }))
+  userEvent
+    .setup()
+    .click(screen.getByRole('button', { name: 'Mostra les variants de Pastís de xocolata' }))
 
 describe('ProductsTable', () => {
   it('toggles an active product', async () => {
@@ -41,7 +43,9 @@ describe('ProductsTable', () => {
     const { shownProduct, onToggleProduct } = renderTable()
 
     // When the admin clicks deactivate
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Desactiva Pastís de xocolata' }))
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Desactiva Pastís de xocolata' }))
 
     // Then the table asks to toggle that product
     expect(onToggleProduct).toHaveBeenCalledWith(shownProduct)
@@ -78,7 +82,9 @@ describe('ProductsTable', () => {
     // When the admin activates the second variant
     await userEvent
       .setup()
-      .click(screen.getByRole('button', { name: 'Activa la variant 10 racions de Pastís de xocolata' }))
+      .click(
+        screen.getByRole('button', { name: 'Activa la variant 10 racions de Pastís de xocolata' }),
+      )
 
     // Then the table asks to toggle that variant of that product
     expect(onToggleVariant).toHaveBeenCalledWith(shownProduct, shownProduct.variants[1])

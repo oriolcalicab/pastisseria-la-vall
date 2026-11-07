@@ -33,7 +33,9 @@ describe('OrderErrorNotice', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Tria una altra data' }))
 
     // Then the message is shown and the customer goes back to the dates
-    expect(screen.getByRole('alert')).toHaveTextContent('La data de lliurament ja no està disponible')
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'La data de lliurament ja no està disponible',
+    )
     expect(onChangeDate).toHaveBeenCalledOnce()
   })
 

@@ -28,17 +28,21 @@ describe('useConfirmOrder', () => {
     vi.mocked(useAuth).mockReturnValue({ user, isLoading: false })
   })
 
-  it('sends the order with the token of the user', async () => {
+  it('sends the order with the token of the user and returns it', async () => {
     // Given a backend that creates the order
     vi.mocked(createOrder).mockResolvedValue(order)
     const { result } = renderHook(() => useConfirmOrder())
 
     // When the order is confirmed
-    await act(() => result.current.confirm(payload))
+    let created = null
+    await act(async () => {
+      created = await result.current.confirm(payload)
+    })
 
-    // Then it is sent with the token and the order is kept
+    // Then it is sent with the token and the created order is returned
     expect(createOrder).toHaveBeenCalledWith('token-123', payload)
-    expect(result.current).toMatchObject({ status: 'done', order })
+    expect(created).toEqual(order)
+    expect(result.current.status).toBe('done')
   })
 
   it('only sends the order once when it is confirmed twice at the same time', async () => {
@@ -66,7 +70,10 @@ describe('useConfirmOrder', () => {
 
     // Then the error is kept
     expect(result.current.status).toBe('error')
-    expect(result.current.error).toMatchObject({ message: 'Alguns productes han canviat', warnings })
+    expect(result.current.error).toMatchObject({
+      message: 'Alguns productes han canviat',
+      warnings,
+    })
 
     // When the customer tries again
     await act(() => result.current.confirm(payload))
@@ -76,7 +83,7 @@ describe('useConfirmOrder', () => {
     expect(result.current.status).toBe('done')
   })
 
-    it('clears the error when the customer goes back to change the order', async () => {
+  it('clears the error when the customer goes back to change the order', async () => {
     // Given an order that was rejected
     vi.mocked(createOrder).mockRejectedValue(
       new OrderRequestError('La data de lliurament ja no està disponible', [], 'date_unavailable'),

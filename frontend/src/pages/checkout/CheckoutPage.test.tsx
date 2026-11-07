@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ProtectedRoute from '../../features/auth/components/ProtectedRoute'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { CartProvider } from '../../features/cart/CartProvider'
-import { saveCart } from '../../features/cart/services/cartStorage'
+import { saveCart, loadCart } from '../../features/cart/services/cartStorage'
 import { useDeliveryDates } from '../../features/delivery/hooks/useDeliveryDates'
 import { getCalendarWeeks, getCurrentMonth } from '../../features/delivery/utils/calendar'
 import CheckoutPage from './CheckoutPage'
@@ -58,6 +58,7 @@ const renderCheckout = () =>
         <Routes>
           <Route path="/login" element={<p>Pàgina de login</p>} />
           <Route path="/carreto" element={<p>Pàgina del carretó</p>} />
+          <Route path="/confirmacio/:id" element={<p>Pàgina de confirmació</p>} />
           <Route element={<ProtectedRoute />}>
             <Route path="/checkout" element={<CheckoutPage />} />
           </Route>
@@ -303,13 +304,13 @@ describe('CheckoutPage', () => {
     expect(screen.getByText(/^83,00\s€$/)).toBeInTheDocument()
   })
 
-    const goToReviewStep = async (user: ReturnType<typeof userEvent.setup>) => {
+  const goToReviewStep = async (user: ReturnType<typeof userEvent.setup>) => {
     await goToPickupStep(user)
     await user.click(screen.getByRole('button', { name: 'Tria Eixample' }))
     await user.click(screen.getByRole('button', { name: 'Continua' }))
   }
 
-  it('confirms the order and shows its number', async () => {
+  it('confirms the order, empties the cart and opens the confirmation page', async () => {
     // Given a customer on the review step
     vi.mocked(createOrder).mockResolvedValue({
       id: 1,
@@ -323,7 +324,7 @@ describe('CheckoutPage', () => {
     // When the customer confirms the order
     await user.click(screen.getByRole('button', { name: 'Confirma la comanda' }))
 
-    // Then the order is sent with a key and its number is shown
+    // Then the order is sent with a key, the cart is empty and the confirmation is shown
     expect(createOrder).toHaveBeenCalledWith(
       'token-123',
       expect.objectContaining({
@@ -332,11 +333,12 @@ describe('CheckoutPage', () => {
         pickupPointId: 2,
       }),
     )
-    expect(screen.getByText('Número de comanda: LV-261106-4F2A9C')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Confirma la comanda' })).not.toBeInTheDocument()
+    expect(await screen.findByText('Pàgina de confirmació')).toBeInTheDocument()
+    expect(screen.queryByText('Pàgina del carretó')).not.toBeInTheDocument()
+    expect(loadCart()).toEqual([])
   })
 
-   it('keeps the cart and sends the customer to review it when the cart changed', async () => {
+  it('keeps the cart and sends the customer to review it when the cart changed', async () => {
     // Given a backend that rejects the order because a price changed
     vi.mocked(createOrder).mockRejectedValue(
       new OrderRequestError(
@@ -401,7 +403,9 @@ describe('CheckoutPage', () => {
     await user.click(screen.getByRole('button', { name: 'Tria un altre punt de recollida' }))
 
     // Then the second step is shown without a pickup point and without the error
-    expect(screen.getByRole('heading', { name: 'Pas 2 · Mètode de lliurament' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Pas 2 · Mètode de lliurament' }),
+    ).toBeInTheDocument()
     expect(screen.getByText('Tria un punt de recollida per continuar.')).toBeInTheDocument()
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })

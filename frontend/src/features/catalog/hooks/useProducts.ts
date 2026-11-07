@@ -13,9 +13,7 @@ type ProductsParams = {
 }
 
 type ProductsState = (
-  | { status: 'loading' }
-  | { status: 'error' }
-  | { status: 'success'; data: ProductPage }
+  { status: 'loading' } | { status: 'error' } | { status: 'success'; data: ProductPage }
 ) & { retry: () => void }
 
 export const useProducts = ({ page, diet }: ProductsParams): ProductsState => {

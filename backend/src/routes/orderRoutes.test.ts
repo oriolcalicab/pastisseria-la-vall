@@ -1,6 +1,6 @@
 import express from 'express'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createOrder } from '../services/orderService.js'
+import { createOrder, getCustomerOrder } from '../services/orderService.js'
 import { verifyFirebaseToken } from '../services/tokenService.js'
 import { findUserByFirebaseUid } from '../services/userService.js'
 import { startTestServer } from '../test/startTestServer.js'
@@ -9,7 +9,7 @@ import orderRouter from './orderRoutes.js'
 
 vi.mock('../services/tokenService.js', () => ({ verifyFirebaseToken: vi.fn() }))
 vi.mock('../services/userService.js', () => ({ findUserByFirebaseUid: vi.fn() }))
-vi.mock('../services/orderService.js', () => ({ createOrder: vi.fn() }))
+vi.mock('../services/orderService.js', () => ({ createOrder: vi.fn(), getCustomerOrder: vi.fn() }))
 
 let server: TestServer
 
@@ -32,7 +32,10 @@ const postOrder = (
     body: JSON.stringify(body),
   })
 
-describe('POST /api/orders', () => {
+  const getOrder = (id: string, headers: Record<string, string> = { Authorization: 'Bearer token' }) =>
+  fetch(`${server.baseUrl}/api/orders/${id}`, { headers })
+
+describe('order routes', () => {
   beforeAll(async () => {
     const app = express()
     app.use(express.json())
@@ -131,5 +134,50 @@ describe('POST /api/orders', () => {
     // Then the existing order is returned without creating another one
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual(order)
+  })
+
+    it('returns the order of the customer', async () => {
+    // Given an order of the logged customer
+    const order = { id: 1, orderNumber: 'LV-261106-4F2A9C', deliveryDate: '2026-11-12' }
+    vi.mocked(getCustomerOrder).mockResolvedValue(order as never)
+
+    // When the customer asks for it
+    const response = await getOrder('1')
+
+    // Then it is searched for the user of the token and returned
+    expect(response.status).toBe(200)
+    expect(getCustomerOrder).toHaveBeenCalledWith(5, 1)
+    expect(await response.json()).toEqual(order)
+  })
+
+  it('responds 404 when the order is of another customer', async () => {
+    // Given an order that is not of the logged customer
+    vi.mocked(getCustomerOrder).mockResolvedValue(null)
+
+    // When the customer asks for it
+    const response = await getOrder('1')
+
+    // Then the order is not found
+    expect(response.status).toBe(404)
+  })
+
+  it('responds 400 when the id is not valid', async () => {
+    // Given a logged customer
+    // When the customer asks for an id that is not a number
+    const response = await getOrder('abc')
+
+    // Then the request is rejected without searching
+    expect(response.status).toBe(400)
+    expect(getCustomerOrder).not.toHaveBeenCalled()
+  })
+
+  it('responds 401 when a visitor asks for an order', async () => {
+    // Given a visitor without token
+    // When the visitor asks for an order
+    const response = await getOrder('1', {})
+
+    // Then the request is rejected
+    expect(response.status).toBe(401)
+    expect(getCustomerOrder).not.toHaveBeenCalled()
   })
 })

@@ -3,9 +3,7 @@ import { fetchCategories } from '../services/categoriesApi'
 import type { Category } from '../types/category'
 
 type CategoriesState =
-  | { status: 'loading' }
-  | { status: 'error' }
-  | { status: 'success'; categories: Category[] }
+  { status: 'loading' } | { status: 'error' } | { status: 'success'; categories: Category[] }
 
 export const useCategories = (): CategoriesState => {
   const [state, setState] = useState<CategoriesState>({ status: 'loading' })

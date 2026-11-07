@@ -14,9 +14,7 @@ type AdminProductsResult = {
 }
 
 type AdminProductsState = (
-  | { status: 'loading' }
-  | { status: 'error' }
-  | { status: 'success'; data: AdminProductPage }
+  { status: 'loading' } | { status: 'error' } | { status: 'success'; data: AdminProductPage }
 ) & {
   retry: () => void
   replaceProduct: (product: AdminProduct) => void
@@ -51,7 +49,7 @@ export const useAdminProducts = ({ page, search }: AdminProductsParams): AdminPr
 
   const retry = () => setAttempt((current) => current + 1)
 
-    const updateData = (update: (data: AdminProductPage) => AdminProductPage) =>
+  const updateData = (update: (data: AdminProductPage) => AdminProductPage) =>
     setResult((current) => (current?.data ? { ...current, data: update(current.data) } : current))
 
   const replaceProduct = (product: AdminProduct) =>

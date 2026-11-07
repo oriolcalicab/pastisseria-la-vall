@@ -32,7 +32,7 @@ describe('useProducts', () => {
     vi.mocked(fetchProducts).mockRejectedValue(new Error('Request failed'))
 
     // When the hook asks for the products
-    const { result } = renderHook(() =>useProducts({ page: 1, diet: '' }))
+    const { result } = renderHook(() => useProducts({ page: 1, diet: '' }))
 
     // Then the status is error
     await waitFor(() => expect(result.current.status).toBe('error'))

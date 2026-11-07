@@ -16,18 +16,22 @@ import ProductDetailPage from './pages/catalog/ProductDetailPage'
 import ShopLayout from './components/ShopLayout'
 import CartPage from './pages/cart/CartPage'
 import CheckoutPage from './pages/checkout/CheckoutPage'
+import ConfirmationPage from './pages/orders/ConfirmationPage'
 
 export const router = createBrowserRouter([
-   {
+  {
     element: <ShopLayout />,
     children: [
       { path: '/', element: <HomePage /> },
       { path: '/productes', element: <ProductsPage /> },
       { path: '/productes/:id', element: <ProductDetailPage /> },
       { path: '/carreto', element: <CartPage /> },
-            {
+      {
         element: <ProtectedRoute />,
-        children: [{ path: '/checkout', element: <CheckoutPage /> }],
+        children: [
+          { path: '/checkout', element: <CheckoutPage /> },
+          { path: '/confirmacio/:id', element: <ConfirmationPage /> },
+        ],
       },
     ],
   },

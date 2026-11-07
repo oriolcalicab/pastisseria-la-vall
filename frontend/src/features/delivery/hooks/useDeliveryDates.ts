@@ -8,9 +8,7 @@ type DeliveryDatesResult = {
 }
 
 type DeliveryDatesState = (
-  | { status: 'loading' }
-  | { status: 'error' }
-  | { status: 'success'; days: DeliveryDay[] }
+  { status: 'loading' } | { status: 'error' } | { status: 'success'; days: DeliveryDay[] }
 ) & { retry: () => void }
 
 export const useDeliveryDates = (month: string): DeliveryDatesState => {
