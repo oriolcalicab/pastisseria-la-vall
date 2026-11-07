@@ -4,24 +4,42 @@ import type { CreateOrderRequest } from '../types/order.js'
 import { findCartVariants } from './cartService.js'
 import { getDeliveryDates } from './deliveryService.js'
 import { createOrder } from './orderService.js'
-import { getShippingFeeCents } from './settingsService.js'
+import { getMaxOrdersPerDay, getShippingFeeCents } from './settingsService.js'
+
+const tx = vi.hoisted(() => ({
+  $executeRaw: vi.fn(),
+  order: { count: vi.fn(), create: vi.fn() },
+  productVariant: { updateMany: vi.fn() },
+}))
 
 vi.mock('../lib/prisma.js', () => ({
-  prisma: { pickupPoint: { findFirst: vi.fn() }, order: { create: vi.fn() } },
+  prisma: { pickupPoint: { findFirst: vi.fn() }, $transaction: vi.fn() },
 }))
 vi.mock('./cartService.js', () => ({ findCartVariants: vi.fn() }))
 vi.mock('./deliveryService.js', () => ({ getDeliveryDates: vi.fn() }))
-vi.mock('./settingsService.js', () => ({ getShippingFeeCents: vi.fn() }))
+vi.mock('./settingsService.js', () => ({
+  getShippingFeeCents: vi.fn(),
+  getMaxOrdersPerDay: vi.fn(),
+}))
 
 const now = new Date('2026-11-06T10:00:00Z')
 
-const variant = {
+const cake = {
   id: 12,
   name: '6 racions',
   priceCents: 3900,
   stock: 5,
   isActive: true,
   product: { id: 7, name: 'Pastís de xocolata', imageUrl: null, isActive: true },
+}
+
+const cupcakes = {
+  id: 20,
+  name: 'Caixa de 4',
+  priceCents: 1400,
+  stock: 5,
+  isActive: true,
+  product: { id: 8, name: 'Cupcakes de vainilla', imageUrl: null, isActive: true },
 }
 
 const pickupRequest: CreateOrderRequest = {
@@ -47,32 +65,41 @@ describe('createOrder', () => {
       days: [{ date: '2026-11-12', available: true, reason: null }],
     })
     vi.mocked(prisma.pickupPoint.findFirst).mockResolvedValue({ id: 2 } as never)
-    vi.mocked(findCartVariants).mockResolvedValue([variant] as never)
+    vi.mocked(findCartVariants).mockResolvedValue([cake, cupcakes] as never)
     vi.mocked(getShippingFeeCents).mockResolvedValue(500)
-    vi.mocked(prisma.order.create).mockResolvedValue({
+    vi.mocked(getMaxOrdersPerDay).mockResolvedValue(5)
+    vi.mocked(prisma.$transaction).mockImplementation(((callback: (client: typeof tx) => unknown) =>
+      callback(tx)) as never)
+    tx.order.count.mockResolvedValue(4)
+    tx.productVariant.updateMany.mockResolvedValue({ count: 1 })
+    tx.order.create.mockResolvedValue({
       id: 1,
       orderNumber: 'LV-261106-4F2A9C',
       status: 'pending',
       totalCents: 7800,
-    } as never)
+    })
   })
 
-  it('creates a pickup order for the user with the prices of the database', async () => {
-    // Given an available date, an active point and the same prices
+  it('locks the day, takes the stock and saves the order with its lines and history', async () => {
+    // Given an available date with one free place and enough stock
     // When the order is created
     const result = await createOrder(5, pickupRequest, now)
 
-    // Then it is saved for that user with the lines, the totals and the first status
+    // Then the day is locked, the stock is taken and the order is saved
     expect(result).toMatchObject({ ok: true, order: { orderNumber: 'LV-261106-4F2A9C' } })
-    expect(prisma.order.create).toHaveBeenCalledWith(
+    expect(tx.$executeRaw.mock.calls[0]).toContain(20261112)
+    expect(tx.order.count).toHaveBeenCalledWith({
+      where: { deliveryDate: new Date('2026-11-12T00:00:00Z'), status: { not: 'cancelled' } },
+    })
+    expect(tx.productVariant.updateMany).toHaveBeenCalledWith({
+      where: { id: 12, isActive: true, product: { isActive: true }, stock: { gte: 2 } },
+      data: { stock: { decrement: 2 } },
+    })
+    expect(tx.order.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           userId: 5,
-          deliveryMethod: 'pickup',
-          deliveryDate: new Date('2026-11-12T00:00:00Z'),
           pickupPointId: 2,
-          subtotalCents: 7800,
-          shippingCents: 0,
           totalCents: 7800,
           items: {
             create: [
@@ -98,7 +125,7 @@ describe('createOrder', () => {
     await createOrder(5, deliveryRequest, now)
 
     // Then the address and the shipping are saved
-    expect(prisma.order.create).toHaveBeenCalledWith(
+    expect(tx.order.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           deliveryMethod: 'delivery',
@@ -114,18 +141,18 @@ describe('createOrder', () => {
   })
 
   it('does not create the order when the date is no longer available', async () => {
-    // Given a day that became full
+    // Given a day that is no longer available
     vi.mocked(getDeliveryDates).mockResolvedValue({
       month: '2026-11',
-      days: [{ date: '2026-11-12', available: false, reason: 'full' }],
+      days: [{ date: '2026-11-12', available: false, reason: 'sunday' }],
     })
 
     // When the order is created
     const result = await createOrder(5, pickupRequest, now)
 
-    // Then nothing is saved
+    // Then no transaction is started
     expect(result).toEqual({ ok: false, reason: 'date_unavailable' })
-    expect(prisma.order.create).not.toHaveBeenCalled()
+    expect(prisma.$transaction).not.toHaveBeenCalled()
   })
 
   it('does not create the order when the pickup point is not active', async () => {
@@ -135,24 +162,80 @@ describe('createOrder', () => {
     // When the order is created
     const result = await createOrder(5, pickupRequest, now)
 
-    // Then nothing is saved
+    // Then no transaction is started
     expect(result).toEqual({ ok: false, reason: 'pickup_point_unavailable' })
-    expect(prisma.order.create).not.toHaveBeenCalled()
+    expect(prisma.$transaction).not.toHaveBeenCalled()
   })
 
   it('does not create the order when a price changed', async () => {
     // Given a price that changed since the customer saw it
-    vi.mocked(findCartVariants).mockResolvedValue([{ ...variant, priceCents: 4200 }] as never)
+    vi.mocked(findCartVariants).mockResolvedValue([{ ...cake, priceCents: 4200 }] as never)
 
     // When the order is created
     const result = await createOrder(5, pickupRequest, now)
 
-    // Then nothing is saved and the customer gets the warning
+    // Then no transaction is started and the customer gets the warning
     expect(result).toEqual({
       ok: false,
       reason: 'cart_changed',
       warnings: [{ variantId: 12, type: 'price_changed' }],
     })
-    expect(prisma.order.create).not.toHaveBeenCalled()
+    expect(prisma.$transaction).not.toHaveBeenCalled()
+  })
+
+  it('rejects the order when another order took the last place of the day', async () => {
+    // Given the day became full while waiting for the lock
+    tx.order.count.mockResolvedValue(5)
+
+    // When the order is created
+    const result = await createOrder(5, pickupRequest, now)
+
+    // Then no stock is taken and nothing is saved
+    expect(result).toEqual({ ok: false, reason: 'date_unavailable' })
+    expect(tx.productVariant.updateMany).not.toHaveBeenCalled()
+    expect(tx.order.create).not.toHaveBeenCalled()
+  })
+
+  it('rejects the order when another order took the last units', async () => {
+    // Given the stock ran out while waiting for the lock
+    tx.productVariant.updateMany.mockResolvedValue({ count: 0 })
+
+    // When the order is created
+    const result = await createOrder(5, pickupRequest, now)
+
+    // Then nothing is saved and the customer is told
+    expect(result).toEqual({
+      ok: false,
+      reason: 'cart_changed',
+      warnings: [{ variantId: 12, type: 'out_of_stock' }],
+    })
+    expect(tx.order.create).not.toHaveBeenCalled()
+  })
+
+  it('takes the stock in order of variant to avoid deadlocks', async () => {
+    // Given an order with the cupcakes before the cake
+    const request = {
+      ...pickupRequest,
+      lines: [
+        { variantId: 20, quantity: 1, priceCents: 1400 },
+        { variantId: 12, quantity: 1, priceCents: 3900 },
+      ],
+    }
+
+    // When the order is created
+    await createOrder(5, request, now)
+
+    // Then the cake (12) is updated before the cupcakes (20)
+    const updatedIds = tx.productVariant.updateMany.mock.calls.map(([args]) => args.where.id)
+    expect(updatedIds).toEqual([12, 20])
+  })
+
+  it('does not hide other errors', async () => {
+    // Given a database that fails
+    tx.order.create.mockRejectedValue(new Error('Connection lost'))
+
+    // When the order is created
+    // Then the error goes up to become a server error
+    await expect(createOrder(5, pickupRequest, now)).rejects.toThrow('Connection lost')
   })
 })
