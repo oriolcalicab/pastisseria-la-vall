@@ -62,20 +62,25 @@ describe('createOrder', () => {
     expect(result).toEqual(order)
   })
 
-  it('throws the message and the warnings of the backend', async () => {
+   it('throws the message, the warnings and the reason of the backend', async () => {
     // Given a backend that rejects the order because a price changed
     const warnings = [{ variantId: 12, type: 'price_changed' }]
-    const json = async () => ({ error: 'Alguns productes han canviat. Revisa el carretó', warnings })
+    const json = async () => ({
+      error: 'Alguns productes han canviat. Revisa el carretó',
+      reason: 'cart_changed',
+      warnings,
+    })
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 409, json }))
 
     // When the order is sent
     const error = await createOrder('token-123', payload).catch((caught: unknown) => caught)
 
-    // Then the error has the message and the warnings
+    // Then the error has the message, the warnings and the reason
     expect(error).toBeInstanceOf(OrderRequestError)
     expect(error).toMatchObject({
       message: 'Alguns productes han canviat. Revisa el carretó',
       warnings,
+      reason: 'cart_changed',
     })
   })
 

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { User } from 'firebase/auth'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
@@ -336,12 +336,14 @@ describe('CheckoutPage', () => {
     expect(screen.queryByRole('button', { name: 'Confirma la comanda' })).not.toBeInTheDocument()
   })
 
-  it('explains why the order could not be confirmed', async () => {
+   it('keeps the cart and sends the customer to review it when the cart changed', async () => {
     // Given a backend that rejects the order because a price changed
     vi.mocked(createOrder).mockRejectedValue(
-      new OrderRequestError('Alguns productes han canviat. Revisa el carretó', [
-        { variantId: 12, type: 'price_changed' },
-      ]),
+      new OrderRequestError(
+        'Alguns productes han canviat. Revisa el carretó',
+        [{ variantId: 12, type: 'price_changed' }],
+        'cart_changed',
+      ),
     )
     const user = userEvent.setup()
     await goToReviewStep(user)
@@ -349,13 +351,58 @@ describe('CheckoutPage', () => {
     // When the customer confirms the order
     await user.click(screen.getByRole('button', { name: 'Confirma la comanda' }))
 
-    // Then the reason is shown with a link to the cart
+    // Then the reason is shown, the cart is kept and there is a link to review it
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'El preu de Pastís de xocolata (6 racions) ha canviat.',
+      'Alguns productes han canviat. Revisa el carretó',
     )
     expect(screen.getByRole('link', { name: 'Revisa el carretó' })).toHaveAttribute(
       'href',
       '/carreto',
     )
+    expect(
+      within(screen.getByRole('complementary', { name: 'Resum' })).getByText(
+        '2 × Pastís de xocolata (6 racions)',
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('goes back to the dates without the full day', async () => {
+    // Given a backend that rejects the order because the day is full
+    vi.mocked(createOrder).mockRejectedValue(
+      new OrderRequestError('La data de lliurament ja no està disponible', [], 'date_unavailable'),
+    )
+    const user = userEvent.setup()
+    await goToReviewStep(user)
+    await user.click(screen.getByRole('button', { name: 'Confirma la comanda' }))
+
+    // When the customer wants another date
+    await user.click(screen.getByRole('button', { name: 'Tria una altra data' }))
+
+    // Then the first step is shown without a date and without the error
+    expect(screen.getByRole('heading', { name: 'Pas 1 · Data de lliurament' })).toBeInTheDocument()
+    expect(screen.getByText('Tria una data per continuar.')).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('goes back to the pickup points without the deactivated one', async () => {
+    // Given a backend that rejects the order because the pickup point was deactivated
+    vi.mocked(createOrder).mockRejectedValue(
+      new OrderRequestError(
+        'El punt de recollida ja no està disponible',
+        [],
+        'pickup_point_unavailable',
+      ),
+    )
+    const user = userEvent.setup()
+    await goToReviewStep(user)
+    await user.click(screen.getByRole('button', { name: 'Confirma la comanda' }))
+
+    // When the customer wants another pickup point
+    await user.click(screen.getByRole('button', { name: 'Tria un altre punt de recollida' }))
+
+    // Then the second step is shown without a pickup point and without the error
+    expect(screen.getByRole('heading', { name: 'Pas 2 · Mètode de lliurament' })).toBeInTheDocument()
+    expect(screen.getByText('Tria un punt de recollida per continuar.')).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 })

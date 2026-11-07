@@ -33,5 +33,10 @@ export const useConfirmOrder = () => {
     }
   }
 
-  return { status, error, order, confirm }
+   const reset = () => {
+    setError(null)
+    setStatus('idle')
+  }
+
+  return { status, error, order, confirm, reset }
 }

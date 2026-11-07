@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import { useCart } from '../../features/cart/hooks/useCart'
 import AddressForm from '../../features/checkout/components/AddressForm'
 import DeliveryMethodSelector from '../../features/checkout/components/DeliveryMethodSelector'
@@ -18,7 +18,7 @@ import OrderReview from '../../features/checkout/components/OrderReview'
 import { useShippingFee } from '../../features/checkout/hooks/useShippingFee'
 import { useConfirmOrder } from '../../features/checkout/hooks/useConfirmOrder'
 import { buildOrderPayload } from '../../features/checkout/utils/orderPayload'
-import { getCartNotices } from '../../features/cart/utils/cartNotices'
+import OrderErrorNotice from '../../features/checkout/components/OrderErrorNotice'
 
 type CheckoutStep = 'date' | 'method' | 'review'
 
@@ -68,6 +68,23 @@ const CheckoutPage = () => {
     }
 
     setStep('review')
+  }
+
+  const handleBackToMethod = () => {
+    confirmOrder.reset()
+    setStep('method')
+  }
+
+  const handleChangeDate = () => {
+    confirmOrder.reset()
+    setDeliveryDate(null)
+    setStep('date')
+  }
+
+  const handleChangePickupPoint = () => {
+    confirmOrder.reset()
+    setPickupPoint(null)
+    setStep('method')
   }
 
   return (
@@ -168,32 +185,18 @@ const CheckoutPage = () => {
                 pickupPoint={pickupPoint}
                 shippingFee={shippingFee}
               />
-              <button
-                type="button"
-                onClick={() => setStep('method')}
-                className="mt-4 text-sm underline"
-              >
+              <button type="button" onClick={handleBackToMethod} className="mt-4 text-sm underline">
                 {deliveryMethod === 'delivery' ? "Canvia l'adreça" : 'Canvia el punt de recollida'}
               </button>
-              
-              {confirmOrder.error && (
-                <div role="alert" className="mt-6 rounded-sm border border-red-300 bg-red-50 p-4">
-                  <p className="text-red-700">{confirmOrder.error.message}</p>
-                  {confirmOrder.error.warnings.length > 0 && (
-                    <>
-                      <ul className="mt-2 list-disc pl-5 text-sm">
-                        {getCartNotices(confirmOrder.error.warnings, lines).map((notice) => (
-                          <li key={notice}>{notice}</li>
-                        ))}
-                      </ul>
-                      <Link to="/carreto" className="mt-2 inline-block underline">
-                        Revisa el carretó
-                      </Link>
-                    </>
-                  )}
-                </div>
-              )}
 
+                            {confirmOrder.error && (
+                <OrderErrorNotice
+                  error={confirmOrder.error}
+                  onChangeDate={handleChangeDate}
+                  onChangePickupPoint={handleChangePickupPoint}
+                />
+              )}
+              
               {confirmOrder.status === 'done' && confirmOrder.order ? (
                 <div
                   role="status"
