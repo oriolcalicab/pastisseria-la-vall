@@ -81,3 +81,16 @@ Feature: Create an order
     Given a customer on the review step
     When the customer clicks "Confirma la comanda"
     Then the page shows the order number
+
+
+  Scenario: Not enough stock
+    Given a variant with 2 units
+    When a customer orders 3 units
+    Then the order is not saved
+    And the customer is told the cart has changed
+
+  Scenario: A variant was deactivated
+    Given a customer with a variant in the cart
+    When the admin deactivates the variant before the order is confirmed
+    Then the order is not saved
+    And the customer is told the cart has changed
