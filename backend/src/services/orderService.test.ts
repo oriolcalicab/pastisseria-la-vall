@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma.js'
 import type { CreateOrderRequest } from '../types/order.js'
 import { findCartVariants } from './cartService.js'
 import { getDeliveryDates } from './deliveryService.js'
-import { createOrder, getCustomerOrder } from './orderService.js'
+import { createOrder, getCustomerOrder, listCustomerOrders } from './orderService.js'
 import { getMaxOrdersPerDay, getShippingFeeCents } from './settingsService.js'
 import { Prisma } from '../generated/prisma/client.js'
 
@@ -16,7 +16,7 @@ const tx = vi.hoisted(() => ({
 vi.mock('../lib/prisma.js', () => ({
   prisma: {
     pickupPoint: { findFirst: vi.fn() },
-    order: { findUnique: vi.fn(), findFirst: vi.fn() },
+    order: { findUnique: vi.fn(), findFirst: vi.fn(), findMany: vi.fn() },
     $transaction: vi.fn(),
   },
 }))
@@ -324,5 +324,30 @@ describe('getCustomerOrder', () => {
     // When the customer asks for it
     // Then nothing is returned
     expect(await getCustomerOrder(5, 1)).toBeNull()
+  })
+})
+
+describe('listCustomerOrders', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
+  it('returns the orders of the customer, the newest first', async () => {
+    // Given a customer with orders
+    vi.mocked(prisma.order.findMany).mockResolvedValue([
+      { id: 2, orderNumber: 'LV-261107-AAAAAA', deliveryDate: new Date('2026-11-14T00:00:00Z') },
+    ] as never)
+
+    // When the customer asks for the orders
+    const orders = await listCustomerOrders(5)
+
+    // Then only the orders of the customer are searched, sorted by date
+    expect(prisma.order.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: 5 },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      }),
+    )
+    expect(orders).toEqual([{ id: 2, orderNumber: 'LV-261107-AAAAAA', deliveryDate: '2026-11-14' }])
   })
 })

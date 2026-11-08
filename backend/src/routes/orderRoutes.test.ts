@@ -1,6 +1,6 @@
 import express from 'express'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createOrder, getCustomerOrder } from '../services/orderService.js'
+import { createOrder, getCustomerOrder, listCustomerOrders } from '../services/orderService.js'
 import { verifyFirebaseToken } from '../services/tokenService.js'
 import { findUserByFirebaseUid } from '../services/userService.js'
 import { startTestServer } from '../test/startTestServer.js'
@@ -9,7 +9,11 @@ import orderRouter from './orderRoutes.js'
 
 vi.mock('../services/tokenService.js', () => ({ verifyFirebaseToken: vi.fn() }))
 vi.mock('../services/userService.js', () => ({ findUserByFirebaseUid: vi.fn() }))
-vi.mock('../services/orderService.js', () => ({ createOrder: vi.fn(), getCustomerOrder: vi.fn() }))
+vi.mock('../services/orderService.js', () => ({
+  createOrder: vi.fn(),
+  getCustomerOrder: vi.fn(),
+  listCustomerOrders: vi.fn(),
+}))
 
 let server: TestServer
 
@@ -32,8 +36,10 @@ const postOrder = (
     body: JSON.stringify(body),
   })
 
-  const getOrder = (id: string, headers: Record<string, string> = { Authorization: 'Bearer token' }) =>
-  fetch(`${server.baseUrl}/api/orders/${id}`, { headers })
+const getOrder = (
+  id: string,
+  headers: Record<string, string> = { Authorization: 'Bearer token' },
+) => fetch(`${server.baseUrl}/api/orders/${id}`, { headers })
 
 describe('order routes', () => {
   beforeAll(async () => {
@@ -136,7 +142,7 @@ describe('order routes', () => {
     expect(await response.json()).toEqual(order)
   })
 
-    it('returns the order of the customer', async () => {
+  it('returns the order of the customer', async () => {
     // Given an order of the logged customer
     const order = { id: 1, orderNumber: 'LV-261106-4F2A9C', deliveryDate: '2026-11-12' }
     vi.mocked(getCustomerOrder).mockResolvedValue(order as never)
@@ -179,5 +185,31 @@ describe('order routes', () => {
     // Then the request is rejected
     expect(response.status).toBe(401)
     expect(getCustomerOrder).not.toHaveBeenCalled()
+  })
+
+  it('returns the orders of the customer of the token', async () => {
+    // Given a customer with one order
+    const orders = [{ id: 1, orderNumber: 'LV-261106-4F2A9C', deliveryDate: '2026-11-12' }]
+    vi.mocked(listCustomerOrders).mockResolvedValue(orders as never)
+
+    // When the customer asks for the orders
+    const response = await fetch(`${server.baseUrl}/api/orders`, {
+      headers: { Authorization: 'Bearer token' },
+    })
+
+    // Then the orders of the user of the token are returned
+    expect(response.status).toBe(200)
+    expect(listCustomerOrders).toHaveBeenCalledWith(5)
+    expect(await response.json()).toEqual(orders)
+  })
+
+  it('responds 401 when a visitor asks for the orders', async () => {
+    // Given a visitor without token
+    // When the visitor asks for the orders
+    const response = await fetch(`${server.baseUrl}/api/orders`)
+
+    // Then the request is rejected
+    expect(response.status).toBe(401)
+    expect(listCustomerOrders).not.toHaveBeenCalled()
   })
 })
