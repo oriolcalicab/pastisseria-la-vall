@@ -19,6 +19,7 @@ import CheckoutPage from './pages/checkout/CheckoutPage'
 import ConfirmationPage from './pages/orders/ConfirmationPage'
 import OrdersPage from './pages/orders/OrdersPage'
 import OrderDetailPage from './pages/orders/OrderDetailPage'
+import AdminOrdersPage from './pages/admin/AdminOrdersPage'
 
 export const router = createBrowserRouter([
   {
@@ -54,6 +55,7 @@ export const router = createBrowserRouter([
         element: <AdminLayout />,
         children: [
           { index: true, element: <AdminDashboardPage /> },
+          { path: 'comandes', element: <AdminOrdersPage /> },
           { path: 'productes', element: <AdminProductsPage /> },
           { path: 'productes/nou', element: <NewProductPage /> },
         ],
