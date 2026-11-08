@@ -20,3 +20,26 @@ Feature: Orders of the customer
     Given a visitor without session
     When the visitor asks for the orders
     Then the backend responds 401
+    
+    
+  Scenario: The customer opens the page of their orders
+    Given a customer with one order
+    When the customer opens "Les meves comandes"
+    Then the page shows the number, the date, the delivery date, the method, the total and the status
+
+  Scenario: The customer has no orders yet
+    Given a customer without orders
+    When the customer opens "Les meves comandes"
+    Then the page shows "Encara no has fet cap comanda."
+    And there is a link to the products
+
+  Scenario: The orders can not be loaded
+    Given a backend that fails
+    When the customer opens "Les meves comandes"
+    Then the page shows an error
+    And the customer can try again
+
+  Scenario: Visitor without session opens the page
+    Given a visitor without session
+    When the visitor opens "/comandes"
+    Then the visitor is sent to the login page
