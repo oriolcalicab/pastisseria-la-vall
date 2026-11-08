@@ -10,6 +10,7 @@ import { findCartVariants } from './cartService.js'
 import { getDeliveryDates } from './deliveryService.js'
 import { getMaxOrdersPerDay, getShippingFeeCents } from './settingsService.js'
 import { isUniqueConstraintError } from './userService.js'
+import { toDateKey } from '../utils/dateKey.js'
 
 type OrderSummary = { id: number; orderNumber: string; status: string; totalCents: number }
 
@@ -171,5 +172,25 @@ export const getCustomerOrder = async (userId: number, orderId: number) => {
 
   if (!order) return null
 
-  return { ...order, deliveryDate: order.deliveryDate.toISOString().slice(0, 10) }
+  return { ...order, deliveryDate: toDateKey(order.deliveryDate) }
+}
+
+const orderListSelect = {
+  id: true,
+  orderNumber: true,
+  status: true,
+  deliveryMethod: true,
+  deliveryDate: true,
+  totalCents: true,
+  createdAt: true,
+} satisfies Prisma.OrderSelect
+
+export const listCustomerOrders = async (userId: number) => {
+  const orders = await prisma.order.findMany({
+    where: { userId },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    select: orderListSelect,
+  })
+
+  return orders.map((order) => ({ ...order, deliveryDate: toDateKey(order.deliveryDate) }))
 }

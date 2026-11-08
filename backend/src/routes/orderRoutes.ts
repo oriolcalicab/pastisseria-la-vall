@@ -2,7 +2,7 @@ import { Router } from 'express'
 import type { Request, Response } from 'express'
 import { requireAuth } from '../middleware/requireAuth.js'
 import { parseCreateOrderBody } from '../validation/createOrderBody.js'
-import { createOrder, getCustomerOrder } from '../services/orderService.js'
+import { createOrder, getCustomerOrder, listCustomerOrders } from '../services/orderService.js'
 import { parseIdParam } from '../validation/idParam.js'
 
 const conflictMessages = {
@@ -28,7 +28,7 @@ const handleCreateOrder = async (req: Request, res: Response) => {
 
   const result = await createOrder(user.id, body.data, new Date())
 
-   if (!result.ok) {
+  if (!result.ok) {
     res.status(409).json({
       error: conflictMessages[result.reason],
       reason: result.reason,
@@ -38,6 +38,17 @@ const handleCreateOrder = async (req: Request, res: Response) => {
   }
 
   res.status(result.isNew ? 201 : 200).json(result.order)
+}
+
+const handleListOrders = async (_req: Request, res: Response) => {
+  const user = res.locals.user
+
+  if (!user) {
+    res.status(401).json({ error: 'Usuari no registrat' })
+    return
+  }
+
+  res.json(await listCustomerOrders(user.id))
 }
 
 const handleGetOrder = async (req: Request, res: Response) => {
@@ -68,7 +79,7 @@ const handleGetOrder = async (req: Request, res: Response) => {
 const orderRouter = Router()
 
 orderRouter.post('/', requireAuth, handleCreateOrder)
-orderRouter.post('/', requireAuth, handleCreateOrder)
+orderRouter.get('/', requireAuth, handleListOrders)
 orderRouter.get('/:id', requireAuth, handleGetOrder)
 
 export default orderRouter
