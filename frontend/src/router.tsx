@@ -17,6 +17,7 @@ import ShopLayout from './components/ShopLayout'
 import CartPage from './pages/cart/CartPage'
 import CheckoutPage from './pages/checkout/CheckoutPage'
 import ConfirmationPage from './pages/orders/ConfirmationPage'
+import OrdersPage from './pages/orders/OrdersPage'
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +32,7 @@ export const router = createBrowserRouter([
         children: [
           { path: '/checkout', element: <CheckoutPage /> },
           { path: '/confirmacio/:id', element: <ConfirmationPage /> },
+          { path: '/comandes', element: <OrdersPage /> },
         ],
       },
     ],
