@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { formatPrice } from '../../../lib/formatPrice'
 import { getDayLabel } from '../../delivery/utils/calendar'
 import type { OrderSummary } from '../types/order'
@@ -13,7 +14,11 @@ const OrdersList = ({ orders }: OrdersListProps) => (
     {orders.map((order) => (
       <li key={order.id} className="rounded-sm border p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-semibold">{order.orderNumber}</h2>
+          <h2 className="font-semibold">
+            <Link to={`/comandes/${order.id}`} className="underline">
+              {order.orderNumber}
+            </Link>
+          </h2>
           <OrderStatusBadge status={order.status} />
         </div>
         <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">

@@ -18,6 +18,7 @@ import CartPage from './pages/cart/CartPage'
 import CheckoutPage from './pages/checkout/CheckoutPage'
 import ConfirmationPage from './pages/orders/ConfirmationPage'
 import OrdersPage from './pages/orders/OrdersPage'
+import OrderDetailPage from './pages/orders/OrderDetailPage'
 
 export const router = createBrowserRouter([
   {
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
           { path: '/checkout', element: <CheckoutPage /> },
           { path: '/confirmacio/:id', element: <ConfirmationPage /> },
           { path: '/comandes', element: <OrdersPage /> },
+          { path: '/comandes/:id', element: <OrderDetailPage /> },
         ],
       },
     ],

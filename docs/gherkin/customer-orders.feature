@@ -43,3 +43,26 @@ Feature: Orders of the customer
     Given a visitor without session
     When the visitor opens "/comandes"
     Then the visitor is sent to the login page
+
+    
+  Scenario: The customer opens an order from the list
+    Given a customer on "Les meves comandes"
+    When the customer clicks the number of an order
+    Then the page of that order is shown
+
+  Scenario: The order shows the prices that were paid
+    Given an order with a product that cost 39,00 € per unit
+    And the price of the product changed later
+    When the customer opens the order
+    Then the page shows "39,00 € / unitat"
+    And the totals of the order do not change
+
+  Scenario: Pickup order
+    Given a pickup order
+    When the customer opens the order
+    Then the page shows the pickup point and its opening hours
+
+  Scenario: Home delivery order
+    Given a home delivery order
+    When the customer opens the order
+    Then the page shows the address and the shipping fee
