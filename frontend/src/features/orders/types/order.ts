@@ -34,3 +34,13 @@ export type OrderDetail = {
   pickupPoint: OrderPickupPoint | null
   items: OrderItem[]
 }
+
+export type OrderSummary = {
+  id: number
+  orderNumber: string
+  status: OrderStatus
+  deliveryMethod: DeliveryMethod
+  deliveryDate: string
+  totalCents: number
+  createdAt: string
+}
