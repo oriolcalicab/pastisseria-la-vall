@@ -11,6 +11,7 @@ import { parseProductListQuery } from '../validation/productListQuery.js'
 import { parseCreateProductBody } from '../validation/createProductBody.js'
 import { parseActiveBody } from '../validation/activeBody.js'
 import { parseIdParam } from '../validation/idParam.js'
+import adminOrderRouter from './adminOrderRoutes.js'
 
 const handlePing = (_req: Request, res: Response) => {
   res.json({ status: 'ok' })
@@ -104,5 +105,6 @@ adminRouter.get('/products', handleListProducts)
 adminRouter.post('/products', handleCreateProduct)
 adminRouter.patch('/products/:id', handleSetProductActive)
 adminRouter.patch('/products/:productId/variants/:variantId', handleSetVariantActive)
+adminRouter.use('/orders', adminOrderRouter)
 
 export default adminRouter

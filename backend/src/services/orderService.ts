@@ -137,7 +137,7 @@ export const createOrder = async (
   }
 }
 
-const orderDetailSelect = {
+export const orderDetailSelect = {
   id: true,
   orderNumber: true,
   status: true,
@@ -175,7 +175,7 @@ export const getCustomerOrder = async (userId: number, orderId: number) => {
   return { ...order, deliveryDate: toDateKey(order.deliveryDate) }
 }
 
-const orderListSelect = {
+export const orderListSelect = {
   id: true,
   orderNumber: true,
   status: true,

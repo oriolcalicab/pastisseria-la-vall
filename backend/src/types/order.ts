@@ -1,4 +1,5 @@
 import type { RequestedCartLine } from './cart.js'
+import type { OrderStatus } from '../generated/prisma/enums.js'
 
 export type ShippingAddress = {
   address: string
@@ -30,4 +31,10 @@ export type OrderDraft = {
   subtotalCents: number
   shippingCents: number
   totalCents: number
+}
+
+export type AdminOrderListQuery = {
+  page: number
+  pageSize: number
+  status: OrderStatus | undefined
 }
