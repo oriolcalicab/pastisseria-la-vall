@@ -32,3 +32,25 @@ Feature: Admin orders
     Given a logged customer
     When the customer asks for the admin orders
     Then the backend responds 403
+
+    
+  Scenario: The admin opens the orders page
+    Given a logged admin
+    When the admin clicks "Comandes" in the admin menu
+    Then the page shows a table with the number, the customer, the date, the delivery date, the method, the total and the status of each order
+
+  Scenario: The admin filters the orders on the page
+    Given the admin on the second page of the orders
+    When the admin chooses "Llesta" in the status filter
+    Then the first page of the ready orders is shown
+
+  Scenario: No order has the chosen status
+    Given no order is cancelled
+    When the admin chooses "Cancel·lada" in the status filter
+    Then the page shows "No hi ha cap comanda amb aquest estat."
+
+  Scenario: The orders can not be loaded on the page
+    Given a backend that fails
+    When the admin opens the orders page
+    Then the page shows an error
+    And the admin can try again
