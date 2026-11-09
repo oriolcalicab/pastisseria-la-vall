@@ -134,3 +134,10 @@ Feature: Admin orders
     Given a delivered order
     When the admin opens it
     Then there are no buttons to change the status
+
+
+  Scenario: A customer tries to change the status of an order
+    Given a logged customer
+    When the customer tries to cancel an order with the admin endpoint
+    Then the backend responds 403
+    And the order does not change

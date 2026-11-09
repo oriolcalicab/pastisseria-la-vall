@@ -176,4 +176,16 @@ describe('admin order routes', () => {
     expect(response.status).toBe(400)
     expect(changeOrderStatus).not.toHaveBeenCalled()
   })
+
+    it('responds 403 when a customer tries to change the status', async () => {
+    // Given a logged customer
+    loginAs('customer')
+
+    // When the customer tries to cancel an order
+    const response = await patchStatus('7', { status: 'cancelled' })
+
+    // Then the request is rejected and nothing changes
+    expect(response.status).toBe(403)
+    expect(changeOrderStatus).not.toHaveBeenCalled()
+  })
 })
