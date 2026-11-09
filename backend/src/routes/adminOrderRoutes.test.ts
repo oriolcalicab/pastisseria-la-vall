@@ -177,7 +177,7 @@ describe('admin order routes', () => {
     expect(changeOrderStatus).not.toHaveBeenCalled()
   })
 
-    it('responds 403 when a customer tries to change the status', async () => {
+  it('responds 403 when a customer tries to change the status', async () => {
     // Given a logged customer
     loginAs('customer')
 
