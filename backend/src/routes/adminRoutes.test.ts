@@ -23,6 +23,7 @@ vi.mock('../services/productService.js', () => ({
 vi.mock('../services/adminOrderService.js', () => ({
   listAdminOrders: vi.fn(),
   getAdminOrder: vi.fn(),
+  changeOrderStatus: vi.fn(),
 }))
 
 let server: TestServer

@@ -78,3 +78,33 @@ Feature: Admin orders
     Given an id without order
     When the admin opens "/admin/comandes/999"
     Then the page shows "Pàgina no trobada"
+
+
+  Scenario: The admin moves an order forward
+    Given a pending order
+    When the admin changes it to "En preparació"
+    Then the order is being prepared
+    And the history saves the old status, the new status, the admin and the time
+
+  Scenario: Invalid status change
+    Given a delivered order
+    When the admin tries to change it to "Pendent"
+    Then the backend responds 409
+    And nothing is saved
+
+  Scenario: The admin cancels an order
+    Given a pending order with 2 units of a product
+    When the admin cancels it
+    Then the 2 units go back to the stock
+    And the day has one free place again
+
+  Scenario: Two admins cancel the same order at the same time
+    Given a pending order
+    When two admins cancel it at the same time
+    Then the order is cancelled only once
+    And the stock goes back only once
+
+  Scenario: Final statuses
+    Given a delivered or cancelled order
+    When the admin tries to change its status
+    Then the backend responds 409

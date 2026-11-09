@@ -38,3 +38,7 @@ export type AdminOrderListQuery = {
   pageSize: number
   status: OrderStatus | undefined
 }
+
+export type StatusBody = {
+  status: OrderStatus
+}

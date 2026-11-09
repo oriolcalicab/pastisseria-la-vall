@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { prisma } from '../lib/prisma.js'
-import { getAdminOrder, listAdminOrders } from './adminOrderService.js'
+import { changeOrderStatus, getAdminOrder, listAdminOrders } from './adminOrderService.js'
+
+const tx = vi.hoisted(() => ({
+  order: { findUnique: vi.fn(), updateMany: vi.fn() },
+  orderStatusHistory: { create: vi.fn() },
+  productVariant: { update: vi.fn() },
+}))
 
 vi.mock('../lib/prisma.js', () => ({
   prisma: {
@@ -76,5 +82,106 @@ describe('adminOrderService', () => {
     // When the admin asks for it
     // Then nothing is returned
     expect(await getAdminOrder(999)).toBeNull()
+  })
+})
+
+describe('changeOrderStatus', () => {
+  const savedOrder = {
+    id: 7,
+    deliveryDate: new Date('2026-11-12T00:00:00Z'),
+    user: { name: 'Anna', email: 'anna@test.com' },
+  }
+
+  beforeEach(() => {
+    vi.resetAllMocks()
+    vi.mocked(prisma.$transaction).mockImplementation(((callback: (client: typeof tx) => unknown) =>
+      callback(tx)) as never)
+    tx.order.updateMany.mockResolvedValue({ count: 1 })
+    vi.mocked(prisma.order.findUnique).mockResolvedValue(savedOrder as never)
+  })
+
+  it('changes the status and saves who did it', async () => {
+    // Given a pending order
+    tx.order.findUnique.mockResolvedValue({ status: 'pending', items: [] })
+
+    // When the admin starts preparing it
+    const result = await changeOrderStatus(7, 'preparing', 1)
+
+    // Then the status changes only if it is still pending and the change is saved in the history
+    expect(tx.order.updateMany).toHaveBeenCalledWith({
+      where: { id: 7, status: 'pending' },
+      data: { status: 'preparing' },
+    })
+    expect(tx.orderStatusHistory.create).toHaveBeenCalledWith({
+      data: { orderId: 7, fromStatus: 'pending', toStatus: 'preparing', changedBy: 1 },
+    })
+    expect(tx.productVariant.update).not.toHaveBeenCalled()
+    expect(result).toMatchObject({ ok: true, order: { id: 7, deliveryDate: '2026-11-12' } })
+  })
+
+  it('puts the stock back when the order is cancelled', async () => {
+    // Given a pending order with two products
+    tx.order.findUnique.mockResolvedValue({
+      status: 'pending',
+      items: [
+        { variantId: 20, quantity: 1 },
+        { variantId: 12, quantity: 2 },
+      ],
+    })
+
+    // When the admin cancels it
+    await changeOrderStatus(7, 'cancelled', 1)
+
+    // Then the units go back to the stock, in the order of the variants
+    expect(tx.productVariant.update).toHaveBeenNthCalledWith(1, {
+      where: { id: 12 },
+      data: { stock: { increment: 2 } },
+    })
+    expect(tx.productVariant.update).toHaveBeenNthCalledWith(2, {
+      where: { id: 20 },
+      data: { stock: { increment: 1 } },
+    })
+  })
+
+  it('does not change anything when the transition is not valid', async () => {
+    // Given a delivered order
+    tx.order.findUnique.mockResolvedValue({ status: 'delivered', items: [] })
+
+    // When the admin tries to set it as pending
+    const result = await changeOrderStatus(7, 'pending', 1)
+
+    // Then nothing is saved
+    expect(result).toEqual({ ok: false, reason: 'invalid_transition', from: 'delivered' })
+    expect(tx.order.updateMany).not.toHaveBeenCalled()
+    expect(tx.orderStatusHistory.create).not.toHaveBeenCalled()
+  })
+
+  it('does not put the stock back twice when someone else changed the order first', async () => {
+    // Given an order that another admin cancels at the same time
+    tx.order.findUnique.mockResolvedValue({
+      status: 'pending',
+      items: [{ variantId: 12, quantity: 2 }],
+    })
+    tx.order.updateMany.mockResolvedValue({ count: 0 })
+
+    // When this admin also cancels it
+    const result = await changeOrderStatus(7, 'cancelled', 1)
+
+    // Then no history and no stock are saved again
+    expect(result).toEqual({ ok: false, reason: 'invalid_transition', from: 'pending' })
+    expect(tx.orderStatusHistory.create).not.toHaveBeenCalled()
+    expect(tx.productVariant.update).not.toHaveBeenCalled()
+  })
+
+  it('returns not found when the order does not exist', async () => {
+    // Given an id without order
+    tx.order.findUnique.mockResolvedValue(null)
+
+    // When the admin changes its status
+    // Then the order is not found
+    expect(await changeOrderStatus(999, 'preparing', 1)).toEqual({
+      ok: false,
+      reason: 'not_found',
+    })
   })
 })
