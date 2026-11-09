@@ -1,14 +1,10 @@
-import { OrderStatus } from '../generated/prisma/enums.js'
+import { isOrderStatus } from '../utils/orderStatus.js'
 import type { AdminOrderListQuery } from '../types/order.js'
 import { parsePositiveInt } from './positiveInt.js'
 
 const DEFAULT_PAGE = 1
 const DEFAULT_PAGE_SIZE = 20
 const MAX_PAGE_SIZE = 50
-
-const orderStatuses: string[] = Object.values(OrderStatus)
-
-const isOrderStatus = (value: string): value is OrderStatus => orderStatuses.includes(value)
 
 export const parseAdminOrderListQuery = (
   query: Record<string, unknown>,
