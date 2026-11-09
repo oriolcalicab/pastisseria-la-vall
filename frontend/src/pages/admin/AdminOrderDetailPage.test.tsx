@@ -6,8 +6,17 @@ import type { AdminOrderDetail } from '../../features/admin/types/order'
 import AdminOrderDetailPage from './AdminOrderDetailPage'
 
 vi.mock('../../features/admin/hooks/useAdminOrder', () => ({ useAdminOrder: vi.fn() }))
+vi.mock('../../features/admin/hooks/useChangeOrderStatus', () => ({
+  useChangeOrderStatus: () => ({
+    pendingStatus: null,
+    error: null,
+    notice: null,
+    changeStatus: vi.fn(),
+  }),
+}))
 
 const retry = vi.fn()
+const replaceOrder = vi.fn()
 
 const deliveryOrder: AdminOrderDetail = {
   id: 7,
@@ -34,6 +43,7 @@ const deliveryOrder: AdminOrderDetail = {
     },
   ],
   user: { name: 'Anna Puig', email: 'anna@test.com' },
+  allowedStatuses: ['ready', 'cancelled'],
 }
 
 const renderPage = () =>
@@ -52,7 +62,12 @@ describe('AdminOrderDetailPage', () => {
 
   it('shows the customer, the products and a map link of a home delivery', () => {
     // Given a home delivery order
-    vi.mocked(useAdminOrder).mockReturnValue({ status: 'success', order: deliveryOrder, retry })
+    vi.mocked(useAdminOrder).mockReturnValue({
+      status: 'success',
+      order: deliveryOrder,
+      retry,
+      replaceOrder,
+    })
 
     // When the admin opens the order
     renderPage()
@@ -88,7 +103,12 @@ describe('AdminOrderDetailPage', () => {
         openingHours: 'De dt. a ds., de 9 a 19 h',
       },
     }
-    vi.mocked(useAdminOrder).mockReturnValue({ status: 'success', order: pickupOrder, retry })
+    vi.mocked(useAdminOrder).mockReturnValue({
+      status: 'success',
+      order: pickupOrder,
+      retry,
+      replaceOrder,
+    })
 
     // When the admin opens the order
     renderPage()
@@ -102,7 +122,7 @@ describe('AdminOrderDetailPage', () => {
 
   it('shows the not found page when the order does not exist', () => {
     // Given an id without order
-    vi.mocked(useAdminOrder).mockReturnValue({ status: 'not-found', retry })
+    vi.mocked(useAdminOrder).mockReturnValue({ status: 'not-found', retry, replaceOrder })
 
     // When the admin opens it
     renderPage()
