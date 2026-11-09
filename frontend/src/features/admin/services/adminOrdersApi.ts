@@ -1,5 +1,5 @@
 import { apiUrl } from '../../../lib/api'
-import type { AdminOrderPage, StatusFilter } from '../types/order'
+import type { AdminOrderPage, StatusFilter, AdminOrderDetail } from '../types/order'
 
 type AdminOrdersParams = {
   page: number
@@ -25,4 +25,21 @@ export const fetchAdminOrders = async (
   }
 
   return response.json() as Promise<AdminOrderPage>
+}
+
+export const fetchAdminOrder = async (
+  token: string,
+  id: string,
+): Promise<AdminOrderDetail | null> => {
+  const response = await fetch(apiUrl(`/api/admin/orders/${encodeURIComponent(id)}`), {
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => {
+    throw new Error("No s'ha pogut carregar la comanda")
+  })
+
+  if (response.status === 400 || response.status === 404) return null
+
+  if (!response.ok) throw new Error(`Admin order request failed with status ${response.status}`)
+
+  return response.json() as Promise<AdminOrderDetail>
 }
