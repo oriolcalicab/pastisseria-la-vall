@@ -165,7 +165,7 @@ describe('admin order routes', () => {
     expect(response.status).toBe(404)
   })
 
-  it('responds 400 when the status does not exist', async () => {
+  it('responds 400 when the new status does not exist', async () => {
     // Given a logged admin
     loginAs('admin')
 
