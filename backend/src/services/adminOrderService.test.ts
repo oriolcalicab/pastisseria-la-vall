@@ -75,6 +75,21 @@ describe('adminOrderService', () => {
     expect(order).toMatchObject({ deliveryDate: '2026-11-12', user: { name: 'Anna' } })
   })
 
+  it('sends the statuses the order can go to', async () => {
+    // Given a pending order
+    vi.mocked(prisma.order.findUnique).mockResolvedValue({
+      id: 1,
+      status: 'pending',
+      deliveryDate: new Date('2026-11-12T00:00:00Z'),
+    } as never)
+
+    // When the admin asks for it
+    const order = await getAdminOrder(1)
+
+    // Then it says it can be prepared or cancelled
+    expect(order).toMatchObject({ allowedStatuses: ['preparing', 'cancelled'] })
+  })
+
   it('returns null when the order does not exist', async () => {
     // Given an id without order
     vi.mocked(prisma.order.findUnique).mockResolvedValue(null)

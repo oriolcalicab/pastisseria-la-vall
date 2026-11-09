@@ -4,7 +4,7 @@ import type { AdminOrderListQuery } from '../types/order.js'
 import { toDateKey } from '../utils/dateKey.js'
 import { orderDetailSelect, orderListSelect } from './orderService.js'
 import type { OrderStatus } from '../generated/prisma/enums.js'
-import { canChangeStatus } from '../utils/orderStatus.js'
+import { canChangeStatus, orderTransitions } from '../utils/orderStatus.js'
 
 const customerSelect = { select: { name: true, email: true } } as const
 
@@ -39,7 +39,11 @@ export const getAdminOrder = async (id: number) => {
 
   if (!order) return null
 
-  return { ...order, deliveryDate: toDateKey(order.deliveryDate) }
+  return {
+    ...order,
+    deliveryDate: toDateKey(order.deliveryDate),
+    allowedStatuses: orderTransitions[order.status],
+  }
 }
 
 type AdminOrder = NonNullable<Awaited<ReturnType<typeof getAdminOrder>>>
