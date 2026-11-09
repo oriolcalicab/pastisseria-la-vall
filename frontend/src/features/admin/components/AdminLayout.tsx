@@ -5,7 +5,6 @@ const menuItems = [
   { to: '/admin', label: 'Tauler', end: true },
   { to: '/admin/comandes', label: 'Comandes', end: false },
   { to: '/admin/productes', label: 'Productes', end: false },
-  { to: '/admin/categories', label: 'Categories', end: false },
 ]
 
 const linkClassName = ({ isActive }: { isActive: boolean }) =>
