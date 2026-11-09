@@ -3,6 +3,7 @@ import { getDayLabel } from '../../delivery/utils/calendar'
 import OrderStatusBadge from '../../orders/components/OrderStatusBadge'
 import { deliveryMethodLabels, formatOrderDate } from '../../orders/utils/orderLabels'
 import type { AdminOrderSummary } from '../types/order'
+import { Link } from 'react-router-dom'
 
 const columns = ['Número', 'Client', 'Data', 'Entrega', 'Mètode', 'Total', 'Estat']
 
@@ -25,7 +26,11 @@ const AdminOrdersTable = ({ orders }: AdminOrdersTableProps) => (
       <tbody>
         {orders.map((order) => (
           <tr key={order.id} className="border-t">
-            <td className="px-4 py-2 font-medium whitespace-nowrap">{order.orderNumber}</td>
+            <td className="px-4 py-2 font-medium whitespace-nowrap">
+              <Link to={`/admin/comandes/${order.id}`} className="underline">
+                {order.orderNumber}
+              </Link>
+            </td>
             <td className="px-4 py-2">
               <span className="block">{order.user.name}</span>
               <span className="block text-gray-600">{order.user.email}</span>

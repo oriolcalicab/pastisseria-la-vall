@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useAdminOrders } from '../../features/admin/hooks/useAdminOrders'
 import type { AdminOrderPage } from '../../features/admin/types/order'
@@ -8,6 +9,13 @@ import AdminOrdersPage from './AdminOrdersPage'
 vi.mock('../../features/admin/hooks/useAdminOrders', () => ({ useAdminOrders: vi.fn() }))
 
 const retry = vi.fn()
+
+const renderPage = () =>
+  render(
+    <MemoryRouter>
+      <AdminOrdersPage />
+    </MemoryRouter>,
+  )
 
 const orderPage: AdminOrderPage = {
   items: [
@@ -38,7 +46,7 @@ describe('AdminOrdersPage', () => {
     vi.mocked(useAdminOrders).mockReturnValue({ status: 'success', data: orderPage, retry })
 
     // When the admin opens the page
-    render(<AdminOrdersPage />)
+    renderPage()
 
     // Then the first page of all the orders is shown
     expect(useAdminOrders).toHaveBeenLastCalledWith({ page: 1, status: '' })
@@ -50,7 +58,7 @@ describe('AdminOrdersPage', () => {
     // Given the admin on the second page
     vi.mocked(useAdminOrders).mockReturnValue({ status: 'success', data: orderPage, retry })
     const user = userEvent.setup()
-    render(<AdminOrdersPage />)
+    renderPage()
     await user.click(screen.getByRole('button', { name: 'Següent »' }))
     expect(useAdminOrders).toHaveBeenLastCalledWith({ page: 2, status: '' })
 
@@ -68,7 +76,7 @@ describe('AdminOrdersPage', () => {
       data: { ...orderPage, items: [], total: 0, totalPages: 0 },
       retry,
     })
-    render(<AdminOrdersPage />)
+    renderPage()
 
     // When the admin chooses that status
     await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Estat' }), 'Cancel·lada')

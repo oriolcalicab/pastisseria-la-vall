@@ -1,4 +1,4 @@
-import type { OrderStatus, OrderSummary } from '../../orders/types/order'
+import type { OrderStatus, OrderSummary, OrderDetail } from '../../orders/types/order'
 
 export type AdminOrderSummary = OrderSummary & {
   user: { name: string; email: string }
@@ -13,3 +13,7 @@ export type AdminOrderPage = {
 }
 
 export type StatusFilter = OrderStatus | ''
+
+export type AdminOrderDetail = OrderDetail & {
+  user: { name: string; email: string }
+}
