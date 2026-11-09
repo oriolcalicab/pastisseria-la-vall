@@ -108,3 +108,29 @@ Feature: Admin orders
     Given a delivered or cancelled order
     When the admin tries to change its status
     Then the backend responds 409
+
+
+  Scenario: The admin moves an order forward from the detail page
+    Given the admin on the detail page of a pending order
+    When the admin clicks "Passa a En preparació"
+    Then the status shows "En preparació" without reloading the page
+    And the page shows "Estat canviat a En preparació."
+    And the buttons now are "Passa a Llesta" and "Cancel·la la comanda"
+
+  Scenario: The admin does not confirm the cancellation
+    Given the admin on the detail page of a pending order
+    When the admin clicks "Cancel·la la comanda"
+    And the admin says no in the confirmation
+    Then the order is still pending
+
+  Scenario: Someone else changed the order first
+    Given the admin on the detail page of a pending order
+    And another admin has already prepared it
+    When the admin clicks "Passa a En preparació"
+    Then the page says that someone else changed the order
+    And the page shows the current status
+
+  Scenario: Delivered order
+    Given a delivered order
+    When the admin opens it
+    Then there are no buttons to change the status
