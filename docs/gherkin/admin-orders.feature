@@ -54,3 +54,27 @@ Feature: Admin orders
     When the admin opens the orders page
     Then the page shows an error
     And the admin can try again
+
+
+  Scenario: The admin opens an order from the table
+    Given the admin on the orders page
+    When the admin clicks the number of an order
+    Then the detail page of that order is shown
+    And it shows the customer, the products, the method and the delivery date
+
+  Scenario: Home delivery order on the map
+    Given a home delivery order
+    When the admin opens the order
+    Then the page shows the address
+    And there is a link to see the address on the map in a new tab
+
+  Scenario: Pickup order
+    Given a pickup order
+    When the admin opens the order
+    Then the page shows the pickup point
+    And there is no map link
+
+  Scenario: The order does not exist
+    Given an id without order
+    When the admin opens "/admin/comandes/999"
+    Then the page shows "Pàgina no trobada"
