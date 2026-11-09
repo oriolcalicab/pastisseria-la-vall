@@ -30,3 +30,10 @@ Feature: Admin access
     Given a new user
     When the user registers sending role "admin"
     Then the user is saved with role "customer"
+
+    
+  Scenario: The admin menu only has pages that exist
+    Given a logged admin
+    When the admin opens the admin panel
+    Then the menu shows "Tauler", "Comandes" and "Productes"
+    And every link opens a page that exists
