@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react'
+import { renderHook, waitFor, act } from '@testing-library/react'
 import type { User } from 'firebase/auth'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useAuth } from '../../auth/hooks/useAuth'
@@ -42,5 +42,20 @@ describe('useAdminOrder', () => {
 
     // Then the status is not found
     await waitFor(() => expect(result.current.status).toBe('not-found'))
+  })
+
+  it('shows the order that comes back after a change', async () => {
+    // Given a loaded pending order
+    vi.mocked(fetchAdminOrder).mockResolvedValue(order)
+    const { result } = renderHook(() => useAdminOrder('7'))
+    await waitFor(() => expect(result.current.status).toBe('success'))
+
+    // When the order is replaced by the one with the new status
+    const preparingOrder = { ...order, status: 'preparing' } as AdminOrderDetail
+    act(() => result.current.replaceOrder(preparingOrder))
+
+    // Then the new order is shown without asking the backend again
+    expect(result.current).toMatchObject({ status: 'success', order: preparingOrder })
+    expect(fetchAdminOrder).toHaveBeenCalledOnce()
   })
 })

@@ -1,5 +1,6 @@
 import { apiUrl } from '../../../lib/api'
-import type { AdminOrderPage, StatusFilter, AdminOrderDetail } from '../types/order'
+import type { OrderStatus } from '../../orders/types/order'
+import type { AdminOrderDetail, AdminOrderPage, StatusFilter } from '../types/order'
 
 type AdminOrdersParams = {
   page: number
@@ -40,6 +41,35 @@ export const fetchAdminOrder = async (
   if (response.status === 400 || response.status === 404) return null
 
   if (!response.ok) throw new Error(`Admin order request failed with status ${response.status}`)
+
+  return response.json() as Promise<AdminOrderDetail>
+}
+
+const CHANGE_STATUS_ERROR = "No s'ha pogut canviar l'estat de la comanda"
+
+export class OrderStatusConflictError extends Error {
+  constructor() {
+    super("Una altra persona ha canviat aquesta comanda. Ara es mostra l'estat actual.")
+    this.name = 'OrderStatusConflictError'
+  }
+}
+
+export const changeAdminOrderStatus = async (
+  token: string,
+  id: number,
+  status: OrderStatus,
+): Promise<AdminOrderDetail> => {
+  const response = await fetch(apiUrl(`/api/admin/orders/${id}/status`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ status }),
+  }).catch(() => {
+    throw new Error(CHANGE_STATUS_ERROR)
+  })
+
+  if (response.status === 409) throw new OrderStatusConflictError()
+
+  if (!response.ok) throw new Error(CHANGE_STATUS_ERROR)
 
   return response.json() as Promise<AdminOrderDetail>
 }

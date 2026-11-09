@@ -11,7 +11,10 @@ type AdminOrderResult = {
   outcome: AdminOrderOutcome
 }
 
-type AdminOrderState = ({ status: 'loading' } | AdminOrderOutcome) & { retry: () => void }
+type AdminOrderState = ({ status: 'loading' } | AdminOrderOutcome) & {
+  retry: () => void
+  replaceOrder: (order: AdminOrderDetail) => void
+}
 
 export const useAdminOrder = (id: string): AdminOrderState => {
   const { user } = useAuth()
@@ -45,7 +48,12 @@ export const useAdminOrder = (id: string): AdminOrderState => {
 
   const retry = () => setAttempt((current) => current + 1)
 
-  if (result?.key !== key) return { status: 'loading', retry }
+  const replaceOrder = (order: AdminOrderDetail) =>
+    setResult((current) =>
+      current ? { ...current, outcome: { status: 'success', order } } : current,
+    )
 
-  return { ...result.outcome, retry }
+  if (result?.key !== key) return { status: 'loading', retry, replaceOrder }
+
+  return { ...result.outcome, retry, replaceOrder }
 }

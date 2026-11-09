@@ -16,4 +16,5 @@ export type StatusFilter = OrderStatus | ''
 
 export type AdminOrderDetail = OrderDetail & {
   user: { name: string; email: string }
+  allowedStatuses: OrderStatus[]
 }

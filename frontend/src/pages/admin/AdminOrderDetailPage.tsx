@@ -5,6 +5,7 @@ import OrderDetails from '../../features/orders/components/OrderDetails'
 import OrderStatusBadge from '../../features/orders/components/OrderStatusBadge'
 import { formatOrderDate } from '../../features/orders/utils/orderLabels'
 import NotFoundPage from '../errors/NotFoundPage'
+import OrderStatusActions from '../../features/admin/components/OrderStatusActions'
 
 const AdminOrderDetailPage = () => {
   const { id = '' } = useParams()
@@ -42,6 +43,12 @@ const AdminOrderDetailPage = () => {
           <p className="mt-1 text-sm text-gray-600">
             Feta el {formatOrderDate(order.order.createdAt)}
           </p>
+
+          <OrderStatusActions
+            order={order.order}
+            onChange={order.replaceOrder}
+            onConflict={order.retry}
+          />
 
           <section aria-labelledby="customer-title" className="mt-6">
             <h2 id="customer-title" className="text-xl font-semibold">
