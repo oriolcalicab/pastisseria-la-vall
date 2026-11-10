@@ -1,0 +1,412 @@
+import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import type { User } from 'firebase/auth'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import ProtectedRoute from '../../features/auth/components/ProtectedRoute'
+import { useAuth } from '../../features/auth/hooks/useAuth'
+import { CartProvider } from '../../features/cart/CartProvider'
+import { saveCart, loadCart } from '../../features/cart/services/cartStorage'
+import { useDeliveryDates } from '../../features/delivery/hooks/useDeliveryDates'
+import { getCalendarWeeks, getCurrentMonth } from '../../features/delivery/utils/calendar'
+import CheckoutPage from './CheckoutPage'
+import type { PickupPoint } from '../../features/pickup/types/pickupPoint'
+import { useShippingFee } from '../../features/checkout/hooks/useShippingFee'
+import { createOrder, OrderRequestError } from '../../features/checkout/services/checkoutApi'
+
+vi.mock('../../features/auth/hooks/useAuth', () => ({ useAuth: vi.fn() }))
+vi.mock('../../features/delivery/hooks/useDeliveryDates', () => ({ useDeliveryDates: vi.fn() }))
+vi.mock('../../features/checkout/hooks/useShippingFee', () => ({ useShippingFee: vi.fn() }))
+vi.mock('../../features/pickup/components/PickupPoints', () => ({
+  default: ({ onSelect }: { onSelect: (point: PickupPoint) => void }) => (
+    <button type="button" onClick={() => onSelect(eixample)}>
+      Tria Eixample
+    </button>
+  ),
+}))
+vi.mock('../../features/checkout/services/checkoutApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../features/checkout/services/checkoutApi')>()),
+  createOrder: vi.fn(),
+}))
+
+const cartLine = {
+  variantId: 12,
+  productId: 7,
+  productName: 'Pastís de xocolata',
+  variantName: '6 racions',
+  priceCents: 3900,
+  imageUrl: null,
+  quantity: 2,
+}
+
+const availableDate = `${getCurrentMonth(new Date())}-15`
+
+const eixample: PickupPoint = {
+  id: 2,
+  name: 'La Vall · Eixample',
+  address: 'Carrer de Girona, 84',
+  city: 'Barcelona',
+  latitude: 41.3965,
+  longitude: 2.1675,
+  openingHours: 'De dt. a ds., de 9 a 19 h',
+}
+
+const renderCheckout = () =>
+  render(
+    <CartProvider>
+      <MemoryRouter initialEntries={['/checkout']}>
+        <Routes>
+          <Route path="/login" element={<p>Pàgina de login</p>} />
+          <Route path="/carreto" element={<p>Pàgina del carretó</p>} />
+          <Route path="/confirmacio/:id" element={<p>Pàgina de confirmació</p>} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/checkout" element={<CheckoutPage />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    </CartProvider>,
+  )
+
+const login = () =>
+  vi.mocked(useAuth).mockReturnValue({
+    user: { uid: 'u1', getIdToken: vi.fn().mockResolvedValue('token-123') } as unknown as User,
+    isLoading: false,
+  })
+
+const chooseDate = (user: ReturnType<typeof userEvent.setup>) => {
+  const day = screen.getAllByRole('button').find((button) => button.dataset.date === availableDate)
+
+  return user.click(day!)
+}
+
+describe('CheckoutPage', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+    localStorage.clear()
+    vi.mocked(useShippingFee).mockReturnValue({ status: 'success', feeCents: 500, retry: vi.fn() })
+    vi.mocked(useDeliveryDates).mockImplementation((month) => ({
+      status: 'success',
+      days: getCalendarWeeks(month)
+        .flat()
+        .filter((date) => date !== null)
+        .map((date) => ({ date, available: true, reason: null })),
+      retry: vi.fn(),
+    }))
+  })
+
+  it('sends a visitor without session to the login page', () => {
+    // Given a visitor without session and a cart with products
+    vi.mocked(useAuth).mockReturnValue({ user: null, isLoading: false })
+    saveCart([cartLine])
+
+    // When the visitor opens the checkout
+    renderCheckout()
+
+    // Then the visitor is sent to the login page
+    expect(screen.getByText('Pàgina de login')).toBeInTheDocument()
+  })
+
+  it('sends a customer with an empty cart to the cart page', () => {
+    // Given a logged customer with an empty cart
+    login()
+
+    // When the customer opens the checkout
+    renderCheckout()
+
+    // Then the customer is sent to the cart
+    expect(screen.getByText('Pàgina del carretó')).toBeInTheDocument()
+  })
+
+  it('shows the summary of the cart', () => {
+    // Given a logged customer with a cart
+    login()
+    saveCart([cartLine])
+
+    // When the customer opens the checkout
+    renderCheckout()
+
+    // Then the summary is shown
+    expect(screen.getByRole('heading', { name: 'Finalitza la comanda' })).toBeInTheDocument()
+    expect(screen.getByText('2 × Pastís de xocolata (6 racions)')).toBeInTheDocument()
+    expect(screen.getByText(/Subtotal: 78,00\s€/)).toBeInTheDocument()
+  })
+
+  it('does not continue without a delivery date', () => {
+    // Given a logged customer with a cart
+    login()
+    saveCart([cartLine])
+
+    // When the checkout is opened
+    renderCheckout()
+
+    // Then the calendar is shown and the customer can not continue
+    expect(screen.getByRole('heading', { name: 'Pas 1 · Data de lliurament' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Continua' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Continua' })).toHaveAccessibleDescription(
+      'Tria una data per continuar.',
+    )
+  })
+
+  it('continues after choosing a delivery date', async () => {
+    // Given a logged customer with a cart
+    login()
+    saveCart([cartLine])
+    renderCheckout()
+    const user = userEvent.setup()
+
+    // When the customer chooses a date and continues
+    await chooseDate(user)
+    await user.click(screen.getByRole('button', { name: 'Continua' }))
+
+    // Then the next step shows the chosen date
+    expect(
+      screen.getByRole('heading', { name: 'Pas 2 · Mètode de lliurament' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/Data de lliurament: .*15/)).toBeInTheDocument()
+  })
+
+  it('keeps the date when going back', async () => {
+    // Given a customer on the second step
+    login()
+    saveCart([cartLine])
+    renderCheckout()
+    const user = userEvent.setup()
+    await chooseDate(user)
+    await user.click(screen.getByRole('button', { name: 'Continua' }))
+
+    // When the customer goes back to change the date
+    await user.click(screen.getByRole('button', { name: 'Canvia la data' }))
+
+    // Then the chosen date is still selected
+    expect(screen.getByRole('button', { name: 'Continua' })).toBeEnabled()
+  })
+
+  const goToPickupStep = async (user: ReturnType<typeof userEvent.setup>) => {
+    login()
+    saveCart([cartLine])
+    renderCheckout()
+    await chooseDate(user)
+    await user.click(screen.getByRole('button', { name: 'Continua' }))
+    await user.click(screen.getByRole('radio', { name: /Recollida en un punt/ }))
+  }
+
+  it('does not confirm a pickup without a pickup point', async () => {
+    // Given a customer on the second step
+    const user = userEvent.setup()
+    await goToPickupStep(user)
+
+    // When no pickup point is chosen
+    // Then the customer can not continue
+    expect(screen.getByRole('button', { name: 'Continua' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Continua' })).toHaveAccessibleDescription(
+      'Tria un punt de recollida per continuar.',
+    )
+  })
+
+  it('continues to the review with the chosen pickup point', async () => {
+    // Given a customer on the second step
+    const user = userEvent.setup()
+    await goToPickupStep(user)
+
+    // When the customer chooses a pickup point and continues
+    await user.click(screen.getByRole('button', { name: 'Tria Eixample' }))
+    await user.click(screen.getByRole('button', { name: 'Continua' }))
+
+    // Then the review shows the date and the pickup point
+    expect(screen.getByRole('heading', { name: 'Pas 3 · Revisió' })).toBeInTheDocument()
+    expect(
+      screen.getByText('La Vall · Eixample, Carrer de Girona, 84, Barcelona'),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/15/)).toBeInTheDocument()
+  })
+
+  it('keeps the pickup point when going back', async () => {
+    // Given a customer on the review step
+    const user = userEvent.setup()
+    await goToPickupStep(user)
+    await user.click(screen.getByRole('button', { name: 'Tria Eixample' }))
+    await user.click(screen.getByRole('button', { name: 'Continua' }))
+
+    // When the customer goes back to change the pickup point
+    await user.click(screen.getByRole('button', { name: 'Canvia el punt de recollida' }))
+
+    // Then the point is still chosen
+    expect(screen.getByRole('button', { name: 'Continua' })).toBeEnabled()
+  })
+
+  const goToMethodStep = async (user: ReturnType<typeof userEvent.setup>) => {
+    login()
+    saveCart([cartLine])
+    renderCheckout()
+    await chooseDate(user)
+    await user.click(screen.getByRole('button', { name: 'Continua' }))
+  }
+
+  it('asks for a delivery method first', async () => {
+    // Given a customer on the second step
+    const user = userEvent.setup()
+    await goToMethodStep(user)
+
+    // When no method is chosen
+    // Then the customer can not continue
+    expect(screen.getByRole('button', { name: 'Continua' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Continua' })).toHaveAccessibleDescription(
+      'Tria com vols rebre la comanda per continuar.',
+    )
+  })
+
+  it('only shows the pickup points for a pickup', async () => {
+    // Given a customer on the second step
+    const user = userEvent.setup()
+    await goToMethodStep(user)
+
+    // When the customer chooses home delivery
+    await user.click(screen.getByRole('radio', { name: /Lliurament a domicili/ }))
+
+    // Then the address form is shown instead of the pickup points
+    expect(screen.getByLabelText('Codi postal')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Tria Eixample' })).not.toBeInTheDocument()
+  })
+
+  it('does not continue with an address outside Barcelona', async () => {
+    // Given a customer who chose home delivery
+    const user = userEvent.setup()
+    await goToMethodStep(user)
+    await user.click(screen.getByRole('radio', { name: /Lliurament a domicili/ }))
+    await user.type(screen.getByLabelText('Adreça'), 'Carrer Major, 1')
+    await user.type(screen.getByLabelText('Codi postal'), '28001')
+
+    // When the customer continues
+    await user.click(screen.getByRole('button', { name: 'Continua' }))
+
+    // Then the postal code is marked and the step does not change
+    expect(screen.getByLabelText('Codi postal')).toHaveAttribute('aria-invalid', 'true')
+    expect(
+      screen.getByRole('heading', { name: 'Pas 2 · Mètode de lliurament' }),
+    ).toBeInTheDocument()
+  })
+
+  it('continues to the review with a valid address', async () => {
+    // Given a customer who chose home delivery
+    const user = userEvent.setup()
+    await goToMethodStep(user)
+    await user.click(screen.getByRole('radio', { name: /Lliurament a domicili/ }))
+    await user.type(screen.getByLabelText('Adreça'), 'Carrer de Mallorca, 120')
+    await user.type(screen.getByLabelText('Codi postal'), '08036')
+
+    // When the customer continues
+    await user.click(screen.getByRole('button', { name: 'Continua' }))
+
+    // Then the review shows the address
+    expect(screen.getByRole('heading', { name: 'Pas 3 · Revisió' })).toBeInTheDocument()
+    expect(screen.getByText('Carrer de Mallorca, 120, 08036 Barcelona')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: "Canvia l'adreça" })).toBeInTheDocument()
+    expect(screen.getByText(/^83,00\s€$/)).toBeInTheDocument()
+  })
+
+  const goToReviewStep = async (user: ReturnType<typeof userEvent.setup>) => {
+    await goToPickupStep(user)
+    await user.click(screen.getByRole('button', { name: 'Tria Eixample' }))
+    await user.click(screen.getByRole('button', { name: 'Continua' }))
+  }
+
+  it('confirms the order, empties the cart and opens the confirmation page', async () => {
+    // Given a customer on the review step
+    vi.mocked(createOrder).mockResolvedValue({
+      id: 1,
+      orderNumber: 'LV-261106-4F2A9C',
+      status: 'pending',
+      totalCents: 7800,
+    })
+    const user = userEvent.setup()
+    await goToReviewStep(user)
+
+    // When the customer confirms the order
+    await user.click(screen.getByRole('button', { name: 'Confirma la comanda' }))
+
+    // Then the order is sent with a key, the cart is empty and the confirmation is shown
+    expect(createOrder).toHaveBeenCalledWith(
+      'token-123',
+      expect.objectContaining({
+        idempotencyKey: expect.stringMatching(/^[0-9a-f-]{36}$/),
+        deliveryMethod: 'pickup',
+        pickupPointId: 2,
+      }),
+    )
+    expect(await screen.findByText('Pàgina de confirmació')).toBeInTheDocument()
+    expect(screen.queryByText('Pàgina del carretó')).not.toBeInTheDocument()
+    expect(loadCart()).toEqual([])
+  })
+
+  it('keeps the cart and sends the customer to review it when the cart changed', async () => {
+    // Given a backend that rejects the order because a price changed
+    vi.mocked(createOrder).mockRejectedValue(
+      new OrderRequestError(
+        'Alguns productes han canviat. Revisa el carretó',
+        [{ variantId: 12, type: 'price_changed' }],
+        'cart_changed',
+      ),
+    )
+    const user = userEvent.setup()
+    await goToReviewStep(user)
+
+    // When the customer confirms the order
+    await user.click(screen.getByRole('button', { name: 'Confirma la comanda' }))
+
+    // Then the reason is shown, the cart is kept and there is a link to review it
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Alguns productes han canviat. Revisa el carretó',
+    )
+    expect(screen.getByRole('link', { name: 'Revisa el carretó' })).toHaveAttribute(
+      'href',
+      '/carreto',
+    )
+    expect(
+      within(screen.getByRole('complementary', { name: 'Resum' })).getByText(
+        '2 × Pastís de xocolata (6 racions)',
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('goes back to the dates without the full day', async () => {
+    // Given a backend that rejects the order because the day is full
+    vi.mocked(createOrder).mockRejectedValue(
+      new OrderRequestError('La data de lliurament ja no està disponible', [], 'date_unavailable'),
+    )
+    const user = userEvent.setup()
+    await goToReviewStep(user)
+    await user.click(screen.getByRole('button', { name: 'Confirma la comanda' }))
+
+    // When the customer wants another date
+    await user.click(screen.getByRole('button', { name: 'Tria una altra data' }))
+
+    // Then the first step is shown without a date and without the error
+    expect(screen.getByRole('heading', { name: 'Pas 1 · Data de lliurament' })).toBeInTheDocument()
+    expect(screen.getByText('Tria una data per continuar.')).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('goes back to the pickup points without the deactivated one', async () => {
+    // Given a backend that rejects the order because the pickup point was deactivated
+    vi.mocked(createOrder).mockRejectedValue(
+      new OrderRequestError(
+        'El punt de recollida ja no està disponible',
+        [],
+        'pickup_point_unavailable',
+      ),
+    )
+    const user = userEvent.setup()
+    await goToReviewStep(user)
+    await user.click(screen.getByRole('button', { name: 'Confirma la comanda' }))
+
+    // When the customer wants another pickup point
+    await user.click(screen.getByRole('button', { name: 'Tria un altre punt de recollida' }))
+
+    // Then the second step is shown without a pickup point and without the error
+    expect(
+      screen.getByRole('heading', { name: 'Pas 2 · Mètode de lliurament' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Tria un punt de recollida per continuar.')).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+})

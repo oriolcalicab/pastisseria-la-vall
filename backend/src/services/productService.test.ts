@@ -1,0 +1,519 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { prisma } from '../lib/prisma.js'
+import {
+  createProduct,
+  getPublicProduct,
+  listProducts,
+  listPublicProducts,
+  setProductActive,
+  setVariantActive,
+  getAdminProduct,
+  updateProduct,
+} from './productService.js'
+import { NewProduct } from '../types/product.js'
+
+const tx = vi.hoisted(() => ({
+  product: { findUnique: vi.fn(), update: vi.fn(), findUniqueOrThrow: vi.fn() },
+  category: { findUnique: vi.fn() },
+  productVariant: { create: vi.fn(), update: vi.fn() },
+}))
+
+vi.mock('../lib/prisma.js', () => ({
+  prisma: {
+    $queryRaw: vi.fn(),
+    $transaction: vi.fn(),
+    category: { findUnique: vi.fn() },
+    product: {
+      findMany: vi.fn(),
+      count: vi.fn(),
+      create: vi.fn(),
+      updateMany: vi.fn(),
+      findUnique: vi.fn(),
+      findFirst: vi.fn(),
+    },
+    productVariant: { updateMany: vi.fn(), findUnique: vi.fn() },
+  },
+}))
+
+describe('listProducts', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+    vi.mocked(prisma.$transaction).mockImplementation(((queries: Promise<unknown>[]) =>
+      Promise.all(queries)) as never)
+    vi.mocked(prisma.product.findMany).mockResolvedValue([])
+    vi.mocked(prisma.product.count).mockResolvedValue(25 as never)
+  })
+
+  it('lists all the products without search', async () => {
+    // Given there is no search
+    // When the second page of 20 is requested
+    const result = await listProducts({ page: 2, pageSize: 20, search: undefined })
+
+    // Then all the products are paginated and the accent search is not used
+    expect(prisma.$queryRaw).not.toHaveBeenCalled()
+    expect(prisma.product.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: {}, skip: 20, take: 20 }),
+    )
+    expect(result).toMatchObject({ page: 2, total: 25, totalPages: 2 })
+  })
+
+  it('searches ignoring accents and lists the matching products', async () => {
+    // Given two products whose name matches "pastis"
+    vi.mocked(prisma.$queryRaw).mockResolvedValue([{ id: 1 }, { id: 2 }] as never)
+
+    // When the products are searched by "pastis"
+    await listProducts({ page: 1, pageSize: 20, search: 'pastis' })
+
+    // Then the search pattern is sent as a parameter and only those products are listed
+    expect(vi.mocked(prisma.$queryRaw).mock.calls[0]).toContain('%pastis%')
+    expect(prisma.product.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: { in: [1, 2] } } }),
+    )
+    expect(prisma.product.count).toHaveBeenCalledWith({ where: { id: { in: [1, 2] } } })
+  })
+
+  it('returns no pages when there are no products', async () => {
+    // Given there are no products
+    vi.mocked(prisma.product.count).mockResolvedValue(0 as never)
+
+    // When the first page is requested
+    const result = await listProducts({ page: 1, pageSize: 20, search: undefined })
+
+    // Then the page is empty and there are no pages
+    expect(result).toMatchObject({ items: [], total: 0, totalPages: 0 })
+  })
+
+  it('returns an empty page when the search has no matches', async () => {
+    // Given no product matches the search
+    vi.mocked(prisma.$queryRaw).mockResolvedValue([] as never)
+    vi.mocked(prisma.product.count).mockResolvedValue(0 as never)
+
+    // When the products are searched by "zzz"
+    const result = await listProducts({ page: 1, pageSize: 20, search: 'zzz' })
+
+    // Then nothing matches and there are no pages
+    expect(prisma.product.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: { in: [] } } }),
+    )
+    expect(result).toMatchObject({ total: 0, totalPages: 0 })
+  })
+})
+
+describe('createProduct', () => {
+  const newProduct: NewProduct = {
+    categoryId: 1,
+    name: 'Pastís de maduixa',
+    description: 'Bescuit amb nata i maduixes',
+    allergens: null,
+    isGlutenFree: false,
+    isPlantMilk: false,
+    isVegan: false,
+    isActive: true,
+    variants: [{ name: '6 racions', priceCents: 3900, stock: 5, sortOrder: 0 }],
+  }
+
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
+  it('does not create the product when the category does not exist', async () => {
+    // Given the category does not exist
+    vi.mocked(prisma.category.findUnique).mockResolvedValue(null)
+
+    // When the product is created
+    const result = await createProduct(newProduct)
+
+    // Then nothing is created
+    expect(result).toBeNull()
+    expect(prisma.product.create).not.toHaveBeenCalled()
+  })
+
+  it('creates the product and its variants at once', async () => {
+    // Given the category exists
+    vi.mocked(prisma.category.findUnique).mockResolvedValue({ id: 1 } as never)
+    vi.mocked(prisma.product.create).mockResolvedValue({ id: 10 } as never)
+
+    // When the product is created
+    const result = await createProduct(newProduct)
+
+    // Then the variants are created inside the product and the product is returned
+    const { variants, ...product } = newProduct
+    expect(prisma.product.create).toHaveBeenCalledWith({
+      data: { ...product, variants: { create: variants } },
+      include: { category: true, variants: { orderBy: { sortOrder: 'asc' } } },
+    })
+    expect(result).toEqual({ id: 10 })
+  })
+})
+
+describe('setProductActive', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
+  it('returns null when the product does not exist', async () => {
+    // Given no product with this id
+    vi.mocked(prisma.product.updateMany).mockResolvedValue({ count: 0 })
+
+    // When the product is deactivated
+    const result = await setProductActive(99, false)
+
+    // Then nothing is returned
+    expect(result).toBeNull()
+    expect(prisma.product.findUnique).not.toHaveBeenCalled()
+  })
+
+  it('changes the status and returns the product', async () => {
+    // Given an existing product
+    vi.mocked(prisma.product.updateMany).mockResolvedValue({ count: 1 })
+    vi.mocked(prisma.product.findUnique).mockResolvedValue({ id: 7, isActive: false } as never)
+
+    // When the product is deactivated
+    const result = await setProductActive(7, false)
+
+    // Then only isActive is changed and the product is returned
+    expect(prisma.product.updateMany).toHaveBeenCalledWith({
+      where: { id: 7 },
+      data: { isActive: false },
+    })
+    expect(result).toEqual({ id: 7, isActive: false })
+  })
+})
+
+describe('setVariantActive', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
+  it('only changes the variant when it belongs to the product', async () => {
+    // Given a variant
+    vi.mocked(prisma.productVariant.updateMany).mockResolvedValue({ count: 1 })
+    vi.mocked(prisma.productVariant.findUnique).mockResolvedValue({
+      id: 12,
+      isActive: true,
+    } as never)
+
+    // When the variant of the product is activated
+    const result = await setVariantActive(7, 12, true)
+
+    // Then the product is part of the condition and the variant is returned
+    expect(prisma.productVariant.updateMany).toHaveBeenCalledWith({
+      where: { id: 12, productId: 7 },
+      data: { isActive: true },
+    })
+    expect(result).toEqual({ id: 12, isActive: true })
+  })
+
+  it('returns null when the variant is not of that product', async () => {
+    // Given a variant that belongs to another product
+    vi.mocked(prisma.productVariant.updateMany).mockResolvedValue({ count: 0 })
+
+    // When it is changed through the wrong product
+    const result = await setVariantActive(7, 12, false)
+
+    // Then nothing is changed or returned
+    expect(result).toBeNull()
+    expect(prisma.productVariant.findUnique).not.toHaveBeenCalled()
+  })
+})
+
+describe('listPublicProducts', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+    vi.mocked(prisma.$transaction).mockImplementation(((queries: Promise<unknown>[]) =>
+      Promise.all(queries)) as never)
+    vi.mocked(prisma.product.findMany).mockResolvedValue([])
+    vi.mocked(prisma.product.count).mockResolvedValue(25 as never)
+  })
+
+  it('only lists active products with an active variant', async () => {
+    // Given the second page of 12 products is requested
+    // When the products are listed
+    const result = await listPublicProducts({
+      page: 2,
+      pageSize: 12,
+      category: undefined,
+      diets: [],
+    })
+
+    // Then only the products that can be bought are paginated
+    expect(prisma.product.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { isActive: true, variants: { some: { isActive: true } } },
+        skip: 12,
+        take: 12,
+      }),
+    )
+    expect(result).toMatchObject({ page: 2, pageSize: 12, total: 25, totalPages: 3 })
+  })
+
+  it('filters by the slug of the category', async () => {
+    // Given a category
+    // When the products of the category are listed
+    await listPublicProducts({ page: 1, pageSize: 20, category: 'pastissos', diets: [] })
+
+    // Then the same filter is used for the list and the count
+    const where = {
+      isActive: true,
+      variants: { some: { isActive: true } },
+      category: { slug: 'pastissos' },
+    }
+    expect(prisma.product.findMany).toHaveBeenCalledWith(expect.objectContaining({ where }))
+    expect(prisma.product.count).toHaveBeenCalledWith({ where })
+  })
+
+  it('tells if a variant is in stock without showing the stock', async () => {
+    // Given a product with a variant in stock and another one sold out
+    const row = {
+      id: 1,
+      name: 'Pastís de xocolata',
+      variants: [
+        { id: 12, name: '6 racions', priceCents: 3900, stock: 5 },
+        { id: 13, name: '10 racions', priceCents: 4900, stock: 0 },
+      ],
+    }
+    vi.mocked(prisma.product.findMany).mockResolvedValue([row] as never)
+
+    // When the products are listed
+    const { items } = await listPublicProducts({
+      page: 1,
+      pageSize: 20,
+      category: undefined,
+      diets: [],
+    })
+
+    // Then the variants have inStock and not the real stock
+    expect(items[0]?.variants).toEqual([
+      { id: 12, name: '6 racions', priceCents: 3900, inStock: true },
+      { id: 13, name: '10 racions', priceCents: 4900, inStock: false },
+    ])
+  })
+
+  it('only returns the active variants of each product', async () => {
+    // Given the products are listed
+    // When the query is sent
+    await listPublicProducts({ page: 1, pageSize: 20, category: undefined, diets: [] })
+
+    // Then the inactive variants are left out
+    expect(prisma.product.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: expect.objectContaining({
+          variants: expect.objectContaining({ where: { isActive: true } }),
+        }),
+      }),
+    )
+  })
+
+  it('returns an empty page when there are no products', async () => {
+    // Given there are no products
+    vi.mocked(prisma.product.count).mockResolvedValue(0 as never)
+
+    // When the products are listed
+    const result = await listPublicProducts({
+      page: 1,
+      pageSize: 20,
+      category: undefined,
+      diets: [],
+    })
+
+    // Then the page is empty and there are no pages
+    expect(result).toMatchObject({ items: [], total: 0, totalPages: 0 })
+  })
+
+  it('requires all the diets at once', async () => {
+    // Given two diets
+    // When the products are listed
+    await listPublicProducts({
+      page: 1,
+      pageSize: 20,
+      category: undefined,
+      diets: ['vegan', 'gluten_free'],
+    })
+
+    // Then the same filter is used for the list and the count
+    const where = {
+      isActive: true,
+      variants: { some: { isActive: true } },
+      AND: [{ isVegan: true }, { isGlutenFree: true }],
+    }
+    expect(prisma.product.findMany).toHaveBeenCalledWith(expect.objectContaining({ where }))
+    expect(prisma.product.count).toHaveBeenCalledWith({ where })
+  })
+
+  it.each([
+    ['gluten_free', { isGlutenFree: true }],
+    ['plant_milk', { isPlantMilk: true }],
+    ['vegan', { isVegan: true }],
+  ] as const)('translates the diet %s to its field', async (diet, condition) => {
+    // Given one diet
+    // When the products are listed
+    await listPublicProducts({ page: 1, pageSize: 20, category: undefined, diets: [diet] })
+
+    // Then the field of that diet is required
+    expect(prisma.product.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ AND: [condition] }) }),
+    )
+  })
+
+  it('combines the diets with the category', async () => {
+    // Given a category and a diet
+    // When the products are listed
+    await listPublicProducts({ page: 1, pageSize: 20, category: 'cupcakes', diets: ['vegan'] })
+
+    // Then the product has to match both
+    const where = {
+      isActive: true,
+      variants: { some: { isActive: true } },
+      category: { slug: 'cupcakes' },
+      AND: [{ isVegan: true }],
+    }
+    expect(prisma.product.findMany).toHaveBeenCalledWith(expect.objectContaining({ where }))
+    expect(prisma.product.count).toHaveBeenCalledWith({ where })
+  })
+})
+
+describe('getPublicProduct', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
+  it('only looks for a product that can be bought', async () => {
+    // Given a product that is not available
+    vi.mocked(prisma.product.findFirst).mockResolvedValue(null)
+
+    // When the product is requested
+    const result = await getPublicProduct(7)
+
+    // Then only active products with an active variant are searched
+    expect(prisma.product.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 7, isActive: true, variants: { some: { isActive: true } } },
+      }),
+    )
+    expect(result).toBeNull()
+  })
+
+  it('returns the product without the real stock', async () => {
+    // Given a product with a variant in stock
+    const row = {
+      id: 7,
+      name: 'Pastís de xocolata',
+      variants: [{ id: 12, name: '6 racions', priceCents: 3900, stock: 5 }],
+    }
+    vi.mocked(prisma.product.findFirst).mockResolvedValue(row as never)
+
+    // When the product is requested
+    const result = await getPublicProduct(7)
+
+    // Then the variant has inStock and not the real stock
+    expect(result).toEqual({
+      id: 7,
+      name: 'Pastís de xocolata',
+      variants: [{ id: 12, name: '6 racions', priceCents: 3900, inStock: true }],
+    })
+  })
+
+  it('only returns the active variants', async () => {
+    // Given a product
+    vi.mocked(prisma.product.findFirst).mockResolvedValue(null)
+
+    // When the product is requested
+    await getPublicProduct(7)
+
+    // Then the inactive variants are left out
+    expect(prisma.product.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: expect.objectContaining({
+          variants: expect.objectContaining({ where: { isActive: true } }),
+        }),
+      }),
+    )
+  })
+})
+
+describe('getAdminProduct', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
+  it('returns the product with its category and variants', async () => {
+    // Given a product
+    vi.mocked(prisma.product.findUnique).mockResolvedValue({ id: 7 } as never)
+
+    // When the admin asks for it
+    await getAdminProduct(7)
+
+    // Then it is searched with its category and variants
+    expect(prisma.product.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 7 }, include: expect.anything() }),
+    )
+  })
+})
+
+describe('updateProduct', () => {
+  const update = {
+    categoryId: 1,
+    name: 'Pastís de xocolata',
+    description: 'Amb cacau pur',
+    allergens: null,
+    isGlutenFree: false,
+    isPlantMilk: false,
+    isVegan: false,
+    isActive: true,
+    variants: [
+      { id: 12, name: '6 racions', priceCents: 4200, stock: 8, sortOrder: 0 },
+      { id: null, name: '12 racions', priceCents: 7500, stock: 2, sortOrder: 1 },
+    ],
+  }
+
+  beforeEach(() => {
+    vi.resetAllMocks()
+    vi.mocked(prisma.$transaction).mockImplementation(((callback: (client: typeof tx) => unknown) =>
+      callback(tx)) as never)
+    tx.product.findUnique.mockResolvedValue({ variants: [{ id: 12 }, { id: 13 }] })
+    tx.category.findUnique.mockResolvedValue({ id: 1 })
+    tx.product.findUniqueOrThrow.mockResolvedValue({ id: 7 })
+  })
+
+  it('updates the product, changes the existing variant and creates the new one', async () => {
+    // Given a product with variants 12 and 13
+    // When the admin changes the price of 12 and adds a new variant
+    const result = await updateProduct(7, update)
+
+    // Then the product and the variant are updated and the new variant is created
+    expect(tx.product.update).toHaveBeenCalledWith({
+      where: { id: 7 },
+      data: expect.objectContaining({ name: 'Pastís de xocolata' }),
+    })
+    expect(tx.productVariant.update).toHaveBeenCalledWith({
+      where: { id: 12 },
+      data: { name: '6 racions', priceCents: 4200, stock: 8, sortOrder: 0 },
+    })
+    expect(tx.productVariant.create).toHaveBeenCalledWith({
+      data: { name: '12 racions', priceCents: 7500, stock: 2, sortOrder: 1, productId: 7 },
+    })
+    expect(result).toEqual({ ok: true, product: { id: 7 } })
+  })
+
+  it('does not change a variant of another product', async () => {
+    // Given a variant that is not of this product
+    const otherVariant = { ...update, variants: [{ ...update.variants[0]!, id: 99 }] }
+
+    // When the admin sends it
+    const result = await updateProduct(7, otherVariant)
+
+    // Then nothing is saved
+    expect(result).toEqual({ ok: false, reason: 'variant_not_found' })
+    expect(tx.product.update).not.toHaveBeenCalled()
+    expect(tx.productVariant.update).not.toHaveBeenCalled()
+  })
+
+  it('returns not found when the product does not exist', async () => {
+    // Given an id without product
+    tx.product.findUnique.mockResolvedValue(null)
+
+    // When the admin edits it
+    // Then the product is not found
+    expect(await updateProduct(999, update)).toEqual({ ok: false, reason: 'product_not_found' })
+  })
+})

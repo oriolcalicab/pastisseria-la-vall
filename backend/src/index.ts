@@ -1,0 +1,35 @@
+import 'dotenv/config'
+import express from 'express'
+import cors from 'cors'
+import authRouter from './routes/authRoutes.js'
+import adminRouter from './routes/adminRoutes.js'
+import categoryRouter from './routes/categoryRoutes.js'
+import productRouter from './routes/productRoutes.js'
+import cartRouter from './routes/cartRoutes.js'
+import deliveryRouter from './routes/deliveryRoutes.js'
+import pickupPointRouter from './routes/pickupPointRoutes.js'
+import checkoutRouter from './routes/checkoutRoutes.js'
+import orderRouter from './routes/orderRoutes.js'
+
+const app = express()
+const port = process.env.PORT ?? 3000
+
+app.use(cors())
+app.use(express.json())
+app.use('/api/auth', authRouter)
+app.use('/api/admin', adminRouter)
+app.use('/api/categories', categoryRouter)
+app.use('/api/products', productRouter)
+app.use('/api/cart', cartRouter)
+app.use('/api/delivery-dates', deliveryRouter)
+app.use('/api/pickup-points', pickupPointRouter)
+app.use('/api/checkout', checkoutRouter)
+app.use('/api/orders', orderRouter)
+
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok' })
+})
+
+app.listen(port, () => {
+  console.log(`Servidor a http://localhost:${port}`)
+})
