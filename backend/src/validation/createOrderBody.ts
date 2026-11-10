@@ -1,9 +1,9 @@
 import type { CreateOrderRequest, OrderDelivery } from '../types/order.js'
 import { parseCartValidateBody } from './cartValidateBody.js'
 import { parseIdParam } from './idParam.js'
+import { isRealDate } from './realDate.js'
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const BARCELONA_POSTAL_CODE = /^080\d{2}$/
 const MIN_ADDRESS_LENGTH = 5
 const MAX_ADDRESS_LENGTH = 200
@@ -16,11 +16,6 @@ const fail = (error: string) => ({ ok: false as const, error })
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
-
-const isRealDate = (value: unknown): value is string =>
-  typeof value === 'string' &&
-  DATE_PATTERN.test(value) &&
-  new Date(`${value}T00:00:00Z`).toISOString().startsWith(value)
 
 const parseText = (value: unknown, min: number, max: number): string | null => {
   if (typeof value !== 'string') return null

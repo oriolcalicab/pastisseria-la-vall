@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma.js'
 import type { Prisma } from '../generated/prisma/client.js'
-import type { AdminOrderListQuery } from '../types/order.js'
+import type { AdminOrderListQuery, CalendarQuery } from '../types/order.js'
 import { toDateKey } from '../utils/dateKey.js'
 import { orderDetailSelect, orderListSelect } from './orderService.js'
 import type { OrderStatus } from '../generated/prisma/enums.js'
@@ -103,4 +103,27 @@ export const changeOrderStatus = async (
   const order = await getAdminOrder(orderId)
 
   return order ? { ok: true, order } : { ok: false, reason: 'not_found' }
+}
+
+export const listCalendarOrders = async ({ from, to }: CalendarQuery) => {
+  const orders = await prisma.order.findMany({
+    where: {
+      status: { not: 'cancelled' },
+      deliveryDate: {
+        gte: new Date(`${from}T00:00:00Z`),
+        lte: new Date(`${to}T00:00:00Z`),
+      },
+    },
+    orderBy: [{ deliveryDate: 'asc' }, { id: 'asc' }],
+    select: {
+      id: true,
+      orderNumber: true,
+      status: true,
+      deliveryMethod: true,
+      deliveryDate: true,
+      user: { select: { name: true } },
+    },
+  })
+
+  return orders.map((order) => ({ ...order, deliveryDate: toDateKey(order.deliveryDate) }))
 }
