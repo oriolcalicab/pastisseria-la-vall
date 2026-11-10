@@ -64,14 +64,20 @@ const VariantFields = ({
                 onChange={(value) => onChange(variant.key, 'stock', value)}
               />
             </div>
-            <button
-              type="button"
-              onClick={() => onRemove(variant.key)}
-              disabled={variants.length <= 1}
-              className="mt-3 text-sm text-red-700 underline disabled:text-gray-400 disabled:no-underline"
-            >
-              Treu la variant {position}
-            </button>
+            {variant.id ? (
+              <p className="mt-3 text-sm text-gray-600">
+                Per amagar aquesta variant, desactiva-la a la llista de productes.
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onRemove(variant.key)}
+                disabled={variants.length <= 1}
+                className="mt-3 text-sm text-red-700 underline disabled:text-gray-400 disabled:no-underline"
+              >
+                Treu la variant {position}
+              </button>
+            )}
           </fieldset>
         )
       })}

@@ -21,6 +21,7 @@ import OrdersPage from './pages/orders/OrdersPage'
 import OrderDetailPage from './pages/orders/OrderDetailPage'
 import AdminOrdersPage from './pages/admin/AdminOrdersPage'
 import AdminOrderDetailPage from './pages/admin/AdminOrderDetailPage'
+import EditProductPage from './pages/admin/EditProductPage'
 
 export const router = createBrowserRouter([
   {
@@ -60,6 +61,7 @@ export const router = createBrowserRouter([
           { path: 'comandes/:id', element: <AdminOrderDetailPage /> },
           { path: 'productes', element: <AdminProductsPage /> },
           { path: 'productes/nou', element: <NewProductPage /> },
+          { path: 'productes/:id/editar', element: <EditProductPage /> },
         ],
       },
     ],

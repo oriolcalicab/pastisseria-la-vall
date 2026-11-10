@@ -4,6 +4,7 @@ export type ProductFlag = 'isGlutenFree' | 'isPlantMilk' | 'isVegan' | 'isActive
 
 export type VariantFormValues = {
   key: number
+  id?: number
   name: string
   price: string
   stock: string

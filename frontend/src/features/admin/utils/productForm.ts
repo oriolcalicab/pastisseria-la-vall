@@ -1,4 +1,4 @@
-import type { NewProduct, NewProductVariant } from '../types/product'
+import type { AdminProductDetail, NewProduct, NewProductVariant } from '../types/product'
 import type {
   ProductFormErrors,
   ProductFormValues,
@@ -53,7 +53,12 @@ const validateVariant = (values: VariantFormValues) => {
     errors.stock = 'Escriu un stock enter, 0 o més'
   }
 
-  const variant: NewProductVariant = { name, priceCents: priceCents ?? 0, stock: stock ?? 0 }
+  const variant: NewProductVariant = {
+    ...(values.id ? { id: values.id } : {}),
+    name,
+    priceCents: priceCents ?? 0,
+    stock: stock ?? 0,
+  }
 
   return { errors, variant }
 }
@@ -108,3 +113,23 @@ export const validateProductForm = (values: ProductFormValues): ProductFormResul
     },
   }
 }
+
+const formatCentsForInput = (cents: number) => (cents / 100).toFixed(2).replace('.', ',')
+
+export const toProductFormValues = (product: AdminProductDetail): ProductFormValues => ({
+  categoryId: String(product.categoryId),
+  name: product.name,
+  description: product.description,
+  allergens: product.allergens ?? '',
+  isGlutenFree: product.isGlutenFree,
+  isPlantMilk: product.isPlantMilk,
+  isVegan: product.isVegan,
+  isActive: product.isActive,
+  variants: product.variants.map((variant, index) => ({
+    key: index + 1,
+    id: variant.id,
+    name: variant.name,
+    price: formatCentsForInput(variant.priceCents),
+    stock: String(variant.stock),
+  })),
+})

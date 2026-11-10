@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ProductFormValues } from '../types/productForm'
-import { parseEurosToCents, validateProductForm } from './productForm'
+import { parseEurosToCents, toProductFormValues, validateProductForm } from './productForm'
 
 const validVariant = { key: 1, name: '6 racions', price: '39,50', stock: '5' }
 
@@ -135,6 +135,53 @@ describe('validateProductForm', () => {
     expect(validateProductForm(values)).toMatchObject({
       ok: false,
       errors: { allergens: 'Els al·lèrgens poden tenir fins a 300 caràcters' },
+    })
+  })
+})
+
+describe('editing a product', () => {
+  it('keeps the id of a saved variant', () => {
+    // Given a form with a saved variant
+    const values = validValues({ variants: [{ ...validVariant, id: 12 }] })
+
+    // When the form is validated
+    const result = validateProductForm(values)
+
+    // Then the variant keeps its id
+    expect(result).toMatchObject({
+      ok: true,
+      product: { variants: [{ id: 12, name: '6 racions', priceCents: 3950, stock: 5 }] },
+    })
+  })
+
+  it('fills the form with a saved product', () => {
+    // Given a saved product
+    const product = {
+      id: 7,
+      name: 'Pastís de xocolata',
+      isActive: false,
+      category: { id: 1, name: 'Pastissos' },
+      categoryId: 1,
+      description: 'Amb cacau pur',
+      allergens: null,
+      isGlutenFree: true,
+      isPlantMilk: false,
+      isVegan: false,
+      variants: [{ id: 12, name: '6 racions', priceCents: 3900, stock: 5, isActive: true }],
+    }
+
+    // When the form values are created
+    // Then the prices are in euros and the texts are ready to edit
+    expect(toProductFormValues(product)).toEqual({
+      categoryId: '1',
+      name: 'Pastís de xocolata',
+      description: 'Amb cacau pur',
+      allergens: '',
+      isGlutenFree: true,
+      isPlantMilk: false,
+      isVegan: false,
+      isActive: false,
+      variants: [{ key: 1, id: 12, name: '6 racions', price: '39,00', stock: '5' }],
     })
   })
 })

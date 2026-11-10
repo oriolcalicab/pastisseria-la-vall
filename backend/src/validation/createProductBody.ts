@@ -1,4 +1,4 @@
-import type { NewProduct, NewVariant } from '../types/product.js'
+import type { NewProduct, ProductUpdate, VariantInput } from '../types/product.js'
 
 const MIN_NAME_LENGTH = 2
 const MAX_NAME_LENGTH = 100
@@ -32,7 +32,7 @@ const parseFlag = (value: unknown, defaultValue: boolean): boolean | null => {
   return typeof value === 'boolean' ? value : null
 }
 
-const parseVariant = (value: unknown, position: number): Result<NewVariant> => {
+const parseVariant = (value: unknown, position: number): Result<VariantInput> => {
   if (!isRecord(value)) return fail(`La variant ${position} no és vàlida`)
 
   const name = parseText(value.name, 1, MAX_VARIANT_NAME_LENGTH)
@@ -49,10 +49,16 @@ const parseVariant = (value: unknown, position: number): Result<NewVariant> => {
     return fail(`L'stock de la variant ${position} ha de ser un enter igual o més gran que 0`)
   }
 
-  return { ok: true, data: { name, priceCents, stock, sortOrder: position - 1 } }
+  const id = value.id ?? null
+
+  if (id !== null && (!isInteger(id) || id < 1)) {
+    return fail(`La variant ${position} no és vàlida`)
+  }
+
+  return { ok: true, data: { id, name, priceCents, stock, sortOrder: position - 1 } }
 }
 
-const parseVariants = (value: unknown): Result<NewVariant[]> => {
+const parseVariants = (value: unknown): Result<VariantInput[]> => {
   if (!Array.isArray(value) || value.length === 0) {
     return fail('El producte ha de tenir com a mínim una variant')
   }
@@ -60,7 +66,7 @@ const parseVariants = (value: unknown): Result<NewVariant[]> => {
   if (value.length > MAX_VARIANTS)
     return fail(`Un producte no pot tenir més de ${MAX_VARIANTS} variants`)
 
-  const variants: NewVariant[] = []
+  const variants: VariantInput[] = []
 
   for (const [index, item] of value.entries()) {
     const variant = parseVariant(item, index + 1)
@@ -70,10 +76,14 @@ const parseVariants = (value: unknown): Result<NewVariant[]> => {
     variants.push(variant.data)
   }
 
+  const ids = variants.flatMap((variant) => (variant.id === null ? [] : [variant.id]))
+
+  if (new Set(ids).size !== ids.length) return fail('Hi ha variants repetides')
+
   return { ok: true, data: variants }
 }
 
-export const parseCreateProductBody = (body: unknown): Result<NewProduct> => {
+const parseProductBody = (body: unknown): Result<ProductUpdate> => {
   if (!isRecord(body)) return fail('El cos de la petició no és vàlid')
 
   const { categoryId, allergens } = body
@@ -126,3 +136,29 @@ export const parseCreateProductBody = (body: unknown): Result<NewProduct> => {
     },
   }
 }
+
+export const parseCreateProductBody = (body: unknown): Result<NewProduct> => {
+  const result = parseProductBody(body)
+
+  if (!result.ok) return result
+
+  if (result.data.variants.some((variant) => variant.id !== null)) {
+    return fail('Un producte nou no pot tenir variants que ja existeixen')
+  }
+
+  return {
+    ok: true,
+    data: {
+      ...result.data,
+      variants: result.data.variants.map(({ name, priceCents, stock, sortOrder }) => ({
+        name,
+        priceCents,
+        stock,
+        sortOrder,
+      })),
+    },
+  }
+}
+
+export const parseUpdateProductBody = (body: unknown): Result<ProductUpdate> =>
+  parseProductBody(body)

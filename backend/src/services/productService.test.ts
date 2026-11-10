@@ -7,8 +7,16 @@ import {
   listPublicProducts,
   setProductActive,
   setVariantActive,
+  getAdminProduct,
+  updateProduct,
 } from './productService.js'
 import { NewProduct } from '../types/product.js'
+
+const tx = vi.hoisted(() => ({
+  product: { findUnique: vi.fn(), update: vi.fn(), findUniqueOrThrow: vi.fn() },
+  category: { findUnique: vi.fn() },
+  productVariant: { create: vi.fn(), update: vi.fn() },
+}))
 
 vi.mock('../lib/prisma.js', () => ({
   prisma: {
@@ -420,5 +428,92 @@ describe('getPublicProduct', () => {
         }),
       }),
     )
+  })
+})
+
+describe('getAdminProduct', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
+  it('returns the product with its category and variants', async () => {
+    // Given a product
+    vi.mocked(prisma.product.findUnique).mockResolvedValue({ id: 7 } as never)
+
+    // When the admin asks for it
+    await getAdminProduct(7)
+
+    // Then it is searched with its category and variants
+    expect(prisma.product.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 7 }, include: expect.anything() }),
+    )
+  })
+})
+
+describe('updateProduct', () => {
+  const update = {
+    categoryId: 1,
+    name: 'Pastís de xocolata',
+    description: 'Amb cacau pur',
+    allergens: null,
+    isGlutenFree: false,
+    isPlantMilk: false,
+    isVegan: false,
+    isActive: true,
+    variants: [
+      { id: 12, name: '6 racions', priceCents: 4200, stock: 8, sortOrder: 0 },
+      { id: null, name: '12 racions', priceCents: 7500, stock: 2, sortOrder: 1 },
+    ],
+  }
+
+  beforeEach(() => {
+    vi.resetAllMocks()
+    vi.mocked(prisma.$transaction).mockImplementation(((callback: (client: typeof tx) => unknown) =>
+      callback(tx)) as never)
+    tx.product.findUnique.mockResolvedValue({ variants: [{ id: 12 }, { id: 13 }] })
+    tx.category.findUnique.mockResolvedValue({ id: 1 })
+    tx.product.findUniqueOrThrow.mockResolvedValue({ id: 7 })
+  })
+
+  it('updates the product, changes the existing variant and creates the new one', async () => {
+    // Given a product with variants 12 and 13
+    // When the admin changes the price of 12 and adds a new variant
+    const result = await updateProduct(7, update)
+
+    // Then the product and the variant are updated and the new variant is created
+    expect(tx.product.update).toHaveBeenCalledWith({
+      where: { id: 7 },
+      data: expect.objectContaining({ name: 'Pastís de xocolata' }),
+    })
+    expect(tx.productVariant.update).toHaveBeenCalledWith({
+      where: { id: 12 },
+      data: { name: '6 racions', priceCents: 4200, stock: 8, sortOrder: 0 },
+    })
+    expect(tx.productVariant.create).toHaveBeenCalledWith({
+      data: { name: '12 racions', priceCents: 7500, stock: 2, sortOrder: 1, productId: 7 },
+    })
+    expect(result).toEqual({ ok: true, product: { id: 7 } })
+  })
+
+  it('does not change a variant of another product', async () => {
+    // Given a variant that is not of this product
+    const otherVariant = { ...update, variants: [{ ...update.variants[0]!, id: 99 }] }
+
+    // When the admin sends it
+    const result = await updateProduct(7, otherVariant)
+
+    // Then nothing is saved
+    expect(result).toEqual({ ok: false, reason: 'variant_not_found' })
+    expect(tx.product.update).not.toHaveBeenCalled()
+    expect(tx.productVariant.update).not.toHaveBeenCalled()
+  })
+
+  it('returns not found when the product does not exist', async () => {
+    // Given an id without product
+    tx.product.findUnique.mockResolvedValue(null)
+
+    // When the admin edits it
+    // Then the product is not found
+    expect(await updateProduct(999, update)).toEqual({ ok: false, reason: 'product_not_found' })
   })
 })

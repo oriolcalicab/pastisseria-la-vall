@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseCreateProductBody } from './createProductBody.js'
+import { parseCreateProductBody, parseUpdateProductBody } from './createProductBody.js'
 
 const validVariant = { name: '6 racions', priceCents: 3900, stock: 5 }
 
@@ -122,5 +122,57 @@ describe('parseCreateProductBody', () => {
     // When the body is parsed
     // Then it is rejected
     expect(parseCreateProductBody(validBody(overrides))).toMatchObject({ ok: false })
+  })
+
+  it('returns an error when a new product has a variant that already exists', () => {
+    // Given a new product with a variant id
+    const body = validBody({ variants: [{ ...validVariant, id: 12 }] })
+
+    // When the body is parsed
+    // Then an error is returned
+    expect(parseCreateProductBody(body)).toEqual({
+      ok: false,
+      error: 'Un producte nou no pot tenir variants que ja existeixen',
+    })
+  })
+})
+
+describe('parseUpdateProductBody', () => {
+  it('keeps the id of the existing variants and marks the new ones', () => {
+    // Given an edited product with an existing variant and a new one
+    const body = validBody({
+      variants: [
+        { ...validVariant, id: 12 },
+        { name: '10 racions', priceCents: 4900, stock: 3 },
+      ],
+    })
+
+    // When the body is parsed
+    const result = parseUpdateProductBody(body)
+
+    // Then the existing variant keeps its id and the new one has none
+    expect(result).toMatchObject({
+      ok: true,
+      data: {
+        variants: [
+          { id: 12, name: '6 racions', sortOrder: 0 },
+          { id: null, name: '10 racions', sortOrder: 1 },
+        ],
+      },
+    })
+  })
+
+  it('returns an error when the same variant is sent twice', () => {
+    // Given an edited product with a repeated variant
+    const body = validBody({
+      variants: [
+        { ...validVariant, id: 12 },
+        { ...validVariant, id: 12 },
+      ],
+    })
+
+    // When the body is parsed
+    // Then an error is returned
+    expect(parseUpdateProductBody(body)).toEqual({ ok: false, error: 'Hi ha variants repetides' })
   })
 })
