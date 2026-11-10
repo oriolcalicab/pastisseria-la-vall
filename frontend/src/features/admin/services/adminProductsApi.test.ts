@@ -4,6 +4,8 @@ import {
   fetchAdminProducts,
   setAdminProductActive,
   setAdminVariantActive,
+  fetchAdminProduct,
+  updateAdminProduct,
 } from './adminProductsApi'
 import type { NewProduct } from '../types/product'
 
@@ -210,5 +212,48 @@ describe('setAdminVariantActive', () => {
     await expect(setAdminVariantActive('token-123', 7, 12, false)).rejects.toThrow(
       "No s'ha pogut canviar l'estat",
     )
+  })
+})
+
+describe('editing a product', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('returns null when the product does not exist', async () => {
+    // Given a backend without the product
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 404 }))
+
+    // When the product is requested
+    // Then nothing is returned
+    expect(await fetchAdminProduct('token-123', '999')).toBeNull()
+  })
+
+  it('sends the edited product with PUT', async () => {
+    // Given a backend that saves the product
+    const saved = { id: 7, name: 'Pastís de xocolata' }
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => saved })
+    vi.stubGlobal('fetch', fetchMock)
+    const product: NewProduct = {
+      categoryId: 1,
+      name: 'Pastís de xocolata',
+      description: 'Amb cacau pur',
+      allergens: '',
+      isGlutenFree: false,
+      isPlantMilk: false,
+      isVegan: false,
+      isActive: true,
+      variants: [{ id: 12, name: '6 racions', priceCents: 4200, stock: 8 }],
+    }
+
+    // When the admin saves it
+    const result = await updateAdminProduct('token-123', 7, product)
+
+    // Then it is sent to the product with PUT
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/api/admin/products/7'),
+      expect.objectContaining({ method: 'PUT', body: JSON.stringify(product) }),
+    )
+    expect(result).toEqual(saved)
   })
 })

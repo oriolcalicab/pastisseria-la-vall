@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { createAdminProduct } from '../services/adminProductsApi'
-import type { AdminProduct } from '../types/product'
+import type { AdminProduct, NewProduct } from '../types/product'
 import type {
   ProductFlag,
   ProductFormErrors,
@@ -33,13 +33,26 @@ const createInitialValues = (): ProductFormValues => ({
   variants: [createEmptyVariant(1)],
 })
 
-export const useProductForm = (onSuccess: (product: AdminProduct) => void) => {
+type ProductFormOptions = {
+  initialValues?: ProductFormValues
+  save?: (token: string, product: NewProduct) => Promise<AdminProduct>
+  errorMessage?: string
+}
+
+export const useProductForm = (
+  onSuccess: (product: AdminProduct) => void,
+  {
+    initialValues,
+    save = createAdminProduct,
+    errorMessage = "No s'ha pogut crear el producte",
+  }: ProductFormOptions = {},
+) => {
   const { user } = useAuth()
-  const [values, setValues] = useState(createInitialValues)
+  const [values, setValues] = useState(() => initialValues ?? createInitialValues())
   const [errors, setErrors] = useState<ProductFormErrors>({})
   const [submitError, setSubmitError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const nextVariantKey = useRef(2)
+  const nextVariantKey = useRef((initialValues?.variants.length ?? 1) + 1)
 
   const setField = (field: ProductTextField, value: string) =>
     setValues((current) => ({ ...current, [field]: value }))
@@ -67,7 +80,7 @@ export const useProductForm = (onSuccess: (product: AdminProduct) => void) => {
   const removeVariant = (key: number) => {
     const index = values.variants.findIndex((variant) => variant.key === key)
 
-    if (values.variants.length <= 1 || index === -1) return
+    if (values.variants.length <= 1 || index === -1 || values.variants[index]?.id) return
 
     setValues((current) => ({
       ...current,
@@ -99,10 +112,10 @@ export const useProductForm = (onSuccess: (product: AdminProduct) => void) => {
 
     try {
       const token = await user.getIdToken()
-      const product = await createAdminProduct(token, result.product)
+      const product = await save(token, result.product)
       onSuccess(product)
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "No s'ha pogut crear el producte")
+      setSubmitError(error instanceof Error ? error.message : errorMessage)
       setIsSubmitting(false)
     }
   }

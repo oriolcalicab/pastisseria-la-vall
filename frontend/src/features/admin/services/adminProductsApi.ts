@@ -4,6 +4,7 @@ import type {
   AdminProductPage,
   AdminProductVariant,
   NewProduct,
+  AdminProductDetail,
 } from '../types/product'
 
 type AdminProductsParams = {
@@ -98,3 +99,42 @@ export const setAdminVariantActive = (
     `/products/${productId}/variants/${variantId}`,
     isActive,
   )
+
+export const fetchAdminProduct = async (
+  token: string,
+  id: string,
+): Promise<AdminProductDetail | null> => {
+  const response = await fetch(apiUrl(`/api/admin/products/${encodeURIComponent(id)}`), {
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => {
+    throw new Error("No s'ha pogut carregar el producte")
+  })
+
+  if (response.status === 400 || response.status === 404) return null
+
+  if (!response.ok) throw new Error(`Admin product request failed with status ${response.status}`)
+
+  return response.json() as Promise<AdminProductDetail>
+}
+
+const UPDATE_PRODUCT_ERROR = "No s'ha pogut desar el producte"
+
+export const updateAdminProduct = async (
+  token: string,
+  id: number,
+  product: NewProduct,
+): Promise<AdminProduct> => {
+  const response = await fetch(apiUrl(`/api/admin/products/${id}`), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(product),
+  }).catch(() => {
+    throw new Error(UPDATE_PRODUCT_ERROR)
+  })
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, UPDATE_PRODUCT_ERROR))
+  }
+
+  return response.json() as Promise<AdminProduct>
+}

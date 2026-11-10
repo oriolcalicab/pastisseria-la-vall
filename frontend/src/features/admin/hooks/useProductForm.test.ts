@@ -105,4 +105,34 @@ describe('useProductForm', () => {
     await waitFor(() => expect(result.current.submitError).toBe('La categoria no existeix'))
     expect(result.current.isSubmitting).toBe(false)
   })
+
+  it('starts with a saved product and saves it with the given function', async () => {
+    // Given a saved product in the form
+    const save = vi.fn().mockResolvedValue({ id: 7 })
+    const initialValues = {
+      categoryId: '1',
+      name: 'Pastís de xocolata',
+      description: 'Amb cacau pur',
+      allergens: '',
+      isGlutenFree: false,
+      isPlantMilk: false,
+      isVegan: false,
+      isActive: true,
+      variants: [{ key: 1, id: 12, name: '6 racions', price: '39,00', stock: '5' }],
+    }
+    const { result } = renderHook(() => useProductForm(vi.fn(), { initialValues, save }))
+
+    // When the admin tries to remove the saved variant and then saves
+    act(() => result.current.removeVariant(1))
+    await act(() => result.current.handleSubmit(submitEvent()))
+
+    // Then the saved variant stays and the product is sent with its id
+    expect(result.current.values.variants).toHaveLength(1)
+    expect(save).toHaveBeenCalledWith(
+      'token-123',
+      expect.objectContaining({
+        variants: [{ id: 12, name: '6 racions', priceCents: 3900, stock: 5 }],
+      }),
+    )
+  })
 })

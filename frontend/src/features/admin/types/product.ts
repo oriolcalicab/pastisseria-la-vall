@@ -24,6 +24,7 @@ export type AdminProductPage = {
 
 export type NewProductVariant = {
   name: string
+  id?: number
   priceCents: number
   stock: number
 }
@@ -38,4 +39,13 @@ export type NewProduct = {
   isVegan: boolean
   isActive: boolean
   variants: NewProductVariant[]
+}
+
+export type AdminProductDetail = AdminProduct & {
+  categoryId: number
+  description: string
+  allergens: string | null
+  isGlutenFree: boolean
+  isPlantMilk: boolean
+  isVegan: boolean
 }
