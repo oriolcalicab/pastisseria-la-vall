@@ -1,6 +1,12 @@
 import type { Prisma } from '../generated/prisma/client.js'
 import { prisma } from '../lib/prisma.js'
-import type { Diet, NewProduct, ProductListQuery, PublicProductQuery } from '../types/product.js'
+import type {
+  Diet,
+  NewProduct,
+  ProductListQuery,
+  ProductUpdate,
+  PublicProductQuery,
+} from '../types/product.js'
 import { containsPattern } from '../utils/likePattern.js'
 
 const productInclude = {
@@ -137,4 +143,56 @@ export const getPublicProduct = async (id: number) => {
   })
 
   return product ? toPublicProduct(product) : null
+}
+
+type AdminProductRow = Prisma.ProductGetPayload<{ include: typeof productInclude }>
+
+type UpdateProductResult =
+  | { ok: true; product: AdminProductRow }
+  | { ok: false; reason: 'product_not_found' | 'category_not_found' | 'variant_not_found' }
+
+export const getAdminProduct = (id: number) =>
+  prisma.product.findUnique({ where: { id }, include: productInclude })
+
+export const updateProduct = async (
+  id: number,
+  data: ProductUpdate,
+): Promise<UpdateProductResult> => {
+  const { variants, ...product } = data
+
+  return prisma.$transaction(async (tx): Promise<UpdateProductResult> => {
+    const existing = await tx.product.findUnique({
+      where: { id },
+      select: { variants: { select: { id: true } } },
+    })
+
+    if (!existing) return { ok: false, reason: 'product_not_found' }
+
+    const category = await tx.category.findUnique({
+      where: { id: product.categoryId },
+      select: { id: true },
+    })
+
+    if (!category) return { ok: false, reason: 'category_not_found' }
+
+    const ownVariantIds = new Set(existing.variants.map((variant) => variant.id))
+
+    if (variants.some((variant) => variant.id !== null && !ownVariantIds.has(variant.id))) {
+      return { ok: false, reason: 'variant_not_found' }
+    }
+
+    await tx.product.update({ where: { id }, data: product })
+
+    for (const { id: variantId, ...variant } of variants) {
+      if (variantId === null) {
+        await tx.productVariant.create({ data: { ...variant, productId: id } })
+      } else {
+        await tx.productVariant.update({ where: { id: variantId }, data: variant })
+      }
+    }
+
+    const updated = await tx.product.findUniqueOrThrow({ where: { id }, include: productInclude })
+
+    return { ok: true, product: updated }
+  })
 }

@@ -10,6 +10,8 @@ import {
   listProducts,
   setProductActive,
   setVariantActive,
+  getAdminProduct,
+  updateProduct,
 } from '../services/productService.js'
 
 vi.mock('../services/tokenService.js', () => ({ verifyFirebaseToken: vi.fn() }))
@@ -19,6 +21,8 @@ vi.mock('../services/productService.js', () => ({
   createProduct: vi.fn(),
   setProductActive: vi.fn(),
   setVariantActive: vi.fn(),
+  getAdminProduct: vi.fn(),
+  updateProduct: vi.fn(),
 }))
 vi.mock('../services/adminOrderService.js', () => ({
   listAdminOrders: vi.fn(),
@@ -462,5 +466,87 @@ describe('PATCH active status', () => {
       expect(response.status).toBe(400)
       expect(setVariantActive).not.toHaveBeenCalled()
     })
+  })
+})
+
+describe('edit a product', () => {
+  beforeAll(async () => {
+    const app = express()
+    app.use(express.json())
+    app.use('/api/admin', adminRouter)
+    server = await startTestServer(app)
+  })
+
+  afterAll(() => {
+    server.close()
+  })
+
+  beforeEach(() => {
+    vi.resetAllMocks()
+    loginAs('admin')
+  })
+
+  const putProduct = (id: string, body: object) =>
+    fetch(`${server.baseUrl}/api/admin/products/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer token' },
+      body: JSON.stringify(body),
+    })
+
+  it('returns the product to fill the form', async () => {
+    // Given an existing product
+    vi.mocked(getAdminProduct).mockResolvedValue({ id: 7, name: 'Pastís de xocolata' } as never)
+
+    // When the admin opens it
+    const response = await fetch(`${server.baseUrl}/api/admin/products/7`, {
+      headers: { Authorization: 'Bearer token' },
+    })
+
+    // Then the product is returned
+    expect(response.status).toBe(200)
+    expect(getAdminProduct).toHaveBeenCalledWith(7)
+  })
+
+  it('saves the product with the ids of its variants', async () => {
+    // Given an edited product with an existing variant
+    vi.mocked(updateProduct).mockResolvedValue({ ok: true, product: { id: 7 } } as never)
+    const body = {
+      ...validProduct,
+      variants: [{ id: 12, name: '6 racions', priceCents: 4200, stock: 8 }],
+    }
+
+    // When the admin saves it
+    const response = await putProduct('7', body)
+
+    // Then the clean product is saved keeping the variant id
+    expect(response.status).toBe(200)
+    expect(updateProduct).toHaveBeenCalledWith(
+      7,
+      expect.objectContaining({
+        name: 'Pastís de maduixa',
+        variants: [{ id: 12, name: '6 racions', priceCents: 4200, stock: 8, sortOrder: 0 }],
+      }),
+    )
+  })
+
+  it('responds 400 when the product has no variants', async () => {
+    // Given a product without variants
+    // When the admin saves it
+    const response = await putProduct('7', { ...validProduct, variants: [] })
+
+    // Then the request is rejected without saving
+    expect(response.status).toBe(400)
+    expect(updateProduct).not.toHaveBeenCalled()
+  })
+
+  it('responds 404 when the product does not exist', async () => {
+    // Given an id without product
+    vi.mocked(updateProduct).mockResolvedValue({ ok: false, reason: 'product_not_found' })
+
+    // When the admin saves it
+    const response = await putProduct('999', validProduct)
+
+    // Then the product is not found
+    expect(response.status).toBe(404)
   })
 })

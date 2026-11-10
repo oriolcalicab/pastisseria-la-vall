@@ -3,12 +3,14 @@ import type { Request, Response } from 'express'
 import { adminOnly } from '../middleware/adminOnly.js'
 import {
   createProduct,
+  getAdminProduct,
   listProducts,
   setProductActive,
   setVariantActive,
+  updateProduct,
 } from '../services/productService.js'
 import { parseProductListQuery } from '../validation/productListQuery.js'
-import { parseCreateProductBody } from '../validation/createProductBody.js'
+import { parseCreateProductBody, parseUpdateProductBody } from '../validation/createProductBody.js'
 import { parseActiveBody } from '../validation/activeBody.js'
 import { parseIdParam } from '../validation/idParam.js'
 import adminOrderRouter from './adminOrderRoutes.js'
@@ -97,11 +99,63 @@ const handleCreateProduct = async (req: Request, res: Response) => {
   res.status(201).json(product)
 }
 
+const handleGetProduct = async (req: Request, res: Response) => {
+  const id = parseIdParam(req.params.id)
+
+  if (id === null) {
+    res.status(400).json({ error: 'El producte no és vàlid' })
+    return
+  }
+
+  const product = await getAdminProduct(id)
+
+  if (!product) {
+    res.status(404).json({ error: 'El producte no existeix' })
+    return
+  }
+
+  res.json(product)
+}
+
+const updateErrors = {
+  product_not_found: { status: 404, error: 'El producte no existeix' },
+  category_not_found: { status: 400, error: 'La categoria no existeix' },
+  variant_not_found: { status: 400, error: "Alguna variant no és d'aquest producte" },
+}
+
+const handleUpdateProduct = async (req: Request, res: Response) => {
+  const id = parseIdParam(req.params.id)
+
+  if (id === null) {
+    res.status(400).json({ error: 'El producte no és vàlid' })
+    return
+  }
+
+  const body = parseUpdateProductBody(req.body)
+
+  if (!body.ok) {
+    res.status(400).json({ error: body.error })
+    return
+  }
+
+  const result = await updateProduct(id, body.data)
+
+  if (!result.ok) {
+    const { status, error } = updateErrors[result.reason]
+    res.status(status).json({ error })
+    return
+  }
+
+  res.json(result.product)
+}
+
 const adminRouter = Router()
 
 adminRouter.use(adminOnly)
 adminRouter.get('/ping', handlePing)
 adminRouter.get('/products', handleListProducts)
+adminRouter.get('/products/:id', handleGetProduct)
+adminRouter.put('/products/:id', handleUpdateProduct)
 adminRouter.post('/products', handleCreateProduct)
 adminRouter.patch('/products/:id', handleSetProductActive)
 adminRouter.patch('/products/:productId/variants/:variantId', handleSetVariantActive)
