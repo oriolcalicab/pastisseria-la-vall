@@ -3,6 +3,7 @@ import type { AdminProduct, AdminProductVariant } from '../types/product'
 import { getFromPriceCents, getTotalStock } from '../utils/productSummary'
 import { formatPrice } from '../../../lib/formatPrice'
 import StatusBadge from './StatusBadge'
+import { Link } from 'react-router-dom'
 
 type ProductsTableProps = {
   products: AdminProduct[]
@@ -81,6 +82,13 @@ const ProductsTable = ({
                       >
                         {toggleText(product.isActive, pendingKey === `product-${product.id}`)}
                       </button>
+                      <Link
+                        to={`/admin/productes/${product.id}/editar`}
+                        aria-label={`Edita ${product.name}`}
+                        className="text-xs underline"
+                      >
+                        Edita
+                      </Link>
                     </div>
                   </td>
                 </tr>

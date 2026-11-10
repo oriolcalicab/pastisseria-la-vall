@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { AdminProduct } from '../types/product'
 import ProductsTable from './ProductsTable'
+import { MemoryRouter } from 'react-router-dom'
 
 const product: AdminProduct = {
   id: 7,
@@ -21,12 +22,14 @@ const renderTable = (overrides: Partial<AdminProduct> = {}, pendingKey: string |
   const shownProduct = { ...product, ...overrides }
 
   render(
-    <ProductsTable
-      products={[shownProduct]}
-      pendingKey={pendingKey}
-      onToggleProduct={onToggleProduct}
-      onToggleVariant={onToggleVariant}
-    />,
+    <MemoryRouter>
+      <ProductsTable
+        products={[shownProduct]}
+        pendingKey={pendingKey}
+        onToggleProduct={onToggleProduct}
+        onToggleVariant={onToggleVariant}
+      />
+    </MemoryRouter>,
   )
 
   return { shownProduct, onToggleProduct, onToggleVariant }
@@ -99,5 +102,16 @@ describe('ProductsTable', () => {
     const button = screen.getByRole('button', { name: 'Desactiva Pastís de xocolata' })
     expect(button).toHaveTextContent('Desant...')
     expect(button).toBeDisabled()
+  })
+
+  it('links to the page to edit the product', () => {
+    // Given a product in the table
+    renderTable()
+
+    // Then there is a link to edit it
+    expect(screen.getByRole('link', { name: 'Edita Pastís de xocolata' })).toHaveAttribute(
+      'href',
+      '/admin/productes/7/editar',
+    )
   })
 })
