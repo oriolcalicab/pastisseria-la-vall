@@ -17,6 +17,14 @@ export type NewProduct = {
   variants: NewVariant[]
 }
 
+export type VariantInput = NewVariant & {
+  id: number | null
+}
+
+export type ProductUpdate = Omit<NewProduct, 'variants'> & {
+  variants: VariantInput[]
+}
+
 export type ProductListQuery = {
   page: number
   pageSize: number
