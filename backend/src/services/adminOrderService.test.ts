@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { prisma } from '../lib/prisma.js'
-import { changeOrderStatus, getAdminOrder, listAdminOrders } from './adminOrderService.js'
+import {
+  changeOrderStatus,
+  getAdminOrder,
+  listAdminOrders,
+  listCalendarOrders,
+} from './adminOrderService.js'
 
 const tx = vi.hoisted(() => ({
   order: { findUnique: vi.fn(), updateMany: vi.fn() },
@@ -198,5 +203,35 @@ describe('changeOrderStatus', () => {
       ok: false,
       reason: 'not_found',
     })
+  })
+})
+
+describe('listCalendarOrders', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
+  it('lists the orders of the range that are not cancelled', async () => {
+    // Given an order to deliver in the range
+    vi.mocked(prisma.order.findMany).mockResolvedValue([
+      { id: 7, deliveryDate: new Date('2026-11-12T00:00:00Z') },
+    ] as never)
+
+    // When the admin asks for November
+    const orders = await listCalendarOrders({ from: '2026-11-01', to: '2026-11-30' })
+
+    // Then only the orders that are not cancelled are searched in the range
+    expect(prisma.order.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          status: { not: 'cancelled' },
+          deliveryDate: {
+            gte: new Date('2026-11-01T00:00:00Z'),
+            lte: new Date('2026-11-30T00:00:00Z'),
+          },
+        },
+      }),
+    )
+    expect(orders).toEqual([{ id: 7, deliveryDate: '2026-11-12' }])
   })
 })

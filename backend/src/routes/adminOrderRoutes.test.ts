@@ -1,7 +1,12 @@
 import express from 'express'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { adminOnly } from '../middleware/adminOnly.js'
-import { changeOrderStatus, getAdminOrder, listAdminOrders } from '../services/adminOrderService.js'
+import {
+  changeOrderStatus,
+  getAdminOrder,
+  listAdminOrders,
+  listCalendarOrders,
+} from '../services/adminOrderService.js'
 import { verifyFirebaseToken } from '../services/tokenService.js'
 import { findUserByFirebaseUid } from '../services/userService.js'
 import { startTestServer } from '../test/startTestServer.js'
@@ -14,6 +19,7 @@ vi.mock('../services/adminOrderService.js', () => ({
   listAdminOrders: vi.fn(),
   getAdminOrder: vi.fn(),
   changeOrderStatus: vi.fn(),
+  listCalendarOrders: vi.fn()
 }))
 
 let server: TestServer
@@ -187,5 +193,44 @@ describe('admin order routes', () => {
     // Then the request is rejected and nothing changes
     expect(response.status).toBe(403)
     expect(changeOrderStatus).not.toHaveBeenCalled()
+  })
+
+  it('returns the orders of the calendar range', async () => {
+    // Given a logged admin and an order in November
+    loginAs('admin')
+    const orders = [{ id: 7, orderNumber: 'LV-261106-4F2A9C', deliveryDate: '2026-11-12' }]
+    vi.mocked(listCalendarOrders).mockResolvedValue(orders as never)
+
+    // When the admin asks for November
+    const response = await getOrders('/calendar?from=2026-11-01&to=2026-11-30')
+
+    // Then the orders of the range are returned
+    expect(response.status).toBe(200)
+    expect(listCalendarOrders).toHaveBeenCalledWith({ from: '2026-11-01', to: '2026-11-30' })
+    expect(await response.json()).toEqual(orders)
+  })
+
+  it('responds 400 when the calendar range is backwards', async () => {
+    // Given a logged admin
+    loginAs('admin')
+
+    // When the admin asks for a range that ends before it starts
+    const response = await getOrders('/calendar?from=2026-11-30&to=2026-11-01')
+
+    // Then the request is rejected without searching
+    expect(response.status).toBe(400)
+    expect(listCalendarOrders).not.toHaveBeenCalled()
+  })
+
+  it('responds 403 when a customer asks for the calendar', async () => {
+    // Given a logged customer
+    loginAs('customer')
+
+    // When the customer asks for the calendar
+    const response = await getOrders('/calendar?from=2026-11-01&to=2026-11-30')
+
+    // Then the request is rejected
+    expect(response.status).toBe(403)
+    expect(listCalendarOrders).not.toHaveBeenCalled()
   })
 })
