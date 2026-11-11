@@ -1,9 +1,12 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { useAuth } from '../features/auth/hooks/useAuth'
 import { CartProvider } from '../features/cart/CartProvider'
 import { saveCart } from '../features/cart/services/cartStorage'
 import ShopLayout from './ShopLayout'
+
+vi.mock('../features/auth/hooks/useAuth', () => ({ useAuth: vi.fn() }))
 
 const renderLayout = () =>
   render(
@@ -21,20 +24,27 @@ const renderLayout = () =>
 describe('ShopLayout', () => {
   beforeEach(() => {
     localStorage.clear()
+    vi.mocked(useAuth).mockReturnValue({ user: null, isLoading: false })
   })
 
-  it('shows the header and the page', () => {
+  it('shows the header, the page and the footer', () => {
     // Given an empty cart
     // When a shop page is shown
     renderLayout()
 
-    // Then the header and the page are shown
-    expect(screen.getByRole('link', { name: 'Productes' })).toHaveAttribute('href', '/productes')
+    // Then the menu, the page and the footer are shown
+    const menu = screen.getByRole('navigation', { name: 'Menú principal' })
+    expect(within(menu).getByRole('link', { name: 'Productes' })).toHaveAttribute(
+      'href',
+      '/productes',
+    )
     expect(screen.getByRole('link', { name: 'Carretó, 0 unitats' })).toHaveAttribute(
       'href',
       '/carreto',
     )
     expect(screen.getByText('Contingut de la pàgina')).toBeInTheDocument()
+    const footer = screen.getByRole('contentinfo')
+    expect(within(footer).getByRole('img', { name: 'Pastisseria La Vall' })).toBeInTheDocument()
   })
 
   it('shows how many units are in the cart', () => {
@@ -55,8 +65,6 @@ describe('ShopLayout', () => {
     renderLayout()
 
     // Then the header shows the units
-    expect(screen.getByRole('link', { name: 'Carretó, 3 unitats' })).toHaveTextContent(
-      'Carretó (3)',
-    )
+    expect(screen.getByRole('link', { name: 'Carretó, 3 unitats' })).toHaveTextContent('3')
   })
 })
