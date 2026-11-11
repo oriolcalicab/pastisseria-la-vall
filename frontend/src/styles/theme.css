@@ -1,0 +1,14 @@
+@theme {
+  --color-chocolate: #3b2417;
+  --color-cocoa: #4a2c1d;
+  --color-cocoa-dark: #33200f;
+  --color-mocha: #6b5344;
+  --color-caramel: #8f5426;
+  --color-cream: #fbf7f1;
+  --color-nata: #f1e6d8;
+  --color-line: #e8ded2;
+  --color-field: #8c7464;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Cormorant Garamond', ui-serif, Georgia, serif;
+}

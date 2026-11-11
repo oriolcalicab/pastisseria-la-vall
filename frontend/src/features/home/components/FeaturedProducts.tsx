@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import ProductCard from '../../catalog/components/ProductCard'
+import ProductGrid from '../../catalog/components/ProductGrid'
 import { useProducts } from '../../catalog/hooks/useProducts'
 
 const FEATURED_COUNT = 4
@@ -27,16 +27,9 @@ const FeaturedProducts = () => {
           </div>
         )}
         {products.status === 'success' && (
-          <ul className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-            {products.data.items.slice(0, FEATURED_COUNT).map((product) => (
-              <li key={product.id}>
-                <ProductCard product={product} />
-              </li>
-            ))}
-          </ul>
+          <ProductGrid products={products.data.items.slice(0, FEATURED_COUNT)} />
         )}
       </div>
-
       <p className="mt-6 text-sm text-mocha">
         La llet vegetal no implica que sigui vegà. Treballem en un obrador compartit: hi pot haver
         traces d’al·lèrgens.

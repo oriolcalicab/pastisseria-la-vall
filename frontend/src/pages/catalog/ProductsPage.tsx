@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import Pagination from '../../components/Pagination'
 import DietFilters from '../../features/catalog/components/DietFilters'
-import ProductCard from '../../features/catalog/components/ProductCard'
+import ProductGrid from '../../features/catalog/components/ProductGrid'
 import { useProducts } from '../../features/catalog/hooks/useProducts'
 import type { Diet } from '../../features/catalog/types/product'
+import { formatProductCount } from '../../features/catalog/utils/productCount'
 
 const ProductsPage = () => {
   const [page, setPage] = useState(1)
@@ -23,24 +24,24 @@ const ProductsPage = () => {
   }
 
   return (
-    <main className="mx-auto max-w-5xl p-4 sm:p-8">
-      <h1 className="text-3xl font-bold">Els nostres productes</h1>
+    <main className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-14">
+      <p className="eyebrow">Fet a mà. Per compartir.</p>
+      <h1 className="page-title mt-3">Productes</h1>
+      <p className="mt-3 max-w-xl text-mocha">
+        Pastissos i cupcakes de l’obrador. Tria el teu petit gran moment.
+      </p>
 
-      <div className="mt-6">
-        <DietFilters selected={diets} onChange={handleDietChange} />
+      <div className="mt-8">
+        <DietFilters selected={diets} onChange={handleDietChange} onClear={clearDiets} />
       </div>
 
       <div className="mt-6">
         {products.status === 'loading' && <p role="status">Carregant productes...</p>}
 
         {products.status === 'error' && (
-          <div role="alert">
-            <p className="text-red-600">No s'han pogut carregar els productes.</p>
-            <button
-              type="button"
-              onClick={products.retry}
-              className="mt-2 rounded border px-3 py-1"
-            >
+          <div role="alert" className="flex flex-wrap items-center gap-4">
+            <p className="text-red-700">No s'han pogut carregar els productes.</p>
+            <button type="button" onClick={products.retry} className="btn btn-outline btn-sm">
               Torna-ho a provar
             </button>
           </div>
@@ -49,13 +50,9 @@ const ProductsPage = () => {
         {products.status === 'success' && products.data.items.length === 0 && (
           <>
             {diets.length > 0 ? (
-              <div>
+              <div className="flex flex-wrap items-center gap-4">
                 <p>No hi ha cap producte amb aquests filtres.</p>
-                <button
-                  type="button"
-                  onClick={clearDiets}
-                  className="mt-2 rounded border px-3 py-1"
-                >
+                <button type="button" onClick={clearDiets} className="btn btn-outline btn-sm">
                   Treu els filtres
                 </button>
               </div>
@@ -67,13 +64,8 @@ const ProductsPage = () => {
 
         {products.status === 'success' && products.data.items.length > 0 && (
           <>
-            <ul className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {products.data.items.map((product) => (
-                <li key={product.id}>
-                  <ProductCard product={product} />
-                </li>
-              ))}
-            </ul>
+            <p className="mb-5 text-sm text-mocha">{formatProductCount(products.data.total)}</p>
+            <ProductGrid products={products.data.items} />
             <Pagination
               page={products.data.page}
               totalPages={products.data.totalPages}
@@ -82,6 +74,11 @@ const ProductsPage = () => {
           </>
         )}
       </div>
+
+      <p className="mt-10 text-sm text-mocha">
+        Cada etiqueta correspon a la recepta indicada. Obrador compartit amb gluten, ous, llet i
+        fruits de closca. Consulta els al·lèrgens a la fitxa de cada producte.
+      </p>
     </main>
   )
 }

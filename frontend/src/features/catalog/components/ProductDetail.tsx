@@ -6,17 +6,11 @@ import { useCart } from '../../cart/hooks/useCart'
 import { getDefaultVariant } from '../utils/defaultVariant'
 import { getProductImageUrl } from '../utils/productImage'
 import VariantSelector from './VariantSelector'
+import { getDietLabels } from '../utils/dietLabels'
 
 type ProductDetailProps = {
   product: Product
 }
-
-const getDietLabels = (product: Product) =>
-  [
-    product.isGlutenFree && 'Sense gluten',
-    product.isPlantMilk && 'Amb llet vegetal',
-    product.isVegan && 'Vegà',
-  ].filter((label) => label !== false)
 
 const ProductDetail = ({ product }: ProductDetailProps) => {
   const [selectedId, setSelectedId] = useState(

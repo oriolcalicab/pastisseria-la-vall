@@ -1,0 +1,41 @@
+@layer components {
+  .page-title {
+    @apply text-4xl leading-tight md:text-5xl;
+  }
+
+  .section-title {
+    @apply text-3xl leading-tight md:text-4xl;
+  }
+
+  .eyebrow {
+    @apply text-sm font-medium tracking-wide text-caramel uppercase;
+  }
+
+  .btn {
+    @apply inline-flex h-12 items-center justify-center gap-2 rounded-full px-7 font-medium whitespace-nowrap transition-colors disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply bg-cocoa text-white hover:bg-cocoa-dark;
+  }
+
+  .btn-outline {
+    @apply text-cocoa ring-1 ring-cocoa ring-inset hover:bg-nata;
+  }
+
+  .btn-sm {
+    @apply h-9 px-4 text-sm;
+  }
+
+  .tag {
+    @apply rounded-full bg-nata px-3 py-0.5 text-xs font-medium text-cocoa;
+  }
+
+  .chip {
+    @apply cursor-pointer rounded-full px-4 py-2 text-sm ring-1 ring-field ring-inset transition-colors hover:bg-nata has-focus-visible:ring-2 has-focus-visible:ring-caramel;
+  }
+
+  .chip-active {
+    @apply bg-cocoa text-white ring-0 hover:bg-cocoa-dark;
+  }
+}

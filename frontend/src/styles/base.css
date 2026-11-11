@@ -1,0 +1,11 @@
+@layer base {
+  body {
+    @apply bg-cream font-sans text-chocolate antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display font-medium;
+  }
+}
