@@ -32,6 +32,9 @@ export const router = createBrowserRouter([
       { path: '/productes', element: <ProductsPage /> },
       { path: '/productes/:id', element: <ProductDetailPage /> },
       { path: '/carreto', element: <CartPage /> },
+      { path: '/login', element: <LoginPage /> },
+      { path: '/registre', element: <RegisterPage /> },
+      { path: '/contrasenya-oblidada', element: <ForgotPasswordPage /> },
       {
         element: <ProtectedRoute />,
         children: [
@@ -39,8 +42,10 @@ export const router = createBrowserRouter([
           { path: '/confirmacio/:id', element: <ConfirmationPage /> },
           { path: '/comandes', element: <OrdersPage /> },
           { path: '/comandes/:id', element: <OrderDetailPage /> },
+          { path: '/compte', element: <AccountPage /> },
         ],
       },
+      { path: '*', element: <NotFoundPage /> },
     ],
   },
   { path: '/login', element: <LoginPage /> },
@@ -68,5 +73,4 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  { path: '*', element: <NotFoundPage /> },
 ])

@@ -1,5 +1,67 @@
 @import 'tailwindcss';
 
+@theme {
+  --color-chocolate: #3b2417;
+  --color-cocoa: #4a2c1d;
+  --color-cocoa-dark: #33200f;
+  --color-mocha: #6b5344;
+  --color-caramel: #8f5426;
+  --color-cream: #fbf7f1;
+  --color-nata: #f1e6d8;
+  --color-line: #e8ded2;
+  --color-field: #8c7464;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Cormorant Garamond', ui-serif, Georgia, serif;
+  --font-brand: 'Lora', ui-serif, Georgia, serif;
+}
+
+@layer base {
+  body {
+    @apply bg-cream font-sans text-chocolate antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display font-medium;
+  }
+}
+
+@layer components {
+  .page-title {
+    @apply text-4xl leading-tight md:text-5xl;
+  }
+
+  .section-title {
+    @apply text-3xl leading-tight md:text-4xl;
+  }
+
+  .eyebrow {
+    @apply text-sm font-medium tracking-wide text-caramel uppercase;
+  }
+
+  .btn {
+    @apply inline-flex h-12 items-center justify-center gap-2 rounded-full px-7 font-medium whitespace-nowrap transition-colors disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply bg-cocoa text-white hover:bg-cocoa-dark;
+  }
+
+  .btn-outline {
+    @apply text-cocoa ring-1 ring-cocoa ring-inset hover:bg-nata;
+  }
+
+  .btn-sm {
+    @apply h-9 px-4 text-sm;
+  }
+
+  .tag {
+    @apply rounded-full bg-nata px-3 py-0.5 text-xs font-medium text-cocoa;
+  }
+}
+
 .pickup-marker-selected {
   filter: hue-rotate(150deg) saturate(1.6);
 }
