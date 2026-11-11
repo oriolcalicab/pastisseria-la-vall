@@ -9,13 +9,10 @@ type VariantSelectorProps = {
 
 const VariantSelector = ({ variants, selectedId, onSelect }: VariantSelectorProps) => (
   <fieldset>
-    <legend className="font-medium">Tria una opció</legend>
-    <div className="mt-2 space-y-2">
+    <legend className="font-medium">Tria la mida</legend>
+    <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
       {variants.map((variant) => (
-        <label
-          key={variant.id}
-          className={`flex items-center gap-2 ${variant.inStock ? '' : 'text-gray-400'}`}
-        >
+        <label key={variant.id} className="option-card">
           <input
             type="radio"
             name="variant"
@@ -23,9 +20,12 @@ const VariantSelector = ({ variants, selectedId, onSelect }: VariantSelectorProp
             checked={variant.id === selectedId}
             disabled={!variant.inStock}
             onChange={() => onSelect(variant.id)}
+            className="sr-only"
           />
-          <span>{variant.name}</span>
-          <span>{variant.inStock ? formatPrice(variant.priceCents) : 'Esgotat'}</span>
+          <span className="font-medium">{variant.name}</span>
+          <span className="text-sm text-mocha">
+            {variant.inStock ? formatPrice(variant.priceCents) : 'Esgotat'}
+          </span>
         </label>
       ))}
     </div>

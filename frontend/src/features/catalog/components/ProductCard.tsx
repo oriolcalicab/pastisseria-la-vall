@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { formatPrice } from '../../../lib/formatPrice'
 import type { Product } from '../types/product'
-import { getDietLabels } from '../utils/dietLabels'
+import DietTags from './DietTags'
 import { getFromPriceCents } from '../utils/fromPrice'
 import { getProductImageUrl } from '../utils/productImage'
 
@@ -10,8 +10,6 @@ type ProductCardProps = {
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  const dietLabels = getDietLabels(product)
-
   return (
     <Link to={`/productes/${product.id}`} className="group block">
       <article>
@@ -27,15 +25,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           {product.name}
         </h2>
         <p className="mt-1 text-mocha">Des de {formatPrice(getFromPriceCents(product.variants))}</p>
-        {dietLabels.length > 0 && (
-          <ul className="mt-2 flex flex-wrap gap-1.5">
-            {dietLabels.map((label) => (
-              <li key={label} className="tag">
-                {label}
-              </li>
-            ))}
-          </ul>
-        )}
+        <DietTags product={product} className="mt-2" />
       </article>
     </Link>
   )

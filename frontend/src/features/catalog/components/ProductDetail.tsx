@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { formatPrice } from '../../../lib/formatPrice'
-import type { Product } from '../types/product'
 import { useCart } from '../../cart/hooks/useCart'
+import type { Product } from '../types/product'
 import { getDefaultVariant } from '../utils/defaultVariant'
 import { getProductImageUrl } from '../utils/productImage'
+import DietTags from './DietTags'
+import ProductAllergens from './ProductAllergens'
 import VariantSelector from './VariantSelector'
-import { getDietLabels } from '../utils/dietLabels'
 
 type ProductDetailProps = {
   product: Product
@@ -17,7 +18,6 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
     () => getDefaultVariant(product.variants)?.id ?? null,
   )
   const selectedVariant = product.variants.find((variant) => variant.id === selectedId)
-  const dietLabels = getDietLabels(product)
   const { addItem } = useCart()
   const [isAdded, setIsAdded] = useState(false)
 
@@ -41,59 +41,52 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
   }
 
   return (
-    <article className="mt-4 grid gap-8 md:grid-cols-2">
-      <img
-        src={getProductImageUrl(product.imageUrl)}
-        alt={product.name}
-        className="aspect-square w-full rounded object-cover"
-      />
+    <article className="mt-6 grid gap-8 md:grid-cols-2 md:gap-14">
+      <div className="overflow-hidden rounded-3xl bg-nata">
+        <img
+          src={getProductImageUrl(product.imageUrl)}
+          alt={product.name}
+          className="aspect-square w-full object-cover"
+        />
+      </div>
 
       <div>
-        <p className="text-sm text-gray-600">{product.category.name}</p>
-        <h1 className="text-3xl font-bold">{product.name}</h1>
+        <p className="eyebrow">{product.category.name}</p>
+        <h1 className="page-title mt-3">{product.name}</h1>
+        <p className="mt-4 text-mocha md:text-lg">{product.description}</p>
+        <DietTags product={product} className="mt-4" />
 
-        <p className="mt-4 text-2xl font-semibold">
-          {selectedVariant ? formatPrice(selectedVariant.priceCents) : 'Esgotat'}
-        </p>
-
-        <p className="mt-4">{product.description}</p>
-
-        {dietLabels.length > 0 && (
-          <ul className="mt-4 flex flex-wrap gap-2">
-            {dietLabels.map((label) => (
-              <li key={label} className="rounded bg-green-100 px-2 py-0.5 text-sm text-green-800">
-                {label}
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {product.allergens && <p className="mt-4 text-sm">Al·lèrgens: {product.allergens}</p>}
-
-        <div className="mt-6">
+        <div className="mt-8">
           <VariantSelector
             variants={product.variants}
             selectedId={selectedId}
             onSelect={handleSelect}
           />
         </div>
+
+        <p className="mt-6 font-display text-4xl">
+          {selectedVariant ? formatPrice(selectedVariant.priceCents) : 'Esgotat'}
+        </p>
+
         <button
           type="button"
           onClick={handleAdd}
           disabled={!selectedVariant}
-          className="mt-6 rounded bg-gray-900 px-4 py-2 text-white disabled:opacity-50"
+          className="btn btn-primary mt-4 w-full sm:w-auto"
         >
           Afegeix al carretó
         </button>
 
         {isAdded && (
-          <p role="status" className="mt-3 text-sm text-green-800">
+          <p role="status" className="mt-3 text-sm">
             Afegit al carretó ·{' '}
-            <Link to="/carreto" className="underline">
+            <Link to="/carreto" className="font-medium text-caramel underline">
               Veure el carretó
             </Link>
           </p>
         )}
+
+        <ProductAllergens allergens={product.allergens} />
       </div>
     </article>
   )
