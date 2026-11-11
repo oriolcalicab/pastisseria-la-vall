@@ -4,6 +4,7 @@ import LogoutButton from '../../auth/components/LogoutButton'
 const menuItems = [
   { to: '/admin', label: 'Tauler', end: true },
   { to: '/admin/comandes', label: 'Comandes', end: false },
+  { to: '/admin/calendari', label: 'Calendari', end: false },
   { to: '/admin/productes', label: 'Productes', end: false },
 ]
 
