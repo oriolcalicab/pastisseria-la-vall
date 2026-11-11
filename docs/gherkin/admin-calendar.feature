@@ -30,4 +30,27 @@ Feature: Admin delivery calendar
     Given a logged customer
     When the customer asks for the admin calendar
     Then the backend responds 403
+
+    
+  Scenario: The admin opens the delivery calendar
+    Given a logged admin
+    When the admin clicks "Calendari" in the admin menu
+    Then the calendar shows the current month in Catalan, starting on Monday
+    And each order is on its delivery day with its number, its customer and the colour of its status
+
+  Scenario: The admin changes the month
+    Given the admin on the calendar of November
+    When the admin goes to December
+    Then the orders of the days shown in December are loaded
+
+  Scenario: The admin opens an order from the calendar
+    Given the admin on the calendar with an order on the 12th
+    When the admin clicks the order or presses Enter on it
+    Then the detail of the order is shown
+
+  Scenario: The calendar can not be loaded
+    Given a backend that fails
+    When the admin opens the calendar
+    Then the page shows an error
+    And the admin can try again
     

@@ -1,6 +1,7 @@
 import { apiUrl } from '../../../lib/api'
 import type { OrderStatus } from '../../orders/types/order'
 import type { AdminOrderDetail, AdminOrderPage, StatusFilter } from '../types/order'
+import type { CalendarOrder, CalendarRange } from '../types/calendar'
 
 type AdminOrdersParams = {
   page: number
@@ -72,4 +73,21 @@ export const changeAdminOrderStatus = async (
   if (!response.ok) throw new Error(CHANGE_STATUS_ERROR)
 
   return response.json() as Promise<AdminOrderDetail>
+}
+
+export const fetchCalendarOrders = async (
+  token: string,
+  { from, to }: CalendarRange,
+): Promise<CalendarOrder[]> => {
+  const params = new URLSearchParams({ from, to })
+
+  const response = await fetch(apiUrl(`/api/admin/orders/calendar?${params}`), {
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => {
+    throw new Error("No s'ha pogut carregar el calendari")
+  })
+
+  if (!response.ok) throw new Error(`Calendar request failed with status ${response.status}`)
+
+  return response.json() as Promise<CalendarOrder[]>
 }
