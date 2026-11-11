@@ -1,11 +1,6 @@
 import { Link } from 'react-router-dom'
 import { SealLogo } from './Logo'
-
-const shopLinks = [
-  { to: '/productes', label: 'Productes' },
-  { to: '/carreto', label: 'Carretó' },
-  { to: '/comandes', label: 'Les meves comandes' },
-]
+import { shopLinks } from '../data/navigationLinks'
 
 const Footer = () => (
   <footer className="mt-16 border-t border-line">
