@@ -24,7 +24,7 @@ const HomeHero = () => (
     </div>
     <div
       aria-hidden="true"
-      className="flex h-80 items-center justify-center rounded-3xl bg-nata md:h-[540px]"
+      className="flex h-80 items-center justify-center rounded-3xl bg-nata md:h-135"
     >
       <SealLogo className="w-48 md:w-72" />
     </div>
