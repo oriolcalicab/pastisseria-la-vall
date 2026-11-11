@@ -112,3 +112,20 @@ Feature: Public products list
     Given a filtered list with two pages
     When the visitor clicks "Següent »"
     Then the second page of the same filter is shown
+
+    
+  Scenario: Visitor shows all the products again
+    Given a visitor on "/productes" with "Vegà" checked
+    When the visitor clicks "Tots"
+    Then no diet is checked
+    And all the products are shown
+
+  Scenario: Number of products
+    Given there are 13 products available
+    When a visitor opens "/productes"
+    Then the page shows "13 productes"
+
+  Scenario: Diet tags on the cards
+    Given a vegan product with plant milk
+    When a visitor opens "/productes"
+    Then its card shows "Llet vegetal" and "Vegà"
