@@ -1,6 +1,12 @@
 import { Router } from 'express'
 import type { Request, Response } from 'express'
-import { getAdminOrder, listAdminOrders, changeOrderStatus } from '../services/adminOrderService.js'
+import {
+  getAdminOrder,
+  listAdminOrders,
+  changeOrderStatus,
+  listCalendarOrders,
+} from '../services/adminOrderService.js'
+import { parseCalendarQuery } from '../validation/calendarQuery.js'
 import { parseStatusBody } from '../validation/statusBody.js'
 import { parseAdminOrderListQuery } from '../validation/adminOrderListQuery.js'
 import { parseIdParam } from '../validation/idParam.js'
@@ -14,6 +20,17 @@ const handleListOrders = async (req: Request, res: Response) => {
   }
 
   res.json(await listAdminOrders(query))
+}
+
+const handleCalendar = async (req: Request, res: Response) => {
+  const query = parseCalendarQuery(req.query)
+
+  if (!query) {
+    res.status(400).json({ error: 'Cal enviar un rang de dates vàlid (from i to, màxim 62 dies)' })
+    return
+  }
+
+  res.json(await listCalendarOrders(query))
 }
 
 const handleGetOrder = async (req: Request, res: Response) => {
@@ -78,6 +95,7 @@ const handleChangeStatus = async (req: Request, res: Response) => {
 const adminOrderRouter = Router()
 
 adminOrderRouter.get('/', handleListOrders)
+adminOrderRouter.get('/calendar', handleCalendar)
 adminOrderRouter.get('/:id', handleGetOrder)
 adminOrderRouter.patch('/:id/status', handleChangeStatus)
 

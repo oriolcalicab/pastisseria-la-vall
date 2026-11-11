@@ -42,3 +42,8 @@ export type AdminOrderListQuery = {
 export type StatusBody = {
   status: OrderStatus
 }
+
+export type CalendarQuery = {
+  from: string
+  to: string
+}

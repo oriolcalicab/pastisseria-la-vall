@@ -17,14 +17,20 @@ describe('AdminLayout', () => {
       </MemoryRouter>,
     )
 
-    // Then the menu has the dashboard, the orders and the products
+    // Then the menu has the dashboard, the orders, the calendar and the products
     const menu = screen.getByRole('navigation', { name: "Menú d'administració" })
     const links = within(menu).getAllByRole('link')
 
-    expect(links.map((link) => link.textContent)).toEqual(['Tauler', 'Comandes', 'Productes'])
+    expect(links.map((link) => link.textContent)).toEqual([
+      'Tauler',
+      'Comandes',
+      'Calendari',
+      'Productes',
+    ])
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
       '/admin',
       '/admin/comandes',
+      '/admin/calendari',
       '/admin/productes',
     ])
   })

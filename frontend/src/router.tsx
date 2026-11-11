@@ -22,6 +22,7 @@ import OrderDetailPage from './pages/orders/OrderDetailPage'
 import AdminOrdersPage from './pages/admin/AdminOrdersPage'
 import AdminOrderDetailPage from './pages/admin/AdminOrderDetailPage'
 import EditProductPage from './pages/admin/EditProductPage'
+import AdminCalendarPage from './pages/admin/AdminCalendarPage'
 
 export const router = createBrowserRouter([
   {
@@ -59,6 +60,7 @@ export const router = createBrowserRouter([
           { index: true, element: <AdminDashboardPage /> },
           { path: 'comandes', element: <AdminOrdersPage /> },
           { path: 'comandes/:id', element: <AdminOrderDetailPage /> },
+          { path: 'calendari', element: <AdminCalendarPage /> },
           { path: 'productes', element: <AdminProductsPage /> },
           { path: 'productes/nou', element: <NewProductPage /> },
           { path: 'productes/:id/editar', element: <EditProductPage /> },
