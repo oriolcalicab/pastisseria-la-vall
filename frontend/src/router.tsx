@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, type RouteObject } from 'react-router-dom'
 import HomePage from './pages/HomePage'
 import NotFoundPage from './pages/errors/NotFoundPage'
 import RegisterPage from './pages/auth/RegisterPage'
@@ -24,7 +24,7 @@ import AdminOrderDetailPage from './pages/admin/AdminOrderDetailPage'
 import EditProductPage from './pages/admin/EditProductPage'
 import AdminCalendarPage from './pages/admin/AdminCalendarPage'
 
-export const router = createBrowserRouter([
+export const routes: RouteObject[] = [
   {
     element: <ShopLayout />,
     children: [
@@ -48,13 +48,7 @@ export const router = createBrowserRouter([
       { path: '*', element: <NotFoundPage /> },
     ],
   },
-  { path: '/login', element: <LoginPage /> },
-  { path: '/registre', element: <RegisterPage /> },
-  {
-    element: <ProtectedRoute />,
-    children: [{ path: '/compte', element: <AccountPage /> }],
-  },
-  { path: '/contrasenya-oblidada', element: <ForgotPasswordPage /> },
+
   {
     path: '/admin',
     element: <AdminRoute />,
@@ -73,4 +67,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-])
+]
+
+export const router = createBrowserRouter(routes)

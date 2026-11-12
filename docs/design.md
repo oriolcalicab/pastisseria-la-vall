@@ -33,4 +33,4 @@ L'estil triat és l'**opció A: crema i xocolata**.
 ## Mida
 
 - Escriptori: contingut fins a 1320 px d'amplada.
-- Mòbil: a partir de 860 px o menys, una sola columna i menú desplegable.
+- Mòbil: fins a 767 px, una sola columna i menú desplegable. A partir de 768 px, el menú de l'escriptori.
