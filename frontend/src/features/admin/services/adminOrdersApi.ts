@@ -1,7 +1,7 @@
 import { apiUrl } from '../../../lib/api'
 import type { OrderStatus } from '../../orders/types/order'
 import type { AdminOrderDetail, AdminOrderPage, StatusFilter } from '../types/order'
-import type { CalendarOrder, CalendarRange } from '../types/calendar'
+import type { CalendarFilters, CalendarOrder, CalendarRange } from '../types/calendar'
 
 type AdminOrdersParams = {
   page: number
@@ -78,8 +78,12 @@ export const changeAdminOrderStatus = async (
 export const fetchCalendarOrders = async (
   token: string,
   { from, to }: CalendarRange,
+  { status, deliveryMethod }: CalendarFilters,
 ): Promise<CalendarOrder[]> => {
   const params = new URLSearchParams({ from, to })
+
+  if (status) params.set('status', status)
+  if (deliveryMethod) params.set('deliveryMethod', deliveryMethod)
 
   const response = await fetch(apiUrl(`/api/admin/orders/calendar?${params}`), {
     headers: { Authorization: `Bearer ${token}` },
