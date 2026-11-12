@@ -31,3 +31,8 @@ Feature: Shop header and footer
     Given a visitor
     When the visitor opens "/no-existeix"
     Then the page shows "Pàgina no trobada" with the header and the footer
+
+  Scenario: Account pages use the shop layout
+    Given I am on "/login"
+    Then I see the main menu "Menú principal"
+    And I see the footer with "Fet a mà, per compartir."
