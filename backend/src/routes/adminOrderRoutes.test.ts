@@ -233,4 +233,35 @@ describe('admin order routes', () => {
     expect(response.status).toBe(403)
     expect(listCalendarOrders).not.toHaveBeenCalled()
   })
+  it('passes the filters of the calendar to the search', async () => {
+    // Given a logged admin
+    loginAs('admin')
+    vi.mocked(listCalendarOrders).mockResolvedValue([])
+
+    // When the admin asks for the ready orders to deliver at home
+    const response = await getOrders(
+      '/calendar?from=2026-11-01&to=2026-11-30&status=ready&deliveryMethod=delivery',
+    )
+
+    // Then the search gets both filters
+    expect(response.status).toBe(200)
+    expect(listCalendarOrders).toHaveBeenCalledWith({
+      from: '2026-11-01',
+      to: '2026-11-30',
+      status: 'ready',
+      deliveryMethod: 'delivery',
+    })
+  })
+
+  it('responds 400 when a calendar filter does not exist', async () => {
+    // Given a logged admin
+    loginAs('admin')
+
+    // When the admin asks for an unknown delivery method
+    const response = await getOrders('/calendar?from=2026-11-01&to=2026-11-30&deliveryMethod=drone')
+
+    // Then the request is rejected without searching
+    expect(response.status).toBe(400)
+    expect(listCalendarOrders).not.toHaveBeenCalled()
+  })
 })

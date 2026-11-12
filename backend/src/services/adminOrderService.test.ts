@@ -234,4 +234,30 @@ describe('listCalendarOrders', () => {
     )
     expect(orders).toEqual([{ id: 7, deliveryDate: '2026-11-12' }])
   })
+  it('searches only the status and the delivery method of the filters', async () => {
+    // Given the admin filters the cancelled orders to pick up
+    vi.mocked(prisma.order.findMany).mockResolvedValue([])
+
+    // When the admin asks for November
+    await listCalendarOrders({
+      from: '2026-11-01',
+      to: '2026-11-30',
+      status: 'cancelled',
+      deliveryMethod: 'pickup',
+    })
+
+    // Then the cancelled orders to pick up are searched
+    expect(prisma.order.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          status: 'cancelled',
+          deliveryMethod: 'pickup',
+          deliveryDate: {
+            gte: new Date('2026-11-01T00:00:00Z'),
+            lte: new Date('2026-11-30T00:00:00Z'),
+          },
+        },
+      }),
+    )
+  })
 })
