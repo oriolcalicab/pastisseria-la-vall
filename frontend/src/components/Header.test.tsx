@@ -4,10 +4,12 @@ import type { User } from 'firebase/auth'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useAuth } from '../features/auth/hooks/useAuth'
+import { useCurrentUser } from '../features/auth/hooks/useCurrentUser'
 import { CartProvider } from '../features/cart/CartProvider'
 import Header from './Header'
 
 vi.mock('../features/auth/hooks/useAuth', () => ({ useAuth: vi.fn() }))
+vi.mock('../features/auth/hooks/useCurrentUser', () => ({ useCurrentUser: vi.fn() }))
 
 const renderHeader = () =>
   render(
@@ -22,6 +24,7 @@ describe('Header', () => {
   beforeEach(() => {
     localStorage.clear()
     vi.mocked(useAuth).mockReturnValue({ user: null, isLoading: false })
+    vi.mocked(useCurrentUser).mockReturnValue({ currentUser: null, isLoading: false })
   })
 
   it('links the logo to the home page', () => {
@@ -70,5 +73,21 @@ describe('Header', () => {
       'aria-expanded',
       'true',
     )
+  })
+
+  it('links an admin to the admin panel', () => {
+    // Given a logged admin
+    vi.mocked(useAuth).mockReturnValue({ user: { uid: 'u1' } as User, isLoading: false })
+    vi.mocked(useCurrentUser).mockReturnValue({
+      currentUser: { id: 1, name: 'Oriol', email: 'admin@test.com', role: 'admin' },
+      isLoading: false,
+    })
+
+    // When the header is shown
+    renderHeader()
+
+    // Then there is a link to the admin panel next to the account
+    expect(screen.getByRole('link', { name: 'Administració' })).toHaveAttribute('href', '/admin')
+    expect(screen.getByRole('link', { name: 'El meu compte' })).toBeInTheDocument()
   })
 })
