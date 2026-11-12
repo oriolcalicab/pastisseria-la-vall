@@ -1,12 +1,16 @@
 import { logout } from '../services/sessionService'
 
-const LogoutButton = () => (
+type LogoutButtonProps = {
+  className?: string
+}
+
+const LogoutButton = ({ className = 'rounded border px-3 py-1' }: LogoutButtonProps) => (
   <button
     type="button"
     onClick={() => {
       void logout()
     }}
-    className="rounded border px-3 py-1"
+    className={className}
   >
     Tanca la sessió
   </button>

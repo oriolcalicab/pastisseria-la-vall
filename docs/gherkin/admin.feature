@@ -37,3 +37,16 @@ Feature: Admin access
     When the admin opens the admin panel
     Then the menu shows "Tauler", "Comandes" and "Productes"
     And every link opens a page that exists
+
+  Scenario: Admin menu on a phone
+    Given a logged admin on a screen narrower than 768 px
+    When the admin opens "/admin"
+    Then the menu shows "Tauler", "Comandes", "Calendari" and "Productes" as tabs under the logo
+    And the current page is filled in chocolate
+
+  Scenario: Admin menu on a computer
+    Given a logged admin on a wide screen
+    When the admin opens "/admin/calendari"
+    Then the menu is a side bar with an icon on each link
+    And "Calendari" is marked as the current page
+    And the side bar has "Veure la botiga" and "Tanca la sessió"
