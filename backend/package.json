@@ -11,7 +11,9 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:db": "vitest run --config vitest.db.config.ts",
-    "set-role": "tsx scripts/set-role.ts"
+    "set-role": "tsx scripts/set-role.ts",
+    "seed:demo": "tsx scripts/seed-demo-orders.ts",
+    "seed:demo:remove": "tsx scripts/seed-demo-orders.ts --remove"
   },
   "keywords": [],
   "author": "",
