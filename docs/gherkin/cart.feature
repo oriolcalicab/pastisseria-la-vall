@@ -39,7 +39,7 @@ Feature: Cart
   Scenario: Remove a line
     Given a cart with one line
     When the visitor clicks "Elimina"
-    Then the page shows "El teu carretó està buit."
+    Then the page shows "El carretó és buit."
 
     
   Scenario: Price changed
@@ -84,3 +84,14 @@ Feature: Cart
     When the visitor reloads the page
     Then the adjusted cart is kept
     And there are no warnings
+
+
+  Scenario: Cart summary
+    Given a cart with 2 products and 3 units
+    When the customer opens "/carreto"
+    Then the page shows "2 productes · 3 unitats per compartir."
+    And the summary shows the subtotal and "L’enviament es calcula al checkout."
+
+  Scenario: One unit in the header
+    Given a cart with 1 unit
+    Then the cart link says "Carretó, 1 unitat"
