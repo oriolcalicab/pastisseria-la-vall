@@ -8,6 +8,7 @@ import BagIcon from './icons/BagIcon'
 import MenuIcon from './icons/MenuIcon'
 import { HeaderLogo } from './Logo'
 import MobileMenu from './MobileMenu'
+import { formatUnitCount } from '../features/cart/utils/unitCount'
 
 const Header = () => {
   const { itemCount } = useCart()
@@ -44,7 +45,7 @@ const Header = () => {
           <NavLink
             to="/carreto"
             onClick={closeMenu}
-            aria-label={`Carretó, ${itemCount} unitats`}
+            aria-label={`Carretó, ${formatUnitCount(itemCount)}`}
             className="flex items-center gap-2 transition-colors hover:text-caramel"
           >
             <BagIcon />

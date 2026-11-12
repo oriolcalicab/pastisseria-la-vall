@@ -1,64 +1,51 @@
 import { Link } from 'react-router-dom'
 import CartLineItem from '../../features/cart/components/CartLineItem'
+import CartNotices from '../../features/cart/components/CartNotices'
+import CartSummary from '../../features/cart/components/CartSummary'
+import EmptyCart from '../../features/cart/components/EmptyCart'
 import { useCart } from '../../features/cart/hooks/useCart'
 import { useCartValidation } from '../../features/cart/hooks/useCartValidation'
-import { formatPrice } from '../../lib/formatPrice'
+import { formatUnitCount } from '../../features/cart/utils/unitCount'
+import { formatProductCount } from '../../features/catalog/utils/productCount'
 
 const CartPage = () => {
-  const { lines, totalCents, setQuantity, removeItem } = useCart()
+  const { lines, itemCount, totalCents, setQuantity, removeItem } = useCart()
   const { notices, hasFailed } = useCartValidation()
 
   return (
-    <main className="mx-auto max-w-3xl p-4 sm:p-8">
-      <h1 className="text-3xl font-bold">El teu carretó</h1>
-
-      {notices.length > 0 && (
-        <ul
-          role="alert"
-          className="mt-4 space-y-1 rounded border border-yellow-300 bg-yellow-50 p-4"
-        >
-          {notices.map((notice) => (
-            <li key={notice}>{notice}</li>
-          ))}
-        </ul>
-      )}
-
-      {hasFailed && (
-        <p role="alert" className="mt-4 text-sm text-red-600">
-          No s'ha pogut comprovar el carretó. Els preus i l'stock podrien no estar actualitzats.
-        </p>
-      )}
+    <main className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-14">
+      <CartNotices notices={notices} hasFailed={hasFailed} />
 
       {lines.length === 0 ? (
-        <div className="mt-6">
-          <p>El teu carretó està buit.</p>
-          <Link to="/productes" className="mt-4 inline-block underline">
-            Veure els productes
-          </Link>
-        </div>
+        <EmptyCart />
       ) : (
         <>
-          <ul className="mt-6">
-            {lines.map((line) => (
-              <CartLineItem
-                key={line.variantId}
-                line={line}
-                onQuantityChange={setQuantity}
-                onRemove={removeItem}
-              />
-            ))}
-          </ul>
-
-          <p className="border-t pt-4 text-right text-xl font-bold">
-            Total: {formatPrice(totalCents)}
+          <p className="eyebrow">Gairebé a taula</p>
+          <h1 className="page-title mt-3">El teu carretó</h1>
+          <p className="mt-3 text-mocha">
+            {formatProductCount(lines.length)} · {formatUnitCount(itemCount)} per compartir.
           </p>
-          <div className="mt-4 text-right">
-            <Link
-              to="/checkout"
-              className="inline-block rounded-sm bg-gray-900 px-4 py-2 text-white"
-            >
-              Tramita la comanda
-            </Link>
+
+          <div className="mt-8 grid items-start gap-8 lg:grid-cols-[1fr_380px] lg:gap-14">
+            <div>
+              <ul className="border-t border-line">
+                {lines.map((line) => (
+                  <CartLineItem
+                    key={line.variantId}
+                    line={line}
+                    onQuantityChange={setQuantity}
+                    onRemove={removeItem}
+                  />
+                ))}
+              </ul>
+              <Link
+                to="/productes"
+                className="mt-5 inline-block text-sm text-mocha underline transition-colors hover:text-caramel"
+              >
+                ← Continuar comprant
+              </Link>
+            </div>
+            <CartSummary itemCount={itemCount} totalCents={totalCents} />
           </div>
         </>
       )}
