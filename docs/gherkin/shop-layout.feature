@@ -36,3 +36,9 @@ Feature: Shop header and footer
     Given I am on "/login"
     Then I see the main menu "Menú principal"
     And I see the footer with "Fet a mà, per compartir."
+
+  Scenario: An admin can go back to the admin panel from the shop
+    Given a logged admin on the shop
+    When the header is shown
+    Then it has the links "Administració" and "El meu compte"
+    And "Administració" takes to "/admin"

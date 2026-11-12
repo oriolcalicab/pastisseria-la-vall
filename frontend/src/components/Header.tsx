@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
-import { mainLinks, type NavigationLink } from '../data/navigationLinks'
+import { mainLinks } from '../data/navigationLinks'
 import { useAuth } from '../features/auth/hooks/useAuth'
+import { useCurrentUser } from '../features/auth/hooks/useCurrentUser'
 import { useCart } from '../features/cart/hooks/useCart'
 import { navLinkClassName } from '../lib/navLinkClassName'
+import { getAccountLinks } from '../lib/accountLinks'
 import BagIcon from './icons/BagIcon'
 import MenuIcon from './icons/MenuIcon'
 import { HeaderLogo } from './Logo'
@@ -14,9 +16,8 @@ const Header = () => {
   const { itemCount } = useCart()
   const { user } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const account: NavigationLink = user
-    ? { to: '/compte', label: 'El meu compte' }
-    : { to: '/login', label: 'Inicia sessió' }
+  const { currentUser } = useCurrentUser()
+  const accountLinks = getAccountLinks(Boolean(user), currentUser?.role === 'admin')
 
   const closeMenu = () => setIsMenuOpen(false)
 
@@ -36,12 +37,15 @@ const Header = () => {
         </nav>
 
         <div className="flex items-center justify-end gap-4 md:gap-6">
-          <NavLink
-            to={account.to}
-            className={(state) => `hidden md:inline ${navLinkClassName(state)}`}
-          >
-            {account.label}
-          </NavLink>
+          {accountLinks.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              className={(state) => `hidden md:inline ${navLinkClassName(state)}`}
+            >
+              {link.label}
+            </NavLink>
+          ))}
           <NavLink
             to="/carreto"
             onClick={closeMenu}
@@ -64,7 +68,11 @@ const Header = () => {
         </div>
       </div>
 
-      <MobileMenu links={[...mainLinks, account]} isOpen={isMenuOpen} onNavigate={closeMenu} />
+      <MobileMenu
+        links={[...mainLinks, ...accountLinks]}
+        isOpen={isMenuOpen}
+        onNavigate={closeMenu}
+      />
     </header>
   )
 }

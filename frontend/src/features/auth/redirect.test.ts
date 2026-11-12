@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getRedirectPath } from './redirect'
+import { getLoginRedirectPath, getRedirectPath } from './redirect'
 
 describe('getRedirectPath', () => {
   it('returns the original page the user wanted to visit', () => {
@@ -24,5 +24,31 @@ describe('getRedirectPath', () => {
     // Then the home page is returned
     expect(getRedirectPath({ from: { pathname: '//evil.com' } })).toBe('/')
     expect(getRedirectPath({ from: { pathname: 'https://evil.com' } })).toBe('/')
+  })
+})
+
+describe('getLoginRedirectPath', () => {
+  it('takes an admin to the admin panel after a direct login', () => {
+    // Given an admin who opened the login page directly
+    // When the path after the login is calculated
+    // Then it is the admin panel
+    expect(getLoginRedirectPath(undefined, 'admin')).toBe('/admin')
+  })
+
+  it('takes a customer to the home page after a direct login', () => {
+    // Given a customer who opened the login page directly
+    // When the path after the login is calculated
+    // Then it is the home page
+    expect(getLoginRedirectPath(undefined, 'customer')).toBe('/')
+  })
+
+  it('keeps the page the user wanted to visit, admin or not', () => {
+    // Given a login that comes from the checkout
+    const state = { from: { pathname: '/checkout' } }
+
+    // When the path after the login is calculated
+    // Then it goes back to the checkout
+    expect(getLoginRedirectPath(state, 'admin')).toBe('/checkout')
+    expect(getLoginRedirectPath(state, 'customer')).toBe('/checkout')
   })
 })

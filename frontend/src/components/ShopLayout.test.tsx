@@ -2,11 +2,13 @@ import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useAuth } from '../features/auth/hooks/useAuth'
+import { useCurrentUser } from '../features/auth/hooks/useCurrentUser'
 import { CartProvider } from '../features/cart/CartProvider'
 import { saveCart } from '../features/cart/services/cartStorage'
 import ShopLayout from './ShopLayout'
 
 vi.mock('../features/auth/hooks/useAuth', () => ({ useAuth: vi.fn() }))
+vi.mock('../features/auth/hooks/useCurrentUser', () => ({ useCurrentUser: vi.fn() }))
 
 const renderLayout = () =>
   render(
@@ -25,6 +27,7 @@ describe('ShopLayout', () => {
   beforeEach(() => {
     localStorage.clear()
     vi.mocked(useAuth).mockReturnValue({ user: null, isLoading: false })
+    vi.mocked(useCurrentUser).mockReturnValue({ currentUser: null, isLoading: false })
   })
 
   it('shows the header, the page and the footer', () => {

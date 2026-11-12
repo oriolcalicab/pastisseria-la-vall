@@ -2,12 +2,13 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { getLoginErrorMessage } from '../loginErrorMessage'
 import { loginAccount } from '../services/accountService'
+import type { UserRole } from '../services/authApi'
 import type { LoginErrors, LoginValues } from '../types/type'
 import { validateLogin } from '../validation'
 
 const INITIAL_VALUES: LoginValues = { email: '', password: '' }
 
-export const useLoginForm = (onSuccess: () => void) => {
+export const useLoginForm = (onSuccess: (role: UserRole) => void) => {
   const [values, setValues] = useState<LoginValues>(INITIAL_VALUES)
   const [errors, setErrors] = useState<LoginErrors>({})
   const [submitError, setSubmitError] = useState('')
@@ -27,8 +28,7 @@ export const useLoginForm = (onSuccess: () => void) => {
 
     setIsSubmitting(true)
     try {
-      await loginAccount(values.email, values.password)
-      onSuccess()
+      onSuccess(await loginAccount(values.email, values.password))
     } catch (error) {
       setSubmitError(getLoginErrorMessage(error))
     } finally {
