@@ -1,6 +1,6 @@
 type LogoProps = { className?: string }
 
-const ValleyMark = () => (
+export const ValleyMark = () => (
   <>
     <path
       d="M4 46 C10 30 16 16 24 16 C31 16 34 28 40 36 C46 28 49 16 56 16 C64 16 70 30 76 46 Z"

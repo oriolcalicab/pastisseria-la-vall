@@ -1,3 +1,5 @@
+import { lazy } from 'react'
+import type { ComponentType } from 'react'
 import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -69,5 +71,27 @@ describe('ShopLayout', () => {
 
     // Then the header shows the units
     expect(screen.getByRole('link', { name: 'Carretó, 3 unitats' })).toHaveTextContent('3')
+  })
+
+  it('keeps the header and shows a message while a page is loading', () => {
+    // Given a page that is still being downloaded
+    const SlowPage = lazy(() => new Promise<{ default: ComponentType }>(() => {}))
+
+    // When the customer opens it
+    render(
+      <CartProvider>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<ShopLayout />}>
+              <Route path="/" element={<SlowPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </CartProvider>,
+    )
+
+    // Then the menu stays and the loading message is shown
+    expect(screen.getByRole('navigation', { name: 'Menú principal' })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Carregant la pàgina...')
   })
 })
