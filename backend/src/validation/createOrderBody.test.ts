@@ -103,6 +103,13 @@ describe('parseCreateOrderBody', () => {
       }),
       'El codi postal ha de ser de Barcelona (080xx)',
     ],
+    [
+      'a Barcelona postal code with another city',
+      deliveryBody({
+        shippingAddress: { address: 'Carrer Major, 1', city: 'Madrid', postalCode: '08036' },
+      }),
+      'Només entreguem a Barcelona: la població ha de ser Barcelona',
+    ],
     ['without products', pickupBody({ lines: [] }), 'Els productes de la comanda no són vàlids'],
     [
       'with a wrong quantity',

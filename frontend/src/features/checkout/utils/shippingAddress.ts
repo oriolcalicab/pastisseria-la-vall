@@ -1,4 +1,5 @@
 import type { ShippingAddress, ShippingAddressErrors } from '../types/checkout'
+import { isBarcelonaCity } from './barcelonaCity'
 
 const MIN_ADDRESS_LENGTH = 5
 const MAX_ADDRESS_LENGTH = 200
@@ -24,6 +25,8 @@ export const validateShippingAddress = (values: ShippingAddress): ShippingAddres
 
   if (!isLengthBetween(city, MIN_CITY_LENGTH, MAX_CITY_LENGTH)) {
     errors.city = 'Escriu la població'
+  } else if (!isBarcelonaCity(city)) {
+    errors.city = 'Només entreguem a Barcelona: la població ha de ser Barcelona'
   }
 
   if (!BARCELONA_POSTAL_CODE.test(postalCode)) {
