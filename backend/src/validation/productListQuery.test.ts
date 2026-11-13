@@ -47,4 +47,24 @@ describe('parseProductListQuery', () => {
     // Then null is returned
     expect(parseProductListQuery({ search: ['a', 'b'] })).toBeNull()
   })
+
+    it('returns the category and the status of the filters', () => {
+    // Given a query with both filters
+    // When the query is parsed
+    // Then the category is a number and the status is a boolean
+    expect(parseProductListQuery({ categoryId: '2', status: 'inactive' })).toMatchObject({
+      categoryId: 2,
+      isActive: false,
+    })
+  })
+
+  it.each([{ categoryId: 'abc' }, { categoryId: '0' }, { status: 'deleted' }])(
+    'returns null when a filter is not valid: %o',
+    (query) => {
+      // Given a filter that does not exist
+      // When the query is parsed
+      // Then null is returned
+      expect(parseProductListQuery(query)).toBeNull()
+    },
+  )
 })
