@@ -48,7 +48,7 @@ describe('parseProductListQuery', () => {
     expect(parseProductListQuery({ search: ['a', 'b'] })).toBeNull()
   })
 
-    it('returns the category and the status of the filters', () => {
+  it('returns the category and the status of the filters', () => {
     // Given a query with both filters
     // When the query is parsed
     // Then the category is a number and the status is a boolean

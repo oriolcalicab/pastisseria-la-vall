@@ -124,7 +124,7 @@ describe('AdminProductsPage', () => {
       categoryId: '',
       status: '',
     })
-       expect(
+    expect(
       screen.getByText('No hi ha cap producte amb aquesta cerca o aquests filtres.'),
     ).toBeInTheDocument()
   })

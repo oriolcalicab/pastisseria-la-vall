@@ -98,7 +98,7 @@ describe('listProducts', () => {
     expect(result).toMatchObject({ total: 0, totalPages: 0 })
   })
 
-    it('lists only the products of the category and the status of the filters', async () => {
+  it('lists only the products of the category and the status of the filters', async () => {
     // Given the filters of the cakes that are not active
     // When the first page is requested
     await listProducts({ page: 1, pageSize: 20, search: undefined, categoryId: 2, isActive: false })
