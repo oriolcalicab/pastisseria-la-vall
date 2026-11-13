@@ -52,10 +52,18 @@ const findProductIdsByName = async (search: string): Promise<number[]> => {
   return rows.map((row) => row.id)
 }
 
-export const listProducts = async ({ page, pageSize, search }: ProductListQuery) => {
-  const where: Prisma.ProductWhereInput = search
-    ? { id: { in: await findProductIdsByName(search) } }
-    : {}
+export const listProducts = async ({
+  page,
+  pageSize,
+  search,
+  categoryId,
+  isActive,
+}: ProductListQuery) => {
+  const where: Prisma.ProductWhereInput = {
+    ...(search ? { id: { in: await findProductIdsByName(search) } } : {}),
+    ...(categoryId ? { categoryId } : {}),
+    ...(isActive === undefined ? {} : { isActive }),
+  }
 
   const [items, total] = await prisma.$transaction([
     prisma.product.findMany({

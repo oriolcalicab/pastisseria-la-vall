@@ -47,3 +47,24 @@ Feature: Admin products list
     Given a visitor without token
     When the visitor calls "/api/admin/products"
     Then the backend responds 401
+
+      Scenario: The admin filters the products by category
+    Given products of the categories "Pastissos" and "Cupcakes"
+    When the admin picks "Cupcakes" in "Categoria"
+    Then the table only shows cupcakes
+    And the list goes back to the first page
+
+  Scenario: The admin filters the products that are not active
+    Given active and inactive products
+    When the admin picks "Inactius" in "Estat"
+    Then the table only shows the inactive products
+
+  Scenario: Filters and search together
+    Given the admin searched "coco"
+    When the admin picks "Cupcakes" and "Inactius"
+    Then the table only shows the inactive cupcakes whose name has "coco"
+
+  Scenario: Unknown filter
+    Given a logged admin
+    When the admin asks for "/api/admin/products?status=deleted"
+    Then the backend responds 400

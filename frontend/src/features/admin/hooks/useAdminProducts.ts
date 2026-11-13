@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { fetchAdminProducts } from '../services/adminProductsApi'
-import type { AdminProduct, AdminProductPage, AdminProductVariant } from '../types/product'
-
-type AdminProductsParams = {
-  page: number
-  search: string
-}
+import type {
+  AdminProduct,
+  AdminProductPage,
+  AdminProductVariant,
+  AdminProductsParams,
+} from '../types/product'
 
 type AdminProductsResult = {
   key: string
@@ -21,11 +21,12 @@ type AdminProductsState = (
   replaceVariant: (productId: number, variant: AdminProductVariant) => void
 }
 
-export const useAdminProducts = ({ page, search }: AdminProductsParams): AdminProductsState => {
+export const useAdminProducts = (params: AdminProductsParams): AdminProductsState => {
   const { user } = useAuth()
   const [result, setResult] = useState<AdminProductsResult | null>(null)
   const [attempt, setAttempt] = useState(0)
-  const key = `${page}|${search}|${attempt}`
+  const { page, search, categoryId = '', status = '' } = params
+  const key = `${page}|${search}|${categoryId}|${status}|${attempt}`
 
   useEffect(() => {
     if (!user) return
@@ -34,7 +35,7 @@ export const useAdminProducts = ({ page, search }: AdminProductsParams): AdminPr
 
     user
       .getIdToken()
-      .then((token) => fetchAdminProducts(token, { page, search }))
+      .then((token) => fetchAdminProducts(token, params))
       .then((data) => {
         if (isActive) setResult({ key, data })
       })
@@ -45,7 +46,8 @@ export const useAdminProducts = ({ page, search }: AdminProductsParams): AdminPr
     return () => {
       isActive = false
     }
-  }, [user, page, search, key])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, key])
 
   const retry = () => setAttempt((current) => current + 1)
 

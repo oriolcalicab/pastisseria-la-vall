@@ -30,6 +30,8 @@ export type ProductListQuery = {
   page: number
   pageSize: number
   search: string | undefined
+  categoryId?: number
+  isActive?: boolean
 }
 
 export type ActiveBody = {

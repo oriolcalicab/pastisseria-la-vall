@@ -51,3 +51,12 @@ export type AdminProductDetail = AdminProduct & {
   isPlantMilk: boolean
   isVegan: boolean
 }
+
+export type ProductStatusFilter = '' | 'active' | 'inactive'
+
+export type AdminProductsParams = {
+  page: number
+  search: string
+  categoryId?: string
+  status?: ProductStatusFilter
+}
