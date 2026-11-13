@@ -42,3 +42,14 @@ Feature: Shop header and footer
     When the header is shown
     Then it has the links "Administració" and "El meu compte"
     And "Administració" takes to "/admin"
+
+  Scenario: A page is downloaded only when it is opened
+    Given a customer on the home page
+    When the customer opens "Productes" for the first time
+    Then the code of that page is downloaded at that moment
+    And the header and the footer stay while "Carregant la pàgina..." is shown
+
+  Scenario: The shop does not download the admin pages
+    Given a customer who never opens the admin panel
+    When the customer uses the shop
+    Then the code of the dashboard charts and of the calendar is never downloaded
