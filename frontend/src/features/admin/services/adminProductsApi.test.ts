@@ -53,6 +53,25 @@ describe('fetchAdminProducts', () => {
     // Then the call fails
     await expect(fetchAdminProducts('token-123', { page: 1, search: '' })).rejects.toThrow()
   })
+
+  it('sends the category and the status of the filters', async () => {
+    // Given a backend with products
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({}) })
+    vi.stubGlobal('fetch', fetchMock)
+
+    // When the inactive cakes are requested
+    await fetchAdminProducts('token-123', {
+      page: 1,
+      search: '',
+      categoryId: '2',
+      status: 'inactive',
+    })
+
+    // Then both filters go in the query
+    expect(fetchMock.mock.calls[0][0]).toContain(
+      '/api/admin/products?page=1&categoryId=2&status=inactive',
+    )
+  })
 })
 
 describe('createAdminProduct', () => {
