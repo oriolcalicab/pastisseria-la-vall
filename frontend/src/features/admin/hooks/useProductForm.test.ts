@@ -114,6 +114,7 @@ describe('useProductForm', () => {
       name: 'Pastís de xocolata',
       description: 'Amb cacau pur',
       allergens: '',
+      imageUrl: '',
       isGlutenFree: false,
       isPlantMilk: false,
       isVegan: false,

@@ -26,6 +26,7 @@ const createInitialValues = (): ProductFormValues => ({
   name: '',
   description: '',
   allergens: '',
+  imageUrl: '',
   isGlutenFree: false,
   isPlantMilk: false,
   isVegan: false,
@@ -56,6 +57,8 @@ export const useProductForm = (
 
   const setField = (field: ProductTextField, value: string) =>
     setValues((current) => ({ ...current, [field]: value }))
+
+  const setImageUrl = (imageUrl: string) => setValues((current) => ({ ...current, imageUrl }))
 
   const setFlag = (flag: ProductFlag, value: boolean) =>
     setValues((current) => ({ ...current, [flag]: value }))
@@ -131,5 +134,6 @@ export const useProductForm = (
     addVariant,
     removeVariant,
     handleSubmit,
+    setImageUrl,
   }
 }
