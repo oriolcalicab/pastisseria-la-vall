@@ -107,3 +107,19 @@ Feature: Checkout
     When the customer clicks "Confirma la comanda"
     Then the page shows "No s'ha pogut confirmar la comanda. Torna-ho a provar"
     And the customer can confirm the order again
+
+  Scenario: The city must be Barcelona for a home delivery
+    Given a customer who chooses home delivery
+    When the customer writes "Madrid" as the city and "08036" as the postal code
+    Then the form shows "Només entreguem a Barcelona: la població ha de ser Barcelona"
+    And the order is not sent
+
+  Scenario: The backend rejects another city with a Barcelona postal code
+    Given an order to deliver at "Carrer Major, 1", "Madrid", "08036"
+    When it is sent to the backend
+    Then the backend responds 400 with "Només entreguem a Barcelona: la població ha de ser Barcelona"
+
+  Scenario: The city can be written in different ways
+    Given a home delivery with the postal code "08036"
+    When the customer writes "barcelona" or "BARCELONA" as the city
+    Then the address is accepted
