@@ -1,4 +1,6 @@
+import { Suspense } from 'react'
 import { Link, Outlet } from 'react-router-dom'
+import PageLoader from '../../../components/PageLoader'
 import LogoutButton from '../../auth/components/LogoutButton'
 import AdminNav from './AdminNav'
 
@@ -24,7 +26,9 @@ const AdminLayout = () => (
 
     <main className="min-w-0 flex-1 px-4 py-6 md:px-10 md:py-10">
       <div className="mx-auto max-w-6xl">
-        <Outlet />
+        <Suspense fallback={<PageLoader />}>
+          <Outlet />
+        </Suspense>
       </div>
     </main>
   </div>
