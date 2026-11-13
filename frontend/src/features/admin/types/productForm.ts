@@ -15,6 +15,7 @@ export type ProductFormValues = {
   name: string
   description: string
   allergens: string
+  imageUrl: string
   isGlutenFree: boolean
   isPlantMilk: boolean
   isVegan: boolean

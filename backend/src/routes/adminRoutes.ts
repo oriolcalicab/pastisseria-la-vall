@@ -15,6 +15,7 @@ import { parseActiveBody } from '../validation/activeBody.js'
 import { parseIdParam } from '../validation/idParam.js'
 import adminOrderRouter from './adminOrderRoutes.js'
 import adminStatsRouter from './adminStatsRoutes.js'
+import adminUploadRouter from './adminUploadRoutes.js'
 
 const handlePing = (_req: Request, res: Response) => {
   res.json({ status: 'ok' })
@@ -162,5 +163,6 @@ adminRouter.patch('/products/:id', handleSetProductActive)
 adminRouter.patch('/products/:productId/variants/:variantId', handleSetVariantActive)
 adminRouter.use('/orders', adminOrderRouter)
 adminRouter.use('/stats', adminStatsRouter)
+adminRouter.use('/uploads', adminUploadRouter)
 
 export default adminRouter
