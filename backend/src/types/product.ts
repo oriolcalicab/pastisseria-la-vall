@@ -10,6 +10,7 @@ export type NewProduct = {
   name: string
   description: string
   allergens: string | null
+  imageUrl: string | null
   isGlutenFree: boolean
   isPlantMilk: boolean
   isVegan: boolean
