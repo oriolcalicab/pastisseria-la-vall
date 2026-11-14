@@ -123,3 +123,25 @@ Feature: Checkout
     Given a home delivery with the postal code "08036"
     When the customer writes "barcelona" or "BARCELONA" as the city
     Then the address is accepted
+
+  Scenario: The review buttons are easy to tell apart
+    Given a customer on "Pas 3 · Revisió"
+    When the page is shown on a phone
+    Then "Confirma la comanda" is above "Canvia el punt de recollida" with space between them
+
+  Scenario: The map and the pickup points start at the same height
+    Given a customer on a wide screen who chooses "Recollida en un punt"
+    When the pickup points are shown
+    Then the map fills the main column under "Punts de recollida"
+    And the list "Tria la botiga" is in the side column, at the same height as the map
+
+  Scenario: The pickup points on a phone
+    Given a customer on a screen narrower than 768 px who chooses "Recollida en un punt"
+    When the pickup points are shown
+    Then the map comes first, then the list, then "Continua" and the summary
+
+  Scenario: The chosen pickup point stands out
+    Given the pickup points map
+    When the customer picks "La Vall · Eixample"
+    Then its pin is bigger and caramel on the map
+    And its option is framed in the list
