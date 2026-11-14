@@ -1,3 +1,35 @@
-.pickup-marker-selected {
-  filter: hue-rotate(150deg) saturate(1.6);
+.pickup-pin path {
+  fill: var(--color-cocoa);
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.pickup-pin circle {
+  fill: var(--color-nata);
+}
+
+.pickup-pin svg {
+  transform-origin: bottom center;
+  transition: transform 150ms ease;
+}
+
+.pickup-pin-selected path {
+  fill: var(--color-caramel);
+}
+
+.pickup-pin-selected svg {
+  transform: scale(1.25);
+}
+
+.leaflet-container {
+  font-family: inherit;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 1rem;
+  color: var(--color-chocolate);
+}
+
+.leaflet-tile-pane {
+  filter: saturate(0.55) sepia(0.12) brightness(1.03);
 }

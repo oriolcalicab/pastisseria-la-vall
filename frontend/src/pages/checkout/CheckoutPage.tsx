@@ -114,39 +114,39 @@ const CheckoutPage = () => {
     <main className="mx-auto max-w-5xl p-4 sm:p-8">
       <h1 className="text-3xl font-bold">Finalitza la comanda</h1>
 
-      <div className="mt-6 grid gap-8 md:grid-cols-[1fr_18rem]">
-        <div>
-          {step === 'date' && (
-            <section aria-labelledby="date-title">
-              <h2 id="date-title" className="text-xl font-semibold">
-                Pas 1 · Data de lliurament
-              </h2>
-              <div className="mt-4">
-                <DeliveryCalendar
-                  initialMonth={initialMonth}
-                  selectedDate={deliveryDate}
-                  onSelect={setDeliveryDate}
-                />
-              </div>
-              {!deliveryDate && (
-                <p id="date-hint" className="mt-4 text-sm text-gray-600">
-                  Tria una data per continuar.
-                </p>
-              )}
-              <button
-                type="button"
-                onClick={() => setStep('method')}
-                disabled={!deliveryDate}
-                aria-describedby={deliveryDate ? undefined : 'date-hint'}
-                className="mt-4 rounded-sm bg-gray-900 px-4 py-2 text-white disabled:opacity-50"
-              >
-                Continua
-              </button>
-            </section>
-          )}
+      <div className="mt-6 grid gap-8 md:grid-cols-[1fr_20rem]">
+        {step === 'date' && (
+          <section aria-labelledby="date-title" className="md:col-start-1 md:row-start-1">
+            <h2 id="date-title" className="text-xl font-semibold">
+              Pas 1 · Data de lliurament
+            </h2>
+            <div className="mt-4">
+              <DeliveryCalendar
+                initialMonth={initialMonth}
+                selectedDate={deliveryDate}
+                onSelect={setDeliveryDate}
+              />
+            </div>
+            {!deliveryDate && (
+              <p id="date-hint" className="mt-4 text-sm text-gray-600">
+                Tria una data per continuar.
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={() => setStep('method')}
+              disabled={!deliveryDate}
+              aria-describedby={deliveryDate ? undefined : 'date-hint'}
+              className="mt-4 rounded-sm bg-gray-900 px-4 py-2 text-white disabled:opacity-50"
+            >
+              Continua
+            </button>
+          </section>
+        )}
 
-          {step === 'method' && deliveryDate && (
-            <section aria-labelledby="method-title">
+        {step === 'method' && deliveryDate && (
+          <section aria-labelledby="method-title" className="contents">
+            <div className="md:col-start-1 md:row-start-1">
               <h2 id="method-title" className="text-xl font-semibold">
                 Pas 2 · Mètode de lliurament
               </h2>
@@ -172,13 +172,15 @@ const CheckoutPage = () => {
                   />
                 </div>
               )}
+            </div>
 
-              {deliveryMethod === 'pickup' && (
-                <PickupPoints selectedId={pickupPoint?.id ?? null} onSelect={setPickupPoint} />
-              )}
+            {deliveryMethod === 'pickup' && (
+              <PickupPoints selectedId={pickupPoint?.id ?? null} onSelect={setPickupPoint} />
+            )}
 
+            <div className="md:col-start-1">
               {methodHint && (
-                <p id="method-hint" className="mt-4 text-sm text-gray-600">
+                <p id="method-hint" className="text-sm text-gray-600">
                   {methodHint}
                 </p>
               )}
@@ -191,50 +193,55 @@ const CheckoutPage = () => {
               >
                 Continua
               </button>
-            </section>
-          )}
+            </div>
+          </section>
+        )}
 
-          {step === 'review' && deliveryDate && deliveryMethod && (
-            <section aria-labelledby="review-title">
-              <h2 id="review-title" className="text-xl font-semibold">
-                Pas 3 · Revisió
-              </h2>
-              <OrderReview
-                lines={lines}
-                subtotalCents={totalCents}
-                deliveryDate={deliveryDate}
-                method={deliveryMethod}
-                address={address}
-                pickupPoint={pickupPoint}
-                shippingFee={shippingFee}
+        {step === 'review' && deliveryDate && deliveryMethod && (
+          <section aria-labelledby="review-title" className="md:col-start-1 md:row-start-1">
+            <h2 id="review-title" className="text-xl font-semibold">
+              Pas 3 · Revisió
+            </h2>
+            <OrderReview
+              lines={lines}
+              subtotalCents={totalCents}
+              deliveryDate={deliveryDate}
+              method={deliveryMethod}
+              address={address}
+              pickupPoint={pickupPoint}
+              shippingFee={shippingFee}
+            />
+
+            {confirmOrder.error && (
+              <OrderErrorNotice
+                error={confirmOrder.error}
+                onChangeDate={handleChangeDate}
+                onChangePickupPoint={handleChangePickupPoint}
               />
-              <button type="button" onClick={handleBackToMethod} className="mt-4 text-sm underline">
+            )}
+
+            <div className="mt-8 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <button type="button" onClick={handleBackToMethod} className="btn btn-outline btn-sm">
                 {deliveryMethod === 'delivery' ? "Canvia l'adreça" : 'Canvia el punt de recollida'}
               </button>
-
-              {confirmOrder.error && (
-                <OrderErrorNotice
-                  error={confirmOrder.error}
-                  onChangeDate={handleChangeDate}
-                  onChangePickupPoint={handleChangePickupPoint}
-                />
-              )}
-
               <button
                 type="button"
                 onClick={handleConfirm}
                 disabled={confirmOrder.status === 'sending' || confirmOrder.status === 'done'}
-                className="mt-6 rounded-sm bg-gray-900 px-4 py-2 text-white disabled:opacity-50"
+                className="btn btn-primary"
               >
                 {confirmOrder.status === 'idle' || confirmOrder.status === 'error'
                   ? 'Confirma la comanda'
                   : 'Confirmant...'}
               </button>
-            </section>
-          )}
-        </div>
+            </div>
+          </section>
+        )}
 
-        <aside aria-labelledby="summary-title" className="h-fit rounded-sm border p-4">
+        <aside
+          aria-labelledby="summary-title"
+          className="h-fit rounded-sm border p-4 md:col-start-2 md:row-start-1"
+        >
           <h2 id="summary-title" className="text-lg font-semibold">
             Resum
           </h2>
