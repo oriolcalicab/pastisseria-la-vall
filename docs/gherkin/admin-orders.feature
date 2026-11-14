@@ -141,3 +141,9 @@ Feature: Admin orders
     When the customer tries to cancel an order with the admin endpoint
     Then the backend responds 403
     And the order does not change
+
+  Scenario: Short dates in the orders table
+    Given an order made on the 15th of November of 2026
+    When the admin opens the orders table
+    Then the date is shown as "15/11/2026"
+    And the status column is fully visible

@@ -1,27 +1,10 @@
-import L from 'leaflet'
+import type L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import markerIconUrl from 'leaflet/dist/images/marker-icon.png'
-import markerIconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png'
-import markerShadowUrl from 'leaflet/dist/images/marker-shadow.png'
 import { useEffect, useRef } from 'react'
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
+import { BARCELONA_CENTER, INITIAL_ZOOM, mapTiles } from '../data/mapStyle'
 import type { PickupPoint } from '../types/pickupPoint'
-
-const BARCELONA_CENTER: [number, number] = [41.3926, 2.1701]
-const INITIAL_ZOOM = 13
-
-const iconOptions = {
-  iconUrl: markerIconUrl,
-  iconRetinaUrl: markerIconRetinaUrl,
-  shadowUrl: markerShadowUrl,
-  iconSize: [25, 41] as [number, number],
-  iconAnchor: [12, 41] as [number, number],
-  popupAnchor: [1, -34] as [number, number],
-  shadowSize: [41, 41] as [number, number],
-}
-
-const markerIcon = L.icon(iconOptions)
-const selectedMarkerIcon = L.icon({ ...iconOptions, className: 'pickup-marker-selected' })
+import { createPickupPin } from '../utils/pickupPin'
 
 type PickupMapProps = {
   points: PickupPoint[]
@@ -50,12 +33,9 @@ const PickupMap = ({ points, selectedId, onSelect }: PickupMapProps) => {
       center={BARCELONA_CENTER}
       zoom={INITIAL_ZOOM}
       scrollWheelZoom={false}
-      className="h-64 w-full rounded-sm md:h-96"
+      className="h-80 w-full rounded-2xl border border-line md:h-112"
     >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+      <TileLayer attribution={mapTiles.attribution} url={mapTiles.url} />
       {points.map((point) => (
         <Marker
           key={point.id}
@@ -64,7 +44,7 @@ const PickupMap = ({ points, selectedId, onSelect }: PickupMapProps) => {
             else markersRef.current.delete(point.id)
           }}
           position={[point.latitude, point.longitude]}
-          icon={point.id === selectedId ? selectedMarkerIcon : markerIcon}
+          icon={createPickupPin(point.id === selectedId)}
           title={point.name}
           alt={point.name}
           eventHandlers={{ click: () => onSelect(point.id) }}
