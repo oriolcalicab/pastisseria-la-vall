@@ -5,8 +5,8 @@ const labels = (isLoggedIn: boolean, isAdmin: boolean) =>
   getAccountLinks(isLoggedIn, isAdmin).map((link) => link.label)
 
 describe('getAccountLinks', () => {
-  it('invites a visitor to sign in', () => {
-    expect(labels(false, false)).toEqual(['Inicia sessió'])
+  it('invites a visitor to sign in or to sign up', () => {
+    expect(labels(false, false)).toEqual(['Inicia sessió', "Registra't"])
   })
 
   it('links a customer to the account', () => {

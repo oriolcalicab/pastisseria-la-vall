@@ -35,3 +35,9 @@ Feature: Authentication
     Given a visitor who was sent to "/login" from "/checkout"
     When the visitor signs in, admin or not
     Then "/checkout" is shown
+
+  Scenario: Signing out empties the cart
+    Given a signed-in customer with products in the cart
+    When the customer clicks "Tanca la sessió"
+    Then the cart is empty
+    And the header shows 0 units
