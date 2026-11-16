@@ -107,3 +107,41 @@ Feature: Checkout
     When the customer clicks "Confirma la comanda"
     Then the page shows "No s'ha pogut confirmar la comanda. Torna-ho a provar"
     And the customer can confirm the order again
+
+  Scenario: The city must be Barcelona for a home delivery
+    Given a customer who chooses home delivery
+    When the customer writes "Madrid" as the city and "08036" as the postal code
+    Then the form shows "Només entreguem a Barcelona: la població ha de ser Barcelona"
+    And the order is not sent
+
+  Scenario: The backend rejects another city with a Barcelona postal code
+    Given an order to deliver at "Carrer Major, 1", "Madrid", "08036"
+    When it is sent to the backend
+    Then the backend responds 400 with "Només entreguem a Barcelona: la població ha de ser Barcelona"
+
+  Scenario: The city can be written in different ways
+    Given a home delivery with the postal code "08036"
+    When the customer writes "barcelona" or "BARCELONA" as the city
+    Then the address is accepted
+
+  Scenario: The review buttons are easy to tell apart
+    Given a customer on "Pas 3 · Revisió"
+    When the page is shown on a phone
+    Then "Confirma la comanda" is above "Canvia el punt de recollida" with space between them
+
+  Scenario: The map and the pickup points start at the same height
+    Given a customer on a wide screen who chooses "Recollida en un punt"
+    When the pickup points are shown
+    Then the map fills the main column under "Punts de recollida"
+    And the list "Tria la botiga" is in the side column, at the same height as the map
+
+  Scenario: The pickup points on a phone
+    Given a customer on a screen narrower than 768 px who chooses "Recollida en un punt"
+    When the pickup points are shown
+    Then the map comes first, then the list, then "Continua" and the summary
+
+  Scenario: The chosen pickup point stands out
+    Given the pickup points map
+    When the customer picks "La Vall · Eixample"
+    Then its pin is bigger and caramel on the map
+    And its option is framed in the list

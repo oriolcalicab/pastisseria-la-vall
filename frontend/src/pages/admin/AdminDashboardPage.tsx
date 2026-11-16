@@ -1,14 +1,12 @@
-import { useCurrentUser } from '../../features/auth/hooks/useCurrentUser'
+import DashboardContent from '../../features/admin/components/dashboard/DashboardContent'
+import DashboardHeader from '../../features/admin/components/dashboard/DashboardHeader'
+import { DashboardProvider } from '../../features/admin/context/DashboardProvider'
 
-const AdminDashboardPage = () => {
-  const { currentUser } = useCurrentUser()
-
-  return (
-    <>
-      <h1 className="text-2xl font-bold">Tauler</h1>
-      <p className="mt-4">Benvingut/da, {currentUser?.name}.</p>
-    </>
-  )
-}
+const AdminDashboardPage = () => (
+  <DashboardProvider>
+    <DashboardHeader />
+    <DashboardContent />
+  </DashboardProvider>
+)
 
 export default AdminDashboardPage

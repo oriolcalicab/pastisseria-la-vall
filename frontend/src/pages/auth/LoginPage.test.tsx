@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { loginAccount } from '../../features/auth/services/accountService'
 import LoginPage from './LoginPage'
@@ -11,8 +11,12 @@ vi.mock('../../features/auth/services/accountService', () => ({
 
 const renderPage = () =>
   render(
-    <MemoryRouter>
-      <LoginPage />
+    <MemoryRouter initialEntries={['/login']}>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<p>Pàgina d'inici</p>} />
+        <Route path="/admin" element={<p>Tauler d'administració</p>} />
+      </Routes>
     </MemoryRouter>,
   )
 
@@ -53,5 +57,29 @@ describe('LoginPage', () => {
     // Then validation errors are shown and the service is not called
     expect(await screen.findByText('Escriu un correu vàlid')).toBeInTheDocument()
     expect(loginAccount).not.toHaveBeenCalled()
+  })
+
+  it('takes an admin straight to the admin panel', async () => {
+    // Given an admin account
+    vi.mocked(loginAccount).mockResolvedValue('admin')
+    renderPage()
+
+    // When the admin signs in
+    await fillAndSubmit('admin@test.com', 'secret123')
+
+    // Then the admin panel is shown
+    expect(await screen.findByText("Tauler d'administració")).toBeInTheDocument()
+  })
+
+  it('takes a customer to the home page', async () => {
+    // Given a customer account
+    vi.mocked(loginAccount).mockResolvedValue('customer')
+    renderPage()
+
+    // When the customer signs in
+    await fillAndSubmit('client@test.com', 'secret123')
+
+    // Then the home page is shown
+    expect(await screen.findByText("Pàgina d'inici")).toBeInTheDocument()
   })
 })

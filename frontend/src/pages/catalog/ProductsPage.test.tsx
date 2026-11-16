@@ -217,4 +217,20 @@ describe('ProductsPage', () => {
     // Then the card opens the detail of the product
     expect(screen.getByRole('link')).toHaveAttribute('href', '/productes/1')
   })
+
+  it('shows all the products again with "Tots"', async () => {
+    // Given the vegan filter is on
+    vi.mocked(useProducts).mockReturnValue({ status: 'success', data: productPage(), retry })
+    const user = userEvent.setup()
+    renderPage()
+    await user.click(screen.getByRole('checkbox', { name: 'Vegà' }))
+
+    // When the customer clicks "Tots"
+    await user.click(screen.getByRole('button', { name: 'Tots' }))
+
+    // Then no diet is selected and all the products are asked for
+    expect(screen.getByRole('checkbox', { name: 'Vegà' })).not.toBeChecked()
+    expect(screen.getByRole('button', { name: 'Tots' })).toHaveAttribute('aria-pressed', 'true')
+    expect(useProducts).toHaveBeenLastCalledWith({ page: 1, diet: '' })
+  })
 })

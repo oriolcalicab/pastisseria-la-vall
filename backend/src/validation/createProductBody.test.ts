@@ -32,6 +32,7 @@ describe('parseCreateProductBody', () => {
         name: 'Pastís de maduixa',
         description: 'Bescuit amb nata i maduixes',
         allergens: 'gluten, ou',
+        imageUrl: null,
         isGlutenFree: false,
         isPlantMilk: false,
         isVegan: false,
@@ -52,6 +53,7 @@ describe('parseCreateProductBody', () => {
       ok: true,
       data: {
         allergens: null,
+        imageUrl: null,
         isGlutenFree: false,
         isPlantMilk: false,
         isVegan: false,

@@ -34,4 +34,20 @@ describe('AdminLayout', () => {
       '/admin/productes',
     ])
   })
+
+  it('marks the current page and links back to the shop', () => {
+    // Given the admin on the calendar
+    // When the panel is shown
+    render(
+      <MemoryRouter initialEntries={['/admin/calendari']}>
+        <AdminLayout />
+      </MemoryRouter>,
+    )
+
+    // Then the calendar is the current page and the shop is one click away
+    expect(screen.getByRole('link', { name: 'Calendari' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: 'Tauler' })).not.toHaveAttribute('aria-current')
+    expect(screen.getByRole('link', { name: 'Veure la botiga' })).toHaveAttribute('href', '/')
+    expect(screen.getByRole('button', { name: 'Tanca la sessió' })).toBeInTheDocument()
+  })
 })

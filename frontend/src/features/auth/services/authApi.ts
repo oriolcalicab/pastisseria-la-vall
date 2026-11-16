@@ -22,6 +22,8 @@ export type CurrentUser = {
   role: 'customer' | 'admin'
 }
 
+export type UserRole = CurrentUser['role']
+
 export const fetchCurrentUser = async (token: string): Promise<CurrentUser> => {
   const response = await fetch(apiUrl('/api/auth/me'), {
     headers: { Authorization: `Bearer ${token}` },

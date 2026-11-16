@@ -14,3 +14,8 @@ export type CalendarOrder = {
   deliveryDate: string
   user: { name: string }
 }
+
+export type CalendarFilters = {
+  status: OrderStatus | ''
+  deliveryMethod: DeliveryMethod | ''
+}

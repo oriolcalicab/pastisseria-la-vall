@@ -25,6 +25,7 @@ const product: AdminProductDetail = {
   categoryId: 1,
   description: 'Amb cacau pur',
   allergens: null,
+  imageUrl: null,
   isGlutenFree: false,
   isPlantMilk: false,
   isVegan: false,

@@ -1,0 +1,21 @@
+import { lazy } from 'react'
+
+export const ProductsPage = lazy(() => import('./pages/catalog/ProductsPage'))
+export const ProductDetailPage = lazy(() => import('./pages/catalog/ProductDetailPage'))
+export const CartPage = lazy(() => import('./pages/cart/CartPage'))
+export const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
+export const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'))
+export const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
+export const CheckoutPage = lazy(() => import('./pages/checkout/CheckoutPage'))
+export const ConfirmationPage = lazy(() => import('./pages/orders/ConfirmationPage'))
+export const OrdersPage = lazy(() => import('./pages/orders/OrdersPage'))
+export const OrderDetailPage = lazy(() => import('./pages/orders/OrderDetailPage'))
+export const AccountPage = lazy(() => import('./pages/account/AccountPage'))
+
+export const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage'))
+export const AdminOrdersPage = lazy(() => import('./pages/admin/AdminOrdersPage'))
+export const AdminOrderDetailPage = lazy(() => import('./pages/admin/AdminOrderDetailPage'))
+export const AdminCalendarPage = lazy(() => import('./pages/admin/AdminCalendarPage'))
+export const AdminProductsPage = lazy(() => import('./pages/admin/AdminProductsPage'))
+export const NewProductPage = lazy(() => import('./pages/admin/NewProductPage'))
+export const EditProductPage = lazy(() => import('./pages/admin/EditProductPage'))

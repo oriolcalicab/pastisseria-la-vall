@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { fetchCalendarOrders } from '../services/adminOrdersApi'
-import type { CalendarOrder, CalendarRange } from '../types/calendar'
+import type { CalendarFilters, CalendarOrder, CalendarRange } from '../types/calendar'
 
 type CalendarResult = {
   key: string
@@ -12,11 +12,16 @@ type CalendarState = (
   { status: 'loading' } | { status: 'error' } | { status: 'success'; orders: CalendarOrder[] }
 ) & { retry: () => void }
 
-export const useCalendarOrders = (range: CalendarRange | null): CalendarState => {
+export const useCalendarOrders = (
+  range: CalendarRange | null,
+  filters: CalendarFilters,
+): CalendarState => {
   const { user } = useAuth()
   const [result, setResult] = useState<CalendarResult | null>(null)
   const [attempt, setAttempt] = useState(0)
-  const key = range ? `${range.from}|${range.to}|${attempt}` : null
+  const key = range
+    ? `${range.from}|${range.to}|${filters.status}|${filters.deliveryMethod}|${attempt}`
+    : null
 
   useEffect(() => {
     if (!user || !range || !key) return
@@ -25,7 +30,7 @@ export const useCalendarOrders = (range: CalendarRange | null): CalendarState =>
 
     user
       .getIdToken()
-      .then((token) => fetchCalendarOrders(token, range))
+      .then((token) => fetchCalendarOrders(token, range, filters))
       .then((orders) => {
         if (isActive) setResult({ key, orders })
       })

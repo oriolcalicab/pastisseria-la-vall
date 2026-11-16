@@ -1,5 +1,5 @@
 import type { RequestedCartLine } from './cart.js'
-import type { OrderStatus } from '../generated/prisma/enums.js'
+import type { DeliveryMethod, OrderStatus } from '../generated/prisma/enums.js'
 
 export type ShippingAddress = {
   address: string
@@ -46,4 +46,6 @@ export type StatusBody = {
 export type CalendarQuery = {
   from: string
   to: string
+  status?: OrderStatus
+  deliveryMethod?: DeliveryMethod
 }

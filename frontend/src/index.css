@@ -1,5 +1,6 @@
 @import 'tailwindcss';
-
-.pickup-marker-selected {
-  filter: hue-rotate(150deg) saturate(1.6);
-}
+@import './styles/theme.css';
+@import './styles/base.css';
+@import './styles/components.css';
+@import './styles/pickup-map.css';
+@import './styles/admin-calendar.css';

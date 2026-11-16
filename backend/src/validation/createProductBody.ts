@@ -1,4 +1,5 @@
 import type { NewProduct, ProductUpdate, VariantInput } from '../types/product.js'
+import { parseImageUrl } from './imageUrl.js'
 
 const MIN_NAME_LENGTH = 2
 const MAX_NAME_LENGTH = 100
@@ -108,6 +109,10 @@ const parseProductBody = (body: unknown): Result<ProductUpdate> => {
 
   if (trimmedAllergens.length > MAX_ALLERGENS_LENGTH) return fail('Els al·lèrgens són massa llargs')
 
+  const image = parseImageUrl(body.imageUrl)
+
+  if (!image.ok) return fail('La imatge ha de ser una adreça de Cloudinary')
+
   const isGlutenFree = parseFlag(body.isGlutenFree, false)
   const isPlantMilk = parseFlag(body.isPlantMilk, false)
   const isVegan = parseFlag(body.isVegan, false)
@@ -128,6 +133,7 @@ const parseProductBody = (body: unknown): Result<ProductUpdate> => {
       name,
       description,
       allergens: trimmedAllergens || null,
+      imageUrl: image.imageUrl,
       isGlutenFree,
       isPlantMilk,
       isVegan,

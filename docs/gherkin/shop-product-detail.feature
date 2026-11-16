@@ -59,3 +59,15 @@ Feature: Public product detail
     Given a visitor
     When the visitor calls "/api/products/2147483648"
     Then the backend responds 400
+
+    
+  Scenario: Shared workshop notice
+    Given a visitor on a product page
+    Then the page shows "Ingredients i al·lèrgens"
+    And it warns that the workshop is shared
+
+  Scenario: Sold out size
+    Given a product with a sold out size
+    When a visitor opens the product
+    Then that size card says "Esgotat"
+    And it cannot be selected

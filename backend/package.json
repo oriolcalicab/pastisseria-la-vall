@@ -10,8 +10,11 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:db": "vitest run --config vitest.db.config.ts",
-    "set-role": "tsx scripts/set-role.ts"
+    "set-role": "tsx scripts/set-role.ts",
+    "seed:demo": "tsx scripts/seed-demo-orders.ts",
+    "seed:demo:remove": "tsx scripts/seed-demo-orders.ts --remove"
   },
   "keywords": [],
   "author": "",
@@ -31,6 +34,7 @@
     "cors": "^2.8.6",
     "dotenv": "^18.0.8",
     "express": "^5.3.0",
+    "express-rate-limit": "^8.7.4",
     "firebase-admin": "^14.5.0",
     "pg": "^8.23.1"
   },
@@ -40,6 +44,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.5",
     "@types/pg": "^8.23.1",
+    "@vitest/coverage-v8": "5.0.5",
     "eslint": "^10.13.0",
     "globals": "^17.13.0",
     "prettier": "^3.9.10",

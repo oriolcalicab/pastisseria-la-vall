@@ -6,9 +6,11 @@ import { useAdminProducts } from '../../features/admin/hooks/useAdminProducts'
 import type { AdminProductPage } from '../../features/admin/types/product'
 import AdminProductsPage from './AdminProductsPage'
 import { MemoryRouter } from 'react-router-dom'
+import { useCategories } from '../../features/admin/hooks/useCategories'
 
 vi.mock('../../features/admin/hooks/useAdminProducts', () => ({ useAdminProducts: vi.fn() }))
 vi.mock('../../features/admin/hooks/useActiveToggles', () => ({ useActiveToggles: vi.fn() }))
+vi.mock('../../features/admin/hooks/useCategories', () => ({ useCategories: vi.fn() }))
 
 const retry = vi.fn()
 const actions = { retry, replaceProduct: vi.fn(), replaceVariant: vi.fn() }
@@ -49,6 +51,7 @@ describe('AdminProductsPage', () => {
       toggleProduct: vi.fn(),
       toggleVariant: vi.fn(),
     })
+    vi.mocked(useCategories).mockReturnValue({ status: 'success', categories: [] })
   })
 
   it('shows a message while the products are loading', () => {
@@ -115,9 +118,14 @@ describe('AdminProductsPage', () => {
     await user.click(screen.getByRole('button', { name: 'Cerca' }))
 
     // Then the first page is requested with the search and the empty message mentions it
-    expect(useAdminProducts).toHaveBeenLastCalledWith({ page: 1, search: 'croi' })
+    expect(useAdminProducts).toHaveBeenLastCalledWith({
+      page: 1,
+      search: 'croi',
+      categoryId: '',
+      status: '',
+    })
     expect(
-      screen.getByText('No hi ha cap producte que coincideixi amb "croi".'),
+      screen.getByText('No hi ha cap producte amb aquesta cerca o aquests filtres.'),
     ).toBeInTheDocument()
   })
 
@@ -130,7 +138,12 @@ describe('AdminProductsPage', () => {
     await userEvent.setup().click(screen.getByRole('button', { name: 'Següent »' }))
 
     // Then the second page is requested
-    expect(useAdminProducts).toHaveBeenLastCalledWith({ page: 2, search: '' })
+    expect(useAdminProducts).toHaveBeenLastCalledWith({
+      page: 2,
+      search: '',
+      categoryId: '',
+      status: '',
+    })
   })
 
   it('keeps the search when going to the next page', async () => {
@@ -146,7 +159,12 @@ describe('AdminProductsPage', () => {
     await user.click(screen.getByRole('button', { name: 'Següent »' }))
 
     // Then the second page of the same search is requested
-    expect(useAdminProducts).toHaveBeenLastCalledWith({ page: 2, search: 'pastis' })
+    expect(useAdminProducts).toHaveBeenLastCalledWith({
+      page: 2,
+      search: 'pastis',
+      categoryId: '',
+      status: '',
+    })
   })
 
   it('shows the notice sent after creating a product', async () => {

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { formatPrice } from '../../../lib/formatPrice'
 import { getProductImageUrl } from '../../catalog/utils/productImage'
 import type { CartLine } from '../types/cart'
+import QuantityStepper from './QuantityStepper'
 
 type CartLineItemProps = {
   line: CartLine
@@ -13,54 +14,42 @@ const CartLineItem = ({ line, onQuantityChange, onRemove }: CartLineItemProps) =
   const label = `${line.productName}, ${line.variantName}`
 
   return (
-    <li className="flex flex-wrap items-center gap-4 border-t py-4">
+    <li className="grid grid-cols-[76px_1fr] gap-x-3 gap-y-3 border-b border-line py-5 sm:grid-cols-[110px_1fr_auto_auto] sm:items-center sm:gap-5">
       <img
         src={getProductImageUrl(line.imageUrl)}
         alt=""
-        className="h-20 w-20 rounded object-cover"
+        className="aspect-square w-full rounded-xl bg-nata object-cover"
       />
-
-      <div className="min-w-40 flex-1">
-        <Link to={`/productes/${line.productId}`} className="font-semibold underline">
+      <div>
+        <Link
+          to={`/productes/${line.productId}`}
+          className="font-display text-2xl leading-tight transition-colors hover:text-caramel"
+        >
           {line.productName}
         </Link>
-        <p className="text-sm text-gray-600">{line.variantName}</p>
-        <p className="text-sm">{formatPrice(line.priceCents)} / unitat</p>
-      </div>
-
-      <div className="flex items-center gap-2">
+        <p className="text-sm text-mocha">
+          {line.variantName} · {formatPrice(line.priceCents)} / unitat
+        </p>
         <button
           type="button"
-          onClick={() => onQuantityChange(line.variantId, line.quantity - 1)}
-          disabled={line.quantity <= 1}
-          aria-label={`Treu una unitat de ${label}`}
-          className="h-8 w-8 rounded border disabled:opacity-50"
+          onClick={() => onRemove(line.variantId)}
+          aria-label={`Elimina ${label}`}
+          className="mt-1 text-sm text-mocha underline transition-colors hover:text-caramel"
         >
-          −
-        </button>
-        <span aria-label={`Quantitat de ${label}`}>{line.quantity}</span>
-        <button
-          type="button"
-          onClick={() => onQuantityChange(line.variantId, line.quantity + 1)}
-          aria-label={`Afegeix una unitat de ${label}`}
-          className="h-8 w-8 rounded border"
-        >
-          +
+          Elimina
         </button>
       </div>
-
-      <p className="w-24 text-right font-semibold">
-        {formatPrice(line.priceCents * line.quantity)}
-      </p>
-
-      <button
-        type="button"
-        onClick={() => onRemove(line.variantId)}
-        aria-label={`Elimina ${label}`}
-        className="text-sm text-red-700 underline"
-      >
-        Elimina
-      </button>
+      <div className="col-start-2 flex items-center justify-between gap-4 sm:col-auto sm:contents">
+        <QuantityStepper
+          label={label}
+          quantity={line.quantity}
+          onDecrease={() => onQuantityChange(line.variantId, line.quantity - 1)}
+          onIncrease={() => onQuantityChange(line.variantId, line.quantity + 1)}
+        />
+        <p className="font-medium sm:w-24 sm:text-right">
+          {formatPrice(line.priceCents * line.quantity)}
+        </p>
+      </div>
     </li>
   )
 }

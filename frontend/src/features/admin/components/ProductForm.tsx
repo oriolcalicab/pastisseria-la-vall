@@ -4,6 +4,7 @@ import { useCategories } from '../hooks/useCategories'
 import type { useProductForm } from '../hooks/useProductForm'
 import DietaryOptions from './DietaryOptions'
 import VariantFields from './VariantFields'
+import ImageUploadField from './ImageUploadField'
 
 type ProductFormProps = {
   form: ReturnType<typeof useProductForm>
@@ -78,6 +79,8 @@ const ProductForm = ({ form }: ProductFormProps) => {
           </p>
         )}
       </div>
+
+      <ImageUploadField imageUrl={values.imageUrl} onChange={form.setImageUrl} />
 
       <FormField
         id="allergens"

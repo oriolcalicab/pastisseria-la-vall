@@ -5,6 +5,8 @@ import ProductSearch from '../../features/admin/components/ProductSearch'
 import ProductsTable from '../../features/admin/components/ProductsTable'
 import { useAdminProducts } from '../../features/admin/hooks/useAdminProducts'
 import { useActiveToggles } from '../../features/admin/hooks/useActiveToggles'
+import ProductFilters from '../../features/admin/components/ProductFilters'
+import type { ProductStatusFilter } from '../../features/admin/types/product'
 
 const readNotice = (state: unknown): string | null => {
   if (typeof state !== 'object' || state === null || !('notice' in state)) return null
@@ -15,8 +17,11 @@ const readNotice = (state: unknown): string | null => {
 const AdminProductsPage = () => {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
-  const products = useAdminProducts({ page, search })
+  const [categoryId, setCategoryId] = useState('')
+  const [status, setStatus] = useState<ProductStatusFilter>('')
+  const products = useAdminProducts({ page, search, categoryId, status })
   const location = useLocation()
+  const hasFilters = Boolean(search || categoryId || status)
   const navigate = useNavigate()
   const [notice, setNotice] = useState(() => readNotice(location.state))
   const toggles = useActiveToggles({
@@ -33,6 +38,16 @@ const AdminProductsPage = () => {
     setPage(1)
   }
 
+  const handleCategoryChange = (value: string) => {
+    setCategoryId(value)
+    setPage(1)
+  }
+
+  const handleStatusChange = (value: ProductStatusFilter) => {
+    setStatus(value)
+    setPage(1)
+  }
+
   return (
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -46,6 +61,15 @@ const AdminProductsPage = () => {
             Nou producte
           </Link>
         </div>
+      </div>
+
+      <div className="mt-4">
+        <ProductFilters
+          categoryId={categoryId}
+          status={status}
+          onCategoryChange={handleCategoryChange}
+          onStatusChange={handleStatusChange}
+        />
       </div>
 
       {notice && (
@@ -78,8 +102,8 @@ const AdminProductsPage = () => {
 
         {products.status === 'success' && products.data.items.length === 0 && (
           <p>
-            {search
-              ? `No hi ha cap producte que coincideixi amb "${search}".`
+            {hasFilters
+              ? 'No hi ha cap producte amb aquesta cerca o aquests filtres.'
               : 'Encara no hi ha cap producte.'}
           </p>
         )}

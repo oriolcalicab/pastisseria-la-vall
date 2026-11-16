@@ -1,17 +1,10 @@
 import type { EventInput } from '@fullcalendar/core'
-import type { OrderStatus } from '../../orders/types/order'
+import { statusColors } from '../data/calendarColors'
 import type { CalendarOrder, CalendarRange } from '../types/calendar'
-
-const statusColors: Record<Exclude<OrderStatus, 'cancelled'>, string> = {
-  pending: '#B45309',
-  preparing: '#1D4ED8',
-  ready: '#15803D',
-  delivered: '#4B5563',
-}
 
 export const toCalendarEvents = (orders: CalendarOrder[]): EventInput[] =>
   orders.map((order) => {
-    const color = order.status === 'cancelled' ? '#4B5563' : statusColors[order.status]
+    const color = statusColors[order.status]
 
     return {
       id: String(order.id),

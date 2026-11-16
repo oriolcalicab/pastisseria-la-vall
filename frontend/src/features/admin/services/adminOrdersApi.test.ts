@@ -4,6 +4,7 @@ import {
   fetchAdminOrder,
   changeAdminOrderStatus,
   OrderStatusConflictError,
+  fetchCalendarOrders,
 } from './adminOrdersApi'
 
 const page = { items: [], page: 2, pageSize: 20, total: 21, totalPages: 2 }
@@ -111,5 +112,42 @@ describe('changeAdminOrderStatus', () => {
     await expect(changeAdminOrderStatus('token-123', 7, 'ready')).rejects.toBeInstanceOf(
       OrderStatusConflictError,
     )
+  })
+})
+
+describe('fetchCalendarOrders', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  const november = { from: '2026-11-01', to: '2026-11-30' }
+
+  it('sends the range and the filters that are chosen', async () => {
+    // Given a backend with orders
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => [] })
+    vi.stubGlobal('fetch', fetchMock)
+
+    // When the ready orders to pick up are requested
+    await fetchCalendarOrders('token-123', november, { status: 'ready', deliveryMethod: 'pickup' })
+
+    // Then the range, both filters and the token are sent
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining(
+        '/api/admin/orders/calendar?from=2026-11-01&to=2026-11-30&status=ready&deliveryMethod=pickup',
+      ),
+      expect.objectContaining({ headers: { Authorization: 'Bearer token-123' } }),
+    )
+  })
+
+  it('does not send the filters that are empty', async () => {
+    // Given a backend with orders
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => [] })
+    vi.stubGlobal('fetch', fetchMock)
+
+    // When all the orders are requested
+    await fetchCalendarOrders('token-123', november, { status: '', deliveryMethod: '' })
+
+    // Then only the range is sent
+    expect(fetchMock.mock.calls[0][0]).toMatch(/calendar\?from=2026-11-01&to=2026-11-30$/)
   })
 })

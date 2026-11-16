@@ -60,8 +60,8 @@ describe('CartPage', () => {
     await renderPage()
 
     // Then the visitor is invited to see the products
-    expect(screen.getByText('El teu carretó està buit.')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Veure els productes' })).toHaveAttribute(
+    expect(screen.getByText('El carretó és buit.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Tornar als productes' })).toHaveAttribute(
       'href',
       '/productes',
     )
@@ -78,7 +78,7 @@ describe('CartPage', () => {
 
     // Then the subtotals and the total are shown
     expect(screen.getByText(/^78,00\s€$/)).toBeInTheDocument()
-    expect(screen.getByText(/Total: 92,00\s€/)).toBeInTheDocument()
+    expect(screen.getByText(/Subtotal: 92,00\s€/)).toBeInTheDocument()
   })
 
   it('adds a unit and updates the totals', async () => {
@@ -92,7 +92,7 @@ describe('CartPage', () => {
       .click(screen.getByRole('button', { name: `Afegeix una unitat de ${cakeLabel}` }))
 
     // Then the total changes and it is saved
-    expect(screen.getByText(/Total: 117,00\s€/)).toBeInTheDocument()
+    expect(screen.getByText(/Subtotal: 117,00\s€/)).toBeInTheDocument()
     expect(loadCart()[0]?.quantity).toBe(3)
   })
 
@@ -130,7 +130,7 @@ describe('CartPage', () => {
     await userEvent.setup().click(screen.getByRole('button', { name: `Elimina ${cakeLabel}` }))
 
     // Then the cart is empty
-    expect(screen.getByText('El teu carretó està buit.')).toBeInTheDocument()
+    expect(screen.getByText('El carretó és buit.')).toBeInTheDocument()
     expect(loadCart()).toEqual([])
   })
 
@@ -150,7 +150,7 @@ describe('CartPage', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(
       'El preu de Pastís de xocolata (6 racions) ha canviat.',
     )
-    expect(screen.getByText(/Total: 84,00\s€/)).toBeInTheDocument()
+    expect(screen.getByText(/Subtotal: 84,00\s€/)).toBeInTheDocument()
     expect(loadCart()[0]?.priceCents).toBe(4200)
   })
 
@@ -168,7 +168,7 @@ describe('CartPage', () => {
 
     // Then the cart is empty and the visitor knows why
     expect(screen.getByRole('alert')).toHaveTextContent('ja no està disponible')
-    expect(screen.getByText('El teu carretó està buit.')).toBeInTheDocument()
+    expect(screen.getByText('El carretó és buit.')).toBeInTheDocument()
   })
 
   it('keeps the cart when it can not be validated', async () => {

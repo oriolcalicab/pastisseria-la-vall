@@ -100,11 +100,11 @@ describe('PickupMap', () => {
     // Then only that marker has the highlighted icon
     expect(screen.getByRole('button', { name: 'La Vall · Eixample' })).toHaveAttribute(
       'data-icon',
-      'pickup-marker-selected',
+      'pickup-pin pickup-pin-selected',
     )
     expect(screen.getByRole('button', { name: 'La Vall · Gràcia' })).toHaveAttribute(
       'data-icon',
-      '',
+      'pickup-pin',
     )
   })
 })

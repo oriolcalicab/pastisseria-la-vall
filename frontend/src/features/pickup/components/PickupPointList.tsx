@@ -14,26 +14,23 @@ const PickupPointList = ({ points, selectedId, onSelect }: PickupPointListProps)
         const isSelected = point.id === selectedId
 
         return (
-          <label
-            key={point.id}
-            className={`flex cursor-pointer gap-3 rounded-sm border p-3 ${
-              isSelected ? 'border-gray-900 bg-gray-100' : 'hover:bg-gray-50'
-            }`}
-          >
-            <input
-              type="radio"
-              name="pickupPoint"
-              value={point.id}
-              checked={isSelected}
-              onChange={() => onSelect(point.id)}
-              className="mt-1"
-            />
-            <span>
-              <span className="block font-semibold">{point.name}</span>
-              <span className="block text-sm">
-                {point.address}, {point.city}
+          <label key={point.id} className="option-card">
+            <span className="flex gap-3">
+              <input
+                type="radio"
+                name="pickupPoint"
+                value={point.id}
+                checked={isSelected}
+                onChange={() => onSelect(point.id)}
+                className="mt-1 accent-cocoa"
+              />
+              <span>
+                <span className="block font-medium">{point.name}</span>
+                <span className="block text-sm">
+                  {point.address}, {point.city}
+                </span>
+                <span className="block text-sm text-mocha">{point.openingHours}</span>
               </span>
-              <span className="block text-sm text-gray-600">{point.openingHours}</span>
             </span>
           </label>
         )

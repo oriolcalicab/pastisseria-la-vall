@@ -10,6 +10,7 @@ export type NewProduct = {
   name: string
   description: string
   allergens: string | null
+  imageUrl: string | null
   isGlutenFree: boolean
   isPlantMilk: boolean
   isVegan: boolean
@@ -29,6 +30,8 @@ export type ProductListQuery = {
   page: number
   pageSize: number
   search: string | undefined
+  categoryId?: number
+  isActive?: boolean
 }
 
 export type ActiveBody = {

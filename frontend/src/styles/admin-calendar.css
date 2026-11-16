@@ -1,0 +1,54 @@
+.fc {
+  --fc-border-color: var(--color-line);
+  --fc-page-bg-color: #fff;
+  --fc-neutral-bg-color: var(--color-nata);
+  --fc-today-bg-color: var(--color-nata);
+  --fc-list-event-hover-bg-color: var(--color-nata);
+  --fc-button-text-color: var(--color-cocoa);
+  --fc-button-bg-color: #fff;
+  --fc-button-border-color: var(--color-field);
+  --fc-button-hover-bg-color: var(--color-nata);
+  --fc-button-hover-border-color: var(--color-field);
+  --fc-button-active-bg-color: var(--color-cocoa);
+  --fc-button-active-border-color: var(--color-cocoa);
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.5rem;
+}
+
+.fc .fc-list-event-time {
+  display: none;
+}
+
+.fc .fc-button {
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+  box-shadow: none;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  color: #fff;
+}
+
+.fc .fc-button:focus-visible {
+  outline: 2px solid var(--color-caramel);
+  outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+  .fc .fc-header-toolbar {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .fc .fc-toolbar-chunk:nth-child(2) {
+    order: -1;
+    width: 100%;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 1.25rem;
+  }
+}

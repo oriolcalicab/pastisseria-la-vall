@@ -105,10 +105,11 @@ export const changeOrderStatus = async (
   return order ? { ok: true, order } : { ok: false, reason: 'not_found' }
 }
 
-export const listCalendarOrders = async ({ from, to }: CalendarQuery) => {
+export const listCalendarOrders = async ({ from, to, status, deliveryMethod }: CalendarQuery) => {
   const orders = await prisma.order.findMany({
     where: {
-      status: { not: 'cancelled' },
+      status: status ?? { not: 'cancelled' },
+      ...(deliveryMethod ? { deliveryMethod } : {}),
       deliveryDate: {
         gte: new Date(`${from}T00:00:00Z`),
         lte: new Date(`${to}T00:00:00Z`),

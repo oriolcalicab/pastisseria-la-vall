@@ -5,20 +5,18 @@ import type {
   AdminProductVariant,
   NewProduct,
   AdminProductDetail,
+  AdminProductsParams,
 } from '../types/product'
-
-type AdminProductsParams = {
-  page: number
-  search: string
-}
 
 export const fetchAdminProducts = async (
   token: string,
-  { page, search }: AdminProductsParams,
+  { page, search, categoryId = '', status = '' }: AdminProductsParams,
 ): Promise<AdminProductPage> => {
   const params = new URLSearchParams({ page: String(page) })
 
   if (search.trim()) params.set('search', search.trim())
+  if (categoryId) params.set('categoryId', categoryId)
+  if (status) params.set('status', status)
 
   const response = await fetch(apiUrl(`/api/admin/products?${params}`), {
     headers: { Authorization: `Bearer ${token}` },

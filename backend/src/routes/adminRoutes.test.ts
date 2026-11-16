@@ -24,6 +24,7 @@ vi.mock('../services/productService.js', () => ({
   getAdminProduct: vi.fn(),
   updateProduct: vi.fn(),
 }))
+vi.mock('../services/statsService.js', () => ({ getAdminStats: vi.fn() }))
 vi.mock('../services/adminOrderService.js', () => ({
   listAdminOrders: vi.fn(),
   getAdminOrder: vi.fn(),

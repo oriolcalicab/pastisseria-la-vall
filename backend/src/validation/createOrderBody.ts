@@ -1,4 +1,5 @@
 import type { CreateOrderRequest, OrderDelivery } from '../types/order.js'
+import { isBarcelonaCity } from '../utils/barcelonaCity.js'
 import { parseCartValidateBody } from './cartValidateBody.js'
 import { parseIdParam } from './idParam.js'
 import { isRealDate } from './realDate.js'
@@ -45,6 +46,9 @@ const parseDelivery = (body: Record<string, unknown>): Result<OrderDelivery> => 
     if (!address || !city) return fail("L'adreça de lliurament no és vàlida")
     if (!BARCELONA_POSTAL_CODE.test(postalCode)) {
       return fail('El codi postal ha de ser de Barcelona (080xx)')
+    }
+    if (!isBarcelonaCity(city)) {
+      return fail('Només entreguem a Barcelona: la població ha de ser Barcelona')
     }
 
     return { ok: true, data: { method: 'delivery', address: { address, city, postalCode } } }

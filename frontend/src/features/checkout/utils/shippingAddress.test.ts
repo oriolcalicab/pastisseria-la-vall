@@ -69,4 +69,16 @@ describe('validateShippingAddress', () => {
       errors: { address: 'Escriu el carrer, el número i, si cal, el pis' },
     })
   })
+
+  it('rejects another city with a postal code of Barcelona', () => {
+    // Given a Barcelona postal code with the city of Madrid
+    const values = { ...validAddress, city: 'Madrid' }
+
+    // When the address is validated
+    // Then the city has an error
+    expect(validateShippingAddress(values)).toEqual({
+      ok: false,
+      errors: { city: 'Només entreguem a Barcelona: la població ha de ser Barcelona' },
+    })
+  })
 })
