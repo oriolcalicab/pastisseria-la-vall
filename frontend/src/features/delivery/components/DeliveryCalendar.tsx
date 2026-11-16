@@ -168,7 +168,7 @@ const DeliveryCalendar = ({ initialMonth, selectedDate, onSelect }: DeliveryCale
                             ? 'bg-gray-900 text-white'
                             : isAvailable
                               ? 'hover:bg-gray-100'
-                              : 'cursor-not-allowed text-gray-400 line-through'
+                              : 'cursor-not-allowed text-mocha line-through'
                         }`}
                       >
                         {Number(date.slice(8))}

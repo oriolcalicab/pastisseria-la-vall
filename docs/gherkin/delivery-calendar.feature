@@ -26,3 +26,9 @@ Feature: Delivery calendar
   Scenario: First month
     Given the calendar on the current month
     Then the "« Anterior" button is disabled
+
+      Scenario: Unavailable days are readable
+    Given a day that cannot be chosen
+    When the calendar is shown
+    Then its number is crossed out with enough contrast to be read
+    And the screen reader says why it is not available
