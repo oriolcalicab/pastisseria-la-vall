@@ -17,6 +17,8 @@ export const shopLinks: NavigationLink[] = [
 
 export const loginLink: NavigationLink = { to: '/login', label: 'Inicia sessió' }
 
+export const registerLink: NavigationLink = { to: '/registre', label: "Registra't" }
+
 export const accountLink: NavigationLink = { to: '/compte', label: 'El meu compte' }
 
 export const adminLink: NavigationLink = { to: '/admin', label: 'Administració' }

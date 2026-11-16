@@ -53,3 +53,14 @@ Feature: Shop header and footer
     Given a customer who never opens the admin panel
     When the customer uses the shop
     Then the code of the dashboard charts and of the calendar is never downloaded
+
+  Scenario: A visitor can sign in or sign up from the header
+    Given a visitor without session
+    When the header is shown
+    Then it has the links "Inicia sessió" and "Registra't"
+
+  Scenario: A signed-in customer only sees the account
+    Given a signed-in customer
+    When the header is shown
+    Then "Inicia sessió" and "Registra't" are not shown
+    And it has the link "El meu compte"

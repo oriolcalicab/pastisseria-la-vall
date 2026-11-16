@@ -43,6 +43,7 @@ describe('Header', () => {
 
     // Then there is a link to sign in
     expect(screen.getByRole('link', { name: 'Inicia sessió' })).toHaveAttribute('href', '/login')
+    expect(screen.getByRole('link', { name: "Registra't" })).toHaveAttribute('href', '/registre')
   })
 
   it('links a customer to the account', () => {
@@ -54,6 +55,8 @@ describe('Header', () => {
 
     // Then there is a link to the account
     expect(screen.getByRole('link', { name: 'El meu compte' })).toHaveAttribute('href', '/compte')
+    expect(screen.queryByRole('link', { name: 'Inicia sessió' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: "Registra't" })).not.toBeInTheDocument()
   })
 
   it('opens and closes the mobile menu', async () => {
