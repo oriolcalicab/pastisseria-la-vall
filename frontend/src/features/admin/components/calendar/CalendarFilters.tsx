@@ -7,7 +7,7 @@ const statuses = Object.keys(orderStatusLabels) as OrderStatus[]
 const methods = Object.keys(deliveryMethodLabels) as DeliveryMethod[]
 
 const selectClassName =
-  'mt-1 block rounded-lg border border-line bg-white px-3 py-2 text-chocolate focus-visible:ring-2 focus-visible:ring-caramel focus-visible:outline-none'
+  'mt-1 block rounded-lg border border-field bg-white px-3 py-2 text-chocolate focus-visible:ring-2 focus-visible:ring-caramel focus-visible:outline-none'
 
 type CalendarFiltersProps = {
   value: Filters

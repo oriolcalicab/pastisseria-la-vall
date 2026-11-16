@@ -4,7 +4,7 @@ import { useDashboard } from '../../hooks/useDashboard'
 import { rangeError } from '../../utils/dateRange'
 
 const inputClassName =
-  'mt-1 block rounded-lg border border-line bg-white px-3 py-2 text-chocolate focus-visible:ring-2 focus-visible:ring-caramel focus-visible:outline-none'
+  'mt-1 block rounded-lg border border-field bg-white px-3 py-2 text-chocolate focus-visible:ring-2 focus-visible:ring-caramel focus-visible:outline-none'
 
 const CustomRangeForm = () => {
   const { range, applyCustomRange } = useDashboard()
