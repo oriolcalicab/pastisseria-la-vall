@@ -10,13 +10,17 @@ const ConfirmationPage = () => {
   if (order.status === 'not-found') return <NotFoundPage />
 
   return (
-    <main className="mx-auto max-w-3xl p-4 sm:p-8">
-      {order.status === 'loading' && <p role="status">Carregant la comanda...</p>}
+    <main className="mx-auto max-w-3xl px-4 py-12 md:py-16">
+      {order.status === 'loading' && (
+        <p role="status" className="text-mocha">
+          Carregant la comanda...
+        </p>
+      )}
 
       {order.status === 'error' && (
         <div role="alert">
-          <p className="text-red-600">No s'ha pogut carregar la comanda.</p>
-          <button type="button" onClick={order.retry} className="mt-2 rounded-sm border px-3 py-1">
+          <p className="text-red-700">No s'ha pogut carregar la comanda.</p>
+          <button type="button" onClick={order.retry} className="btn btn-outline btn-sm mt-3">
             Torna-ho a provar
           </button>
         </div>
@@ -24,9 +28,14 @@ const ConfirmationPage = () => {
 
       {order.status === 'success' && <OrderConfirmation order={order.order} />}
 
-      <Link to="/productes" className="mt-8 inline-block underline">
-        Continua comprant
-      </Link>
+      <div className="mt-8 flex flex-wrap gap-3">
+        <Link to="/productes" className="btn btn-primary">
+          Continua comprant
+        </Link>
+        <Link to="/comandes" className="btn btn-outline">
+          Les meves comandes
+        </Link>
+      </div>
     </main>
   )
 }

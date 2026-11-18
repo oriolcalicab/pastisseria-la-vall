@@ -36,21 +36,21 @@ const EditProductPage = () => {
 
   return (
     <>
-      <Link to="/admin/productes" className="text-sm underline">
+      <Link to="/admin/productes" className="link text-sm">
         « Torna als productes
       </Link>
-      <h1 className="mt-2 text-2xl font-bold">Edita el producte</h1>
+      <h1 className="page-title mt-2 font-display">Edita el producte</h1>
 
       {product.status === 'loading' && (
-        <p role="status" className="mt-6">
+        <p role="status" className="mt-6 text-mocha">
           Carregant el producte...
         </p>
       )}
 
       {product.status === 'error' && (
         <div role="alert" className="mt-6">
-          <p className="text-red-600">No s'ha pogut carregar el producte.</p>
-          <button type="button" onClick={product.retry} className="mt-2 rounded border px-3 py-1">
+          <p className="text-red-700">No s'ha pogut carregar el producte.</p>
+          <button type="button" onClick={product.retry} className="btn btn-outline btn-sm mt-3">
             Torna-ho a provar
           </button>
         </div>

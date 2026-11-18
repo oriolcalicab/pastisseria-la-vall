@@ -87,35 +87,35 @@ const DeliveryCalendar = ({ initialMonth, selectedDate, onSelect }: DeliveryCale
           type="button"
           onClick={() => goToMonth(addMonths(month, -1))}
           disabled={month <= initialMonth}
-          className="rounded-sm border px-3 py-2 disabled:opacity-50"
+          className="btn btn-outline btn-sm"
         >
           « Anterior
         </button>
-        <h2 id="calendar-title" className="text-lg font-semibold">
+        <h2 id="calendar-title" className="font-display text-2xl capitalize">
           {getMonthLabel(month)}
         </h2>
         <button
           type="button"
           onClick={() => goToMonth(addMonths(month, 1))}
-          className="rounded-sm border px-3 py-2"
+          className="btn btn-outline btn-sm"
         >
           Següent »
         </button>
       </div>
 
       {deliveryDates.status === 'loading' && (
-        <p role="status" className="mt-4">
+        <p role="status" className="mt-4 text-mocha">
           Carregant les dates...
         </p>
       )}
 
       {deliveryDates.status === 'error' && (
         <div role="alert" className="mt-4">
-          <p className="text-red-600">No s'han pogut carregar les dates.</p>
+          <p className="text-red-700">No s'han pogut carregar les dates.</p>
           <button
             type="button"
             onClick={deliveryDates.retry}
-            className="mt-2 rounded-sm border px-3 py-1"
+            className="btn btn-outline btn-sm mt-3"
           >
             Torna-ho a provar
           </button>
@@ -132,7 +132,7 @@ const DeliveryCalendar = ({ initialMonth, selectedDate, onSelect }: DeliveryCale
           <thead>
             <tr>
               {weekdays.map((weekday) => (
-                <th key={weekday.short} scope="col" className="pb-2 text-sm font-medium">
+                <th key={weekday.short} scope="col" className="pb-2 text-sm font-medium text-mocha">
                   <abbr title={weekday.long} className="no-underline">
                     {weekday.short}
                   </abbr>
@@ -163,11 +163,11 @@ const DeliveryCalendar = ({ initialMonth, selectedDate, onSelect }: DeliveryCale
                         aria-label={
                           isAvailable ? getDayLabel(date) : `${getDayLabel(date)}, ${reason}`
                         }
-                        className={`h-11 w-full rounded-sm text-sm focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                        className={`h-11 w-full rounded-full text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-caramel ${
                           isSelected
-                            ? 'bg-gray-900 text-white'
+                            ? 'bg-cocoa font-medium text-white'
                             : isAvailable
-                              ? 'hover:bg-gray-100'
+                              ? 'hover:bg-nata'
                               : 'cursor-not-allowed text-mocha line-through'
                         }`}
                       >
@@ -183,7 +183,7 @@ const DeliveryCalendar = ({ initialMonth, selectedDate, onSelect }: DeliveryCale
       )}
 
       {selectedDate && (
-        <p aria-live="polite" className="mt-4">
+        <p aria-live="polite" className="mt-4 font-medium">
           Data triada: {getDayLabel(selectedDate)}
         </p>
       )}

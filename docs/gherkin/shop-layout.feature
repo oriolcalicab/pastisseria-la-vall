@@ -64,3 +64,9 @@ Feature: Shop header and footer
     When the header is shown
     Then "Inicia sessió" and "Registra't" are not shown
     And it has the link "El meu compte"
+
+  Scenario: The error pages follow the shop style
+    Given a visitor
+    When the visitor opens a page that does not exist or a page without permission
+    Then the valley seal, the title in the shop font and the shop buttons are shown
+    And the "404" page offers to see the products or go back home

@@ -4,8 +4,8 @@ type StatusBadgeProps = {
 
 const StatusBadge = ({ isActive }: StatusBadgeProps) => (
   <span
-    className={`rounded px-2 py-0.5 text-xs ${
-      isActive ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700'
+    className={`rounded-full px-3 py-0.5 text-xs font-medium ${
+      isActive ? 'bg-green-100 text-green-900' : 'bg-nata text-mocha'
     }`}
   >
     {isActive ? 'Actiu' : 'Inactiu'}

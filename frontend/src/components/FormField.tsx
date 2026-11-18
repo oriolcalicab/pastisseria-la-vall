@@ -35,10 +35,10 @@ export default function FormField({
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1 w-full rounded border p-2"
+        className="field"
       />
       {error && (
-        <p id={errorId} role="alert" className="mt-1 text-sm text-red-600">
+        <p id={errorId} role="alert" className="mt-1 text-sm text-red-700">
           {error}
         </p>
       )}

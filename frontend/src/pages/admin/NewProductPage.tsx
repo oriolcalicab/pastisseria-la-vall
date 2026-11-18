@@ -12,10 +12,10 @@ const NewProductPage = () => {
 
   return (
     <>
-      <Link to="/admin/productes" className="text-sm underline">
+      <Link to="/admin/productes" className="link text-sm">
         « Torna als productes
       </Link>
-      <h1 className="mt-2 text-2xl font-bold">Nou producte</h1>
+      <h1 className="page-title mt-2 font-display">Nou producte</h1>
       <ProductForm form={form} />
     </>
   )

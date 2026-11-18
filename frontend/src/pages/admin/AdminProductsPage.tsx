@@ -51,13 +51,10 @@ const AdminProductsPage = () => {
   return (
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold">Productes</h1>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <h1 className="page-title font-display">Productes</h1>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <ProductSearch initialValue={search} onSearch={handleSearch} />
-          <Link
-            to="/admin/productes/nou"
-            className="rounded bg-gray-900 px-3 py-1 text-center text-white"
-          >
+          <Link to="/admin/productes/nou" className="btn btn-primary btn-sm">
             Nou producte
           </Link>
         </div>
@@ -75,7 +72,7 @@ const AdminProductsPage = () => {
       {notice && (
         <div
           role="status"
-          className="mt-4 flex items-center justify-between rounded border border-green-300 bg-green-50 px-4 py-2 text-green-800"
+          className="mt-4 flex items-center justify-between rounded-2xl border border-green-200 bg-green-50 px-5 py-3 text-green-900"
         >
           <p>{notice}</p>
           <button type="button" onClick={() => setNotice(null)} className="text-sm underline">
@@ -85,23 +82,23 @@ const AdminProductsPage = () => {
       )}
 
       <div className="mt-6">
-        {products.status === 'loading' && <p role="status">Carregant productes...</p>}
+        {products.status === 'loading' && (
+          <p role="status" className="text-mocha">
+            Carregant productes...
+          </p>
+        )}
 
         {products.status === 'error' && (
           <div role="alert">
-            <p className="text-red-600">No s'han pogut carregar els productes.</p>
-            <button
-              type="button"
-              onClick={products.retry}
-              className="mt-2 rounded border px-3 py-1"
-            >
+            <p className="text-red-700">No s'han pogut carregar els productes.</p>
+            <button type="button" onClick={products.retry} className="btn btn-outline btn-sm mt-3">
               Torna-ho a provar
             </button>
           </div>
         )}
 
         {products.status === 'success' && products.data.items.length === 0 && (
-          <p>
+          <p className="text-mocha">
             {hasFilters
               ? 'No hi ha cap producte amb aquesta cerca o aquests filtres.'
               : 'Encara no hi ha cap producte.'}
@@ -111,7 +108,7 @@ const AdminProductsPage = () => {
         {products.status === 'success' && products.data.items.length > 0 && (
           <>
             {toggles.error && (
-              <p role="alert" className="mb-4 text-sm text-red-600">
+              <p role="alert" className="mb-4 text-sm text-red-700">
                 {toggles.error}
               </p>
             )}

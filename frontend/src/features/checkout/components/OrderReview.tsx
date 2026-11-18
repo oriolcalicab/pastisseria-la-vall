@@ -30,17 +30,17 @@ const OrderReview = ({
   const totals = feeCents === null ? null : getOrderTotals(subtotalCents, method, feeCents)
 
   return (
-    <>
-      <dl className="mt-4 space-y-2">
+    <div className="mt-6 space-y-4">
+      <dl className="card space-y-4">
         <div>
-          <dt className="font-medium">Data de lliurament</dt>
-          <dd>{getDayLabel(deliveryDate)}</dd>
+          <dt className="text-sm text-mocha">Data de lliurament</dt>
+          <dd className="mt-1 font-medium">{getDayLabel(deliveryDate)}</dd>
         </div>
 
         {method === 'delivery' && (
           <div>
-            <dt className="font-medium">Lliurament a domicili</dt>
-            <dd>
+            <dt className="text-sm text-mocha">Lliurament a domicili</dt>
+            <dd className="mt-1">
               {address.address}, {address.postalCode} {address.city}
             </dd>
           </div>
@@ -48,53 +48,63 @@ const OrderReview = ({
 
         {method === 'pickup' && pickupPoint && (
           <div>
-            <dt className="font-medium">Recollida</dt>
-            <dd>
+            <dt className="text-sm text-mocha">Recollida</dt>
+            <dd className="mt-1">
               {pickupPoint.name}, {pickupPoint.address}, {pickupPoint.city}
             </dd>
-            <dd className="text-sm text-gray-600">{pickupPoint.openingHours}</dd>
+            <dd className="text-sm text-mocha">{pickupPoint.openingHours}</dd>
           </div>
         )}
       </dl>
 
-      <h3 className="mt-6 font-semibold">Productes</h3>
-      <ul className="mt-2 space-y-1">
-        {lines.map((line) => (
-          <li key={line.variantId} className="flex justify-between gap-4">
-            <span>
-              {line.quantity} × {line.productName} ({line.variantName})
-            </span>
-            <span>{formatPrice(line.priceCents * line.quantity)}</span>
-          </li>
-        ))}
-      </ul>
+      <section aria-labelledby="review-items-title" className="card">
+        <h3 id="review-items-title" className="text-2xl">
+          Productes
+        </h3>
+        <ul className="mt-3 divide-y divide-line">
+          {lines.map((line) => (
+            <li key={line.variantId} className="flex justify-between gap-4 py-2">
+              <span>
+                {line.quantity} × {line.productName} ({line.variantName})
+              </span>
+              <span className="whitespace-nowrap">
+                {formatPrice(line.priceCents * line.quantity)}
+              </span>
+            </li>
+          ))}
+        </ul>
 
-      <dl className="mt-4 space-y-1 border-t pt-4">
-        <div className="flex justify-between gap-4">
-          <dt>Subtotal</dt>
-          <dd>{formatPrice(subtotalCents)}</dd>
-        </div>
-        <div className="flex justify-between gap-4">
-          <dt>Enviament</dt>
-          <dd>
-            {method === 'pickup' && 'Gratuït'}
-            {method === 'delivery' && shippingFee.status === 'loading' && 'Calculant...'}
-            {method === 'delivery' &&
-              shippingFee.status === 'success' &&
-              formatPrice(shippingFee.feeCents)}
-            {method === 'delivery' && shippingFee.status === 'error' && (
-              <button type="button" onClick={shippingFee.retry} className="text-red-600 underline">
-                No s'ha pogut calcular. Torna-ho a provar
-              </button>
-            )}
-          </dd>
-        </div>
-        <div className="flex justify-between gap-4 text-lg font-bold">
-          <dt>Total</dt>
-          <dd>{totals ? formatPrice(totals.totalCents) : '—'}</dd>
-        </div>
-      </dl>
-    </>
+        <dl className="mt-2 space-y-2 border-t border-line pt-4">
+          <div className="flex justify-between gap-4 text-mocha">
+            <dt>Subtotal</dt>
+            <dd>{formatPrice(subtotalCents)}</dd>
+          </div>
+          <div className="flex justify-between gap-4 text-mocha">
+            <dt>Enviament</dt>
+            <dd>
+              {method === 'pickup' && 'Gratuït'}
+              {method === 'delivery' && shippingFee.status === 'loading' && 'Calculant...'}
+              {method === 'delivery' &&
+                shippingFee.status === 'success' &&
+                formatPrice(shippingFee.feeCents)}
+              {method === 'delivery' && shippingFee.status === 'error' && (
+                <button
+                  type="button"
+                  onClick={shippingFee.retry}
+                  className="text-red-700 underline"
+                >
+                  No s'ha pogut calcular. Torna-ho a provar
+                </button>
+              )}
+            </dd>
+          </div>
+          <div className="flex justify-between gap-4 font-display text-2xl">
+            <dt>Total</dt>
+            <dd>{totals ? formatPrice(totals.totalCents) : '—'}</dd>
+          </div>
+        </dl>
+      </section>
+    </div>
   )
 }
 

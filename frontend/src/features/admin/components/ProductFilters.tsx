@@ -9,7 +9,7 @@ type ProductFiltersProps = {
   onStatusChange: (status: ProductStatusFilter) => void
 }
 
-const selectClassName = 'mt-1 block rounded border px-3 py-1'
+const selectClassName = 'field w-auto'
 
 const ProductFilters = ({
   categoryId,
@@ -21,7 +21,7 @@ const ProductFilters = ({
 
   return (
     <div className="flex flex-wrap gap-4">
-      <label className="text-sm">
+      <label className="text-sm text-mocha">
         Categoria
         <select
           value={categoryId}
@@ -39,7 +39,7 @@ const ProductFilters = ({
         </select>
       </label>
 
-      <label className="text-sm">
+      <label className="text-sm text-mocha">
         Estat
         <select
           value={status}

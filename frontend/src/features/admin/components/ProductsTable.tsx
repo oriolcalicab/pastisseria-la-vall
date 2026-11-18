@@ -32,12 +32,12 @@ const ProductsTable = ({
     setExpandedId((current) => (current === productId ? null : productId))
 
   return (
-    <div className="overflow-x-auto rounded border">
+    <div className="overflow-x-auto rounded-2xl border border-line bg-white">
       <table className="w-full text-left text-sm">
-        <thead className="bg-gray-50">
+        <thead className="bg-nata text-mocha">
           <tr>
             {columns.map((column) => (
-              <th key={column} scope="col" className="px-4 py-2 font-semibold">
+              <th key={column} scope="col" className="px-4 py-2 font-medium">
                 {column}
               </th>
             ))}
@@ -51,7 +51,7 @@ const ProductsTable = ({
 
             return (
               <Fragment key={product.id}>
-                <tr className="border-t">
+                <tr className="border-t border-line">
                   <td className="px-4 py-2 font-medium">{product.name}</td>
                   <td className="px-4 py-2">{product.category.name}</td>
                   <td className="px-4 py-2">
@@ -64,7 +64,7 @@ const ProductsTable = ({
                       aria-expanded={isExpanded}
                       aria-controls={variantsId}
                       aria-label={`${isExpanded ? 'Amaga' : 'Mostra'} les variants de ${product.name}`}
-                      className="underline"
+                      className="link"
                     >
                       {isExpanded ? 'Amaga' : 'Mostra'} ({product.variants.length})
                     </button>
@@ -78,14 +78,14 @@ const ProductsTable = ({
                         onClick={() => onToggleProduct(product)}
                         disabled={pendingKey !== null}
                         aria-label={`${product.isActive ? 'Desactiva' : 'Activa'} ${product.name}`}
-                        className="text-xs underline disabled:opacity-50"
+                        className="link text-xs disabled:opacity-50"
                       >
                         {toggleText(product.isActive, pendingKey === `product-${product.id}`)}
                       </button>
                       <Link
                         to={`/admin/productes/${product.id}/editar`}
                         aria-label={`Edita ${product.name}`}
-                        className="text-xs underline"
+                        className="link text-xs"
                       >
                         Edita
                       </Link>
@@ -94,7 +94,7 @@ const ProductsTable = ({
                 </tr>
 
                 {isExpanded && (
-                  <tr id={variantsId} className="bg-gray-50">
+                  <tr id={variantsId} className="bg-cream">
                     <td colSpan={columns.length} className="px-4 py-2">
                       <ul className="space-y-2">
                         {product.variants.map((variant) => (
@@ -108,7 +108,7 @@ const ProductsTable = ({
                               onClick={() => onToggleVariant(product, variant)}
                               disabled={pendingKey !== null}
                               aria-label={`${variant.isActive ? 'Desactiva' : 'Activa'} la variant ${variant.name} de ${product.name}`}
-                              className="text-xs underline disabled:opacity-50"
+                              className="link text-xs disabled:opacity-50"
                             >
                               {toggleText(variant.isActive, pendingKey === `variant-${variant.id}`)}
                             </button>

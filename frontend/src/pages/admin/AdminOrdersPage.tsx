@@ -18,7 +18,7 @@ const AdminOrdersPage = () => {
   return (
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold">Comandes</h1>
+        <h1 className="page-title font-display">Comandes</h1>
         <OrderStatusFilter value={status} onChange={handleStatusChange} />
       </div>
 
@@ -27,8 +27,8 @@ const AdminOrdersPage = () => {
 
         {orders.status === 'error' && (
           <div role="alert">
-            <p className="text-red-600">No s'han pogut carregar les comandes.</p>
-            <button type="button" onClick={orders.retry} className="mt-2 rounded border px-3 py-1">
+            <p className="text-red-700">No s'han pogut carregar les comandes.</p>
+            <button type="button" onClick={orders.retry} className="btn btn-outline btn-sm mt-3">
               Torna-ho a provar
             </button>
           </div>
