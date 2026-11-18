@@ -15,7 +15,7 @@ const ProductSearch = ({ initialValue, onSearch }: ProductSearchProps) => {
   }
 
   return (
-    <form role="search" onSubmit={handleSubmit} className="flex gap-2">
+    <form role="search" onSubmit={handleSubmit} className="flex items-center gap-2">
       <label htmlFor="product-search" className="sr-only">
         Cerca per nom
       </label>
@@ -25,9 +25,9 @@ const ProductSearch = ({ initialValue, onSearch }: ProductSearchProps) => {
         value={value}
         onChange={(event) => setValue(event.target.value)}
         placeholder="Cerca per nom..."
-        className="rounded border px-3 py-1"
+        className="field mt-0 w-56"
       />
-      <button type="submit" className="rounded border px-3 py-1">
+      <button type="submit" className="btn btn-outline btn-sm">
         Cerca
       </button>
     </form>

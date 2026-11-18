@@ -10,12 +10,12 @@ type OrderStatusFilterProps = {
 }
 
 const OrderStatusFilter = ({ value, onChange }: OrderStatusFilterProps) => (
-  <label className="flex items-center gap-2 text-sm">
+  <label className="flex items-center gap-2 text-sm text-mocha">
     Estat
     <select
       value={value}
       onChange={(event) => onChange(event.target.value as StatusFilter)}
-      className="rounded-sm border px-2 py-1"
+      className="field mt-0 w-auto"
     >
       <option value="">Tots els estats</option>
       {statuses.map((status) => (

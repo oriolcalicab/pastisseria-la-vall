@@ -21,6 +21,7 @@ const DietaryOptions = ({ values, onChange }: DietaryOptionsProps) => (
             type="checkbox"
             checked={values[flag]}
             onChange={(event) => onChange(flag, event.target.checked)}
+            className="accent-cocoa"
           />
           {label}
         </label>

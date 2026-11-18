@@ -56,7 +56,7 @@ const ImageUploadField = ({ imageUrl, onChange }: ImageUploadFieldProps) => {
       )}
 
       {error && (
-        <p role="alert" className="mt-1 text-sm text-red-600">
+        <p role="alert" className="mt-1 text-sm text-red-700">
           {error}
         </p>
       )}
