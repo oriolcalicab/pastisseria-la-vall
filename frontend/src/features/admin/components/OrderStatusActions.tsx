@@ -30,34 +30,30 @@ const OrderStatusActions = ({ order, onChange, onConflict }: OrderStatusActionsP
   }
 
   return (
-    <section aria-labelledby="status-actions-title" className="mt-6">
-      <h2 id="status-actions-title" className="text-xl font-semibold">
+    <section aria-labelledby="status-actions-title" className="card mt-6">
+      <h2 id="status-actions-title" className="text-2xl">
         Canviar l'estat
       </h2>
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap gap-3">
         {order.allowedStatuses.map((status) => (
           <button
             key={status}
             type="button"
             onClick={() => handleClick(status)}
             disabled={pendingStatus !== null}
-            className={
-              status === 'cancelled'
-                ? 'rounded border border-red-700 px-3 py-1 text-red-700 disabled:opacity-50'
-                : 'rounded bg-gray-900 px-3 py-1 text-white disabled:opacity-50'
-            }
+            className={`btn btn-sm ${status === 'cancelled' ? 'btn-danger' : 'btn-primary'}`}
           >
             {pendingStatus === status ? 'Desant...' : actionLabel(status)}
           </button>
         ))}
       </div>
       {notice && (
-        <p role="status" className="mt-2 text-sm text-green-800">
+        <p role="status" className="mt-3 text-sm text-green-800">
           {notice}
         </p>
       )}
       {error && (
-        <p role="alert" className="mt-2 text-sm text-red-600">
+        <p role="alert" className="mt-3 text-sm text-red-700">
           {error}
         </p>
       )}

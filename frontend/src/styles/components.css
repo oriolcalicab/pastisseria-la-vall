@@ -43,6 +43,18 @@
     @apply rounded-2xl border border-line bg-white p-5;
   }
 
+  .field {
+    @apply mt-1 block w-full rounded-lg border border-field bg-white px-3 py-2 text-chocolate focus-visible:ring-2 focus-visible:ring-caramel focus-visible:outline-none;
+  }
+
+  .btn-danger {
+    @apply text-red-700 ring-1 ring-red-700 ring-inset hover:bg-red-50;
+  }
+
+  .link {
+    @apply text-caramel hover:underline;
+  }
+
   .option-card {
     @apply flex cursor-pointer flex-col rounded-2xl px-4 py-3 ring-1 ring-field ring-inset transition-colors hover:bg-nata has-checked:bg-nata has-checked:ring-2 has-checked:ring-cocoa has-focus-visible:ring-2 has-focus-visible:ring-caramel has-disabled:cursor-not-allowed has-disabled:opacity-50;
   }

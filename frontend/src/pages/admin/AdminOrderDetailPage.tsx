@@ -15,20 +15,20 @@ const AdminOrderDetailPage = () => {
 
   return (
     <>
-      <Link to="/admin/comandes" className="text-sm underline">
+      <Link to="/admin/comandes" className="link text-sm">
         « Torna a les comandes
       </Link>
 
       {order.status === 'loading' && (
-        <p role="status" className="mt-6">
+        <p role="status" className="mt-6 text-mocha">
           Carregant la comanda...
         </p>
       )}
 
       {order.status === 'error' && (
         <div role="alert" className="mt-6">
-          <p className="text-red-600">No s'ha pogut carregar la comanda.</p>
-          <button type="button" onClick={order.retry} className="mt-2 rounded border px-3 py-1">
+          <p className="text-red-700">No s'ha pogut carregar la comanda.</p>
+          <button type="button" onClick={order.retry} className="btn btn-outline btn-sm mt-3">
             Torna-ho a provar
           </button>
         </div>
@@ -37,12 +37,12 @@ const AdminOrderDetailPage = () => {
       {order.status === 'success' && (
         <div className="max-w-3xl">
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold">Comanda {order.order.orderNumber}</h1>
+            <h1 className="font-display text-4xl leading-tight">
+              Comanda {order.order.orderNumber}
+            </h1>
             <OrderStatusBadge status={order.order.status} />
           </div>
-          <p className="mt-1 text-sm text-gray-600">
-            Feta el {formatOrderDate(order.order.createdAt)}
-          </p>
+          <p className="mt-2 text-mocha">Feta el {formatOrderDate(order.order.createdAt)}</p>
 
           <OrderStatusActions
             order={order.order}
@@ -50,12 +50,12 @@ const AdminOrderDetailPage = () => {
             onConflict={order.retry}
           />
 
-          <section aria-labelledby="customer-title" className="mt-6">
-            <h2 id="customer-title" className="text-xl font-semibold">
+          <section aria-labelledby="customer-title" className="card mt-6">
+            <h2 id="customer-title" className="text-2xl">
               Client
             </h2>
             <p className="mt-2">{order.order.user.name}</p>
-            <a href={`mailto:${order.order.user.email}`} className="underline">
+            <a href={`mailto:${order.order.user.email}`} className="link">
               {order.order.user.email}
             </a>
           </section>
@@ -71,7 +71,7 @@ const AdminOrderDetailPage = () => {
               })}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 inline-block underline"
+              className="link mt-4 inline-block"
             >
               Veure l'adreça al mapa (s'obre en una pestanya nova)
             </a>

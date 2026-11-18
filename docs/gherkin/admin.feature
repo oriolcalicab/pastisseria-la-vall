@@ -50,3 +50,9 @@ Feature: Admin access
     Then the menu is a side bar with an icon on each link
     And "Calendari" is marked as the current page
     And the side bar has "Veure la botiga" and "Tanca la sessió"
+
+  Scenario: The admin pages follow the shop style
+    Given a logged admin
+    When the admin opens the orders, an order, the products or the product form
+    Then the titles, the tables, the fields and the buttons use the colours and fonts of the shop
+    And "Cancel·la la comanda" is shown as a red outlined button

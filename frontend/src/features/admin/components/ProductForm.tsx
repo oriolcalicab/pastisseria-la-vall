@@ -15,7 +15,7 @@ const ProductForm = ({ form }: ProductFormProps) => {
   const { values, errors } = form
 
   return (
-    <form onSubmit={form.handleSubmit} noValidate className="mt-6 max-w-3xl space-y-6">
+    <form onSubmit={form.handleSubmit} noValidate className="card mt-8 max-w-3xl space-y-6">
       <div>
         <label htmlFor="categoryId" className="block font-medium">
           Categoria
@@ -27,7 +27,7 @@ const ProductForm = ({ form }: ProductFormProps) => {
           disabled={categories.status !== 'success'}
           aria-invalid={errors.categoryId ? true : undefined}
           aria-describedby={errors.categoryId ? 'categoryId-error' : undefined}
-          className="mt-1 w-full rounded border p-2"
+          className="field"
         >
           <option value="">
             {categories.status === 'loading' ? 'Carregant categories...' : 'Tria una categoria'}
@@ -40,12 +40,12 @@ const ProductForm = ({ form }: ProductFormProps) => {
             ))}
         </select>
         {categories.status === 'error' && (
-          <p role="alert" className="mt-1 text-sm text-red-600">
+          <p role="alert" className="mt-1 text-sm text-red-700">
             No s'han pogut carregar les categories. Recarrega la pàgina.
           </p>
         )}
         {errors.categoryId && (
-          <p id="categoryId-error" role="alert" className="mt-1 text-sm text-red-600">
+          <p id="categoryId-error" role="alert" className="mt-1 text-sm text-red-700">
             {errors.categoryId}
           </p>
         )}
@@ -71,10 +71,10 @@ const ProductForm = ({ form }: ProductFormProps) => {
           onChange={(event) => form.setField('description', event.target.value)}
           aria-invalid={errors.description ? true : undefined}
           aria-describedby={errors.description ? 'description-error' : undefined}
-          className="mt-1 w-full rounded border p-2"
+          className="field"
         />
         {errors.description && (
-          <p id="description-error" role="alert" className="mt-1 text-sm text-red-600">
+          <p id="description-error" role="alert" className="mt-1 text-sm text-red-700">
             {errors.description}
           </p>
         )}
@@ -107,25 +107,22 @@ const ProductForm = ({ form }: ProductFormProps) => {
           type="checkbox"
           checked={values.isActive}
           onChange={(event) => form.setFlag('isActive', event.target.checked)}
+          className="accent-cocoa"
         />
         Actiu (visible a la botiga)
       </label>
 
       {form.submitError && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-red-700">
           {form.submitError}
         </p>
       )}
 
       <div className="flex items-center gap-4">
-        <button
-          type="submit"
-          disabled={form.isSubmitting}
-          className="rounded bg-gray-900 px-4 py-2 text-white disabled:opacity-50"
-        >
+        <button type="submit" disabled={form.isSubmitting} className="btn btn-primary">
           {form.isSubmitting ? 'Desant...' : 'Desa el producte'}
         </button>
-        <Link to="/admin/productes" className="underline">
+        <Link to="/admin/productes" className="link">
           Cancel·la
         </Link>
       </div>
