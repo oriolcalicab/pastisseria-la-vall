@@ -145,3 +145,9 @@ Feature: Checkout
     When the customer picks "La Vall · Eixample"
     Then its pin is bigger and caramel on the map
     And its option is framed in the list
+
+  Scenario: The checkout follows the shop style
+    Given a customer on the checkout
+    When the customer goes through the three steps
+    Then the titles, the buttons, the date calendar and the summary use the colours and fonts of the shop
+    And the chosen day and the chosen delivery method are highlighted in chocolate
