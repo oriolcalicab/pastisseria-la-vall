@@ -66,3 +66,14 @@ Feature: Orders of the customer
     Given a home delivery order
     When the customer opens the order
     Then the page shows the address and the shipping fee
+
+  Scenario: The account pages follow the shop style
+    Given a signed-in customer
+    When the customer opens "El meu compte", "Les meves comandes" or an order
+    Then the titles, the cards and the buttons use the colours and fonts of the shop
+    And each order shows its status as a rounded label
+
+  Scenario: From the confirmation to the orders
+    Given a customer who has just confirmed an order
+    When the confirmation is shown
+    Then there are the buttons "Continua comprant" and "Les meves comandes"
