@@ -11,10 +11,11 @@ const LoginPage = () => {
   )
 
   return (
-    <main className="mx-auto max-w-md p-8">
-      <h1 className="text-2xl font-bold">Inicia la sessió</h1>
+    <main className="mx-auto max-w-md px-4 py-12 md:py-16">
+      <p className="eyebrow">Hola de nou</p>
+      <h1 className="page-title mt-2 font-display">Inicia la sessió</h1>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
+      <form onSubmit={handleSubmit} noValidate className="card mt-8 space-y-5">
         <FormField
           id="email"
           label="Correu"
@@ -35,29 +36,25 @@ const LoginPage = () => {
         />
 
         {submitError && (
-          <p role="alert" className="text-sm text-red-600">
+          <p role="alert" className="text-sm text-red-700">
             {submitError}
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full rounded bg-black p-2 text-white disabled:opacity-50"
-        >
+        <button type="submit" disabled={isSubmitting} className="btn btn-primary w-full">
           {isSubmitting ? 'Entrant...' : 'Entra'}
         </button>
+
+        <p className="text-center text-sm">
+          <Link to="/contrasenya-oblidada" className="link">
+            Has oblidat la contrasenya?
+          </Link>
+        </p>
       </form>
 
-      <p className="mt-4 text-sm">
-        <Link to="/contrasenya-oblidada" className="underline">
-          Has oblidat la contrasenya?
-        </Link>
-      </p>
-
-      <p className="mt-4 text-sm">
+      <p className="mt-6 text-center text-mocha">
         Encara no tens compte?{' '}
-        <Link to="/registre" className="underline">
+        <Link to="/registre" className="link font-medium">
           Registra't
         </Link>
       </p>

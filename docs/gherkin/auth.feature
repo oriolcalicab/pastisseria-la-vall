@@ -41,3 +41,9 @@ Feature: Authentication
     When the customer clicks "Tanca la sessió"
     Then the cart is empty
     And the header shows 0 units
+
+  Scenario: The login and register pages follow the shop style
+    Given a visitor
+    When the visitor opens the login, the register or the forgotten password page
+    Then the form is shown inside a card with the title in the shop font
+    And the submit button uses the chocolate colour of the shop
