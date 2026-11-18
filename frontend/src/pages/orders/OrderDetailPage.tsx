@@ -12,21 +12,21 @@ const OrderDetailPage = () => {
   if (order.status === 'not-found') return <NotFoundPage />
 
   return (
-    <main className="mx-auto max-w-3xl p-4 sm:p-8">
-      <Link to="/comandes" className="text-sm underline">
+    <main className="mx-auto max-w-3xl px-4 py-12 md:py-16">
+      <Link to="/comandes" className="text-sm text-caramel hover:underline">
         « Torna a les meves comandes
       </Link>
 
       {order.status === 'loading' && (
-        <p role="status" className="mt-6">
+        <p role="status" className="mt-8 text-mocha">
           Carregant la comanda...
         </p>
       )}
 
       {order.status === 'error' && (
-        <div role="alert" className="mt-6">
-          <p className="text-red-600">No s'ha pogut carregar la comanda.</p>
-          <button type="button" onClick={order.retry} className="mt-2 rounded-sm border px-3 py-1">
+        <div role="alert" className="mt-8">
+          <p className="text-red-700">No s'ha pogut carregar la comanda.</p>
+          <button type="button" onClick={order.retry} className="btn btn-outline btn-sm mt-3">
             Torna-ho a provar
           </button>
         </div>
@@ -34,13 +34,13 @@ const OrderDetailPage = () => {
 
       {order.status === 'success' && (
         <>
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold">Comanda {order.order.orderNumber}</h1>
+          <div className="mt-6 flex flex-wrap items-center gap-4">
+            <h1 className="font-display text-4xl leading-tight">
+              Comanda {order.order.orderNumber}
+            </h1>
             <OrderStatusBadge status={order.order.status} />
           </div>
-          <p className="mt-1 text-sm text-gray-600">
-            Feta el {formatOrderDate(order.order.createdAt)}
-          </p>
+          <p className="mt-2 text-mocha">Feta el {formatOrderDate(order.order.createdAt)}</p>
           <OrderDetails order={order.order} />
         </>
       )}
