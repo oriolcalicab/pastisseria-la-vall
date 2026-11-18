@@ -8,18 +8,20 @@ export default function RegisterPage() {
 
   if (isSuccess) {
     return (
-      <main className="mx-auto max-w-md p-8">
-        <h1 className="text-2xl font-bold">Compte creat!</h1>
-        <p className="mt-4">Ja pots fer servir el teu compte</p>
+      <main className="mx-auto max-w-md px-4 py-12 text-center md:py-16">
+        <p className="eyebrow">Benvingut a la Vall</p>
+        <h1 className="page-title mt-2 font-display">Compte creat!</h1>
+        <p className="mt-4 text-mocha">Ja pots fer servir el teu compte</p>
       </main>
     )
   }
 
   return (
-    <main className="mx-auto max-w-md p-8">
-      <h1 className="text-2xl font-bold">Crea el teu compte</h1>
+    <main className="mx-auto max-w-md px-4 py-12 md:py-16">
+      <p className="eyebrow">Uneix-te a la Vall</p>
+      <h1 className="page-title mt-2 font-display">Crea el teu compte</h1>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
+      <form onSubmit={handleSubmit} noValidate className="card mt-8 space-y-5">
         <FormField
           id="name"
           label="Nom"
@@ -49,23 +51,19 @@ export default function RegisterPage() {
         />
 
         {submitError && (
-          <p role="alert" className="text-sm text-red-600">
+          <p role="alert" className="text-sm text-red-700">
             {submitError}
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full rounded bg-black p-2 text-white disabled:opacity-50"
-        >
+        <button type="submit" disabled={isSubmitting} className="btn btn-primary w-full">
           {isSubmitting ? 'Creant el compte...' : "Registra'm"}
         </button>
       </form>
 
-      <p className="mt-4 text-sm">
+      <p className="mt-6 text-center text-mocha">
         Ja tens compte?{' '}
-        <Link to="/login" className="underline">
+        <Link to="/login" className="link font-medium">
           Inicia la sessió
         </Link>
       </p>
