@@ -10,26 +10,26 @@ type OrdersListProps = {
 }
 
 const OrdersList = ({ orders }: OrdersListProps) => (
-  <ul className="mt-6 space-y-4">
+  <ul className="mt-8 space-y-4">
     {orders.map((order) => (
-      <li key={order.id} className="rounded-sm border p-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-semibold">
-            <Link to={`/comandes/${order.id}`} className="underline">
+      <li key={order.id} className="card">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-medium">
+            <Link to={`/comandes/${order.id}`} className="text-caramel hover:underline">
               {order.orderNumber}
             </Link>
           </h2>
           <OrderStatusBadge status={order.status} />
         </div>
-        <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-          <dt className="text-gray-600">Data</dt>
+        <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm sm:grid-cols-[auto_1fr_auto_1fr]">
+          <dt className="text-mocha">Data</dt>
           <dd>{formatOrderDate(order.createdAt)}</dd>
-          <dt className="text-gray-600">Entrega</dt>
+          <dt className="text-mocha">Entrega</dt>
           <dd>{getDayLabel(order.deliveryDate)}</dd>
-          <dt className="text-gray-600">Mètode</dt>
+          <dt className="text-mocha">Mètode</dt>
           <dd>{deliveryMethodLabels[order.deliveryMethod]}</dd>
-          <dt className="text-gray-600">Total</dt>
-          <dd className="font-semibold">{formatPrice(order.totalCents)}</dd>
+          <dt className="text-mocha">Total</dt>
+          <dd className="font-medium">{formatPrice(order.totalCents)}</dd>
         </dl>
       </li>
     ))}
