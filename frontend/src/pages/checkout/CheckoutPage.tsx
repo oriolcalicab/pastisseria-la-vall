@@ -111,13 +111,14 @@ const CheckoutPage = () => {
   }
 
   return (
-    <main className="mx-auto max-w-5xl p-4 sm:p-8">
-      <h1 className="text-3xl font-bold">Finalitza la comanda</h1>
+    <main className="mx-auto max-w-6xl px-4 py-12 md:px-8 md:py-16">
+      <p className="eyebrow">Gairebé a taula</p>
+      <h1 className="page-title mt-2 font-display">Finalitza la comanda</h1>
 
       <div className="mt-6 grid gap-8 md:grid-cols-[1fr_20rem]">
         {step === 'date' && (
           <section aria-labelledby="date-title" className="md:col-start-1 md:row-start-1">
-            <h2 id="date-title" className="text-xl font-semibold">
+            <h2 id="date-title" className="font-display text-3xl">
               Pas 1 · Data de lliurament
             </h2>
             <div className="mt-4">
@@ -128,7 +129,7 @@ const CheckoutPage = () => {
               />
             </div>
             {!deliveryDate && (
-              <p id="date-hint" className="mt-4 text-sm text-gray-600">
+              <p id="date-hint" className="mt-4 text-sm text-mocha">
                 Tria una data per continuar.
               </p>
             )}
@@ -137,7 +138,7 @@ const CheckoutPage = () => {
               onClick={() => setStep('method')}
               disabled={!deliveryDate}
               aria-describedby={deliveryDate ? undefined : 'date-hint'}
-              className="mt-4 rounded-sm bg-gray-900 px-4 py-2 text-white disabled:opacity-50"
+              className="btn btn-primary mt-6"
             >
               Continua
             </button>
@@ -147,14 +148,14 @@ const CheckoutPage = () => {
         {step === 'method' && deliveryDate && (
           <section aria-labelledby="method-title" className="contents">
             <div className="md:col-start-1 md:row-start-1">
-              <h2 id="method-title" className="text-xl font-semibold">
+              <h2 id="method-title" className="font-display text-3xl">
                 Pas 2 · Mètode de lliurament
               </h2>
-              <p className="mt-4">Data de lliurament: {getDayLabel(deliveryDate)}</p>
+              <p className="mt-4 text-mocha">Data de lliurament: {getDayLabel(deliveryDate)}</p>
               <button
                 type="button"
                 onClick={() => setStep('date')}
-                className="mt-2 text-sm underline"
+                className="mt-1 text-sm text-caramel hover:underline"
               >
                 Canvia la data
               </button>
@@ -180,7 +181,7 @@ const CheckoutPage = () => {
 
             <div className="md:col-start-1">
               {methodHint && (
-                <p id="method-hint" className="text-sm text-gray-600">
+                <p id="method-hint" className="text-sm text-mocha">
                   {methodHint}
                 </p>
               )}
@@ -189,7 +190,7 @@ const CheckoutPage = () => {
                 onClick={handleMethodContinue}
                 disabled={methodHint !== null}
                 aria-describedby={methodHint ? 'method-hint' : undefined}
-                className="mt-4 rounded-sm bg-gray-900 px-4 py-2 text-white disabled:opacity-50"
+                className="btn btn-primary mt-6"
               >
                 Continua
               </button>
@@ -199,7 +200,7 @@ const CheckoutPage = () => {
 
         {step === 'review' && deliveryDate && deliveryMethod && (
           <section aria-labelledby="review-title" className="md:col-start-1 md:row-start-1">
-            <h2 id="review-title" className="text-xl font-semibold">
+            <h2 id="review-title" className="font-display text-3xl">
               Pas 3 · Revisió
             </h2>
             <OrderReview
@@ -238,24 +239,23 @@ const CheckoutPage = () => {
           </section>
         )}
 
-        <aside
-          aria-labelledby="summary-title"
-          className="h-fit rounded-sm border p-4 md:col-start-2 md:row-start-1"
-        >
-          <h2 id="summary-title" className="text-lg font-semibold">
+        <aside aria-labelledby="summary-title" className="card h-fit md:col-start-2 md:row-start-1">
+          <h2 id="summary-title" className="font-display text-2xl">
             Resum
           </h2>
-          <ul className="mt-2 space-y-1">
+          <ul className="mt-3 divide-y divide-line text-sm">
             {lines.map((line) => (
-              <li key={line.variantId} className="flex justify-between gap-4">
+              <li key={line.variantId} className="flex justify-between gap-4 py-2">
                 <span>
                   {line.quantity} × {line.productName} ({line.variantName})
                 </span>
-                <span>{formatPrice(line.priceCents * line.quantity)}</span>
+                <span className="whitespace-nowrap">
+                  {formatPrice(line.priceCents * line.quantity)}
+                </span>
               </li>
             ))}
           </ul>
-          <p className="mt-4 border-t pt-2 text-right font-bold">
+          <p className="mt-3 border-t border-line pt-3 text-right font-display text-xl">
             Subtotal: {formatPrice(totalCents)}
           </p>
         </aside>
